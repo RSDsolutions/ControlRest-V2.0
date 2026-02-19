@@ -1,7 +1,7 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Table, Plate, Order, OrderItem, User, Ingredient } from '../types';
 import { supabase } from '../supabaseClient';
+import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 
 interface WaiterViewProps {
    tables: Table[];
@@ -19,7 +19,11 @@ interface WaiterViewProps {
 
 type ViewMode = 'tables' | 'order' | 'history' | 'serve' | 'summary';
 
-const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrders, setTables, branchId, currentUser, fetchOrders, ingredients = [], restaurantId, inventoryError }) => {
+const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, branchId, currentUser, ingredients = [], restaurantId, inventoryError }) => {
+   const { orders, refresh: refreshOrders } = useRealtimeOrders(branchId || null);
+
+   // Use refreshOrders instead of fetchOrders prop if passed
+   const fetchOrders = refreshOrders;
    const [viewMode, setViewMode] = useState<ViewMode>('tables');
    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
    const [cart, setCart] = useState<OrderItem[]>([]);
@@ -30,7 +34,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
    const [tableViewType, setTableViewType] = useState<'grid' | 'list'>('grid');
 
    const selectedTable = tables.find(t => (t.id || t.label) === selectedTableId);
-   const tableOrders = orders.filter(o => o.tableId === selectedTableId && !['paid', 'cancelled'].includes(o.status));
+   const tableOrders = orders.filter(o => !o.optimistic && o.tableId === selectedTableId && !['paid', 'cancelled'].includes(o.status));
    const existingOrder = tableOrders[0];
 
    useEffect(() => {
@@ -82,39 +86,68 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
    };
 
    // Ready orders notification
-   const readyOrders = orders.filter(o => o.status === 'ready' && tables.some(t => (t.id || t.label) === o.tableId));
+   const readyOrders = orders.filter(o => !o.optimistic && o.status === 'ready' && tables.some(t => (t.id || t.label) === o.tableId));
 
-   // Table status helpers
-   const getTableStatus = (table: Table) => {
-      const activeOrders = orders.filter(o => o.tableId === (table.id || table.label) && !['paid', 'cancelled'].includes(o.status));
-      if (activeOrders.length === 0) return 'available';
 
-      // Prioritize "Ready to serve" (Purple)
-      if (activeOrders.some(o => o.status === 'ready')) return 'ready';
-      // Then "Billing" (Pink)
-      if (activeOrders.some(o => o.status === 'billing')) return 'billing';
-      // Then "Preparing" (Blue)
-      if (activeOrders.some(o => o.status === 'preparing')) return 'preparing';
 
-      // If none of the above but order exists, it is occupied
-      return 'occupied';
-   };
+   // Optimization: Pre-calculate table statuses to ensure UI updates instantly when 'orders' changes.
+   const tableStatuses = useMemo(() => {
+
+      const statusMap: Record<string, string> = {};
+      tables.forEach(t => {
+         const tId = t.id || t.label;
+         const activeOrders = orders.filter(o =>
+            (o.tableId === t.id || o.tableId === t.label) &&
+            !['paid', 'cancelled'].includes(o.status)
+         );
+
+         let status = 'available';
+         if (activeOrders.length > 0) {
+            status = 'occupied';
+            if (activeOrders.some(o => o.status === 'ready')) status = 'ready';
+            // WAITER UI TWEAK: Treat 'billing' as 'occupied' to avoid confusion. Only Cashier cares about 'billing'.
+            // else if (activeOrders.some(o => o.status === 'billing')) status = 'billing';
+            else if (activeOrders.some(o => o.status === 'preparing')) status = 'preparing';
+         }
+         statusMap[tId] = status;
+      });
+      return statusMap;
+   }, [orders, tables]);
 
    const getTableStatusConfig = (status: string) => {
       const configs: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
          available: { label: 'Libre', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-300', icon: 'check_circle' },
-         occupied: { label: 'Pedido Activo', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300', icon: 'restaurant' },
+         occupied: { label: 'Ocupado', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300', icon: 'restaurant' },
          preparing: { label: 'En Cocina', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-300', icon: 'local_fire_department' },
          ready: { label: 'Listo para Servir', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-400', icon: 'notifications_active' },
-         billing: { label: 'Pendiente Cobro', color: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300', icon: 'point_of_sale' },
+         // billing: { label: 'Pendiente Cobro', color: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300', icon: 'point_of_sale' },
       };
       return configs[status] || configs.available;
    };
 
+   // Helper for click handler
+   const getStatusForTable = (t: Table) => tableStatuses[t.id || t.label] || 'available';
+
    const handleTableClick = (t: Table) => {
-      const tableId = t.id || t.label;
-      setSelectedTableId(tableId);
-      const status = getTableStatus(t);
+      // CRITICAL FIX: Ensure we use the UUID, not the label.
+      // If t.id is missing (should not happen with correct fetch), we must find it.
+      let validId = t.id;
+      if (!validId) {
+         // Fallback: try to find in tables array by label and branch
+         const found = tables.find(tbl => tbl.label === t.label && tbl.branchId === branchId);
+         if (found && found.id) {
+            validId = found.id;
+         }
+      }
+
+      if (!validId) {
+         console.error("Table ID missing for table:", t);
+         showNotification("Error: Mesa sin ID válido. Recarga la página.");
+         return;
+      }
+
+      setSelectedTableId(validId);
+      const status = getStatusForTable(t);
       if (status === 'ready') {
          setViewMode('serve');
       } else {
@@ -181,71 +214,25 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
          const tableId = selectedTableId;
          const tableLabel = getTableLabel(tableId);
 
-         // ALWAYS New order \u2192 insert into DB (to create separate kitchen tickets)
-         const { data: orderData, error: orderErr } = await supabase.from('orders').insert({
-            branch_id: branchId,
-            table_id: tableId,
-            waiter_id: currentUser?.id || null,
-            status: 'pending',
-            total,
-         }).select().single();
+         // Use Atomic RPC for Order Creation & Stock Deduction
+         const orderItemsArg = cart.map(item => ({
+            recipe_id: item.plateId,
+            quantity: item.qty,
+            notes: item.notes || null,
+            unit_price: plates.find(p => p.id === item.plateId)?.sellingPrice || 0
+         }));
 
-         if (orderErr) throw orderErr;
-
-         const itemInserts = cart.map(item => {
-            return {
-               order_id: orderData.id,
-               recipe_id: item.plateId,
-               quantity: item.qty,
-               unit_price: plates.find(p => p.id === item.plateId)?.sellingPrice || 0,
-               notes: item.notes || null,
-            };
+         const { error: rpcErr } = await supabase.rpc('create_order_atomic', {
+            p_branch_id: branchId,
+            p_table_id: tableId,
+            p_waiter_id: currentUser?.id || null,
+            p_total: total,
+            p_items: orderItemsArg
          });
-         const { error: itemErr } = await supabase.from('order_items').insert(itemInserts);
-         if (itemErr) throw itemErr;
 
-         // --- STOCK DEDUCTION ---
-         if (branchId && ingredients.length > 0) {
-            try {
-               // Calculate total deduction for this order
-               const deductions: { [ingId: string]: number } = {};
-               cart.forEach(item => {
-                  const plate = plates.find(p => p.id === item.plateId);
-                  if (plate?.ingredients) {
-                     plate.ingredients.forEach(pi => {
-                        deductions[pi.ingredientId] = (deductions[pi.ingredientId] || 0) + (pi.qty * item.qty);
-                     });
-                  }
-               });
+         if (rpcErr) throw rpcErr;
 
-               // Execute deductions in DB
-               for (const [ingId, qtyToDeduct] of Object.entries(deductions)) {
-                  const currentIng = ingredients.find(i => i.id === ingId);
-                  if (!currentIng) continue;
-
-                  const newQty = Math.max(0, currentIng.currentQty - qtyToDeduct);
-
-                  // Update Database
-                  const { error: stockErr } = await supabase.from('inventory')
-                     .update({ quantity_gr: newQty })
-                     .match({ branch_id: branchId, ingredient_id: ingId });
-
-                  if (stockErr) {
-                     console.error(`Error updating stock for ${ingId}:`, stockErr);
-                     // If it's a permission error, it might not throw but return error
-                     if (stockErr.code === '42501') {
-                        showNotification('⚠️ Error de permisos: No se pudo descontar del inventario. Ejecuta el SQL.');
-                     }
-                  }
-               }
-            } catch (stockErr) {
-               console.error('Error during immediate stock deduction:', stockErr);
-               showNotification('⚠️ Error al procesar inventario');
-            }
-         }
-
-         // Update table status in DB to occupied
-         await supabase.from('tables').update({ status: 'occupied' }).eq('id', tableId);
+         // Table status updated by RPC in DB, we update local state for UI responsiveness
          setTables(prev => prev.map(t => (t.id || t.label) === tableId ? { ...t, status: 'occupied' } : t));
 
          if (fetchOrders) fetchOrders();
@@ -310,135 +297,138 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
    const myOrders = orders.filter(o => o.waiterId === currentUser?.id);
 
    // \u2500\u2500\u2500 TABLES VIEW \u2500\u2500\u2500
-   const renderTablesView = () => (
-      <div className="flex-1 overflow-y-auto bg-slate-50/50 animate-fadeIn text-slate-900">
-         {/* Top bar */}
-         <div className="bg-white border-b border-slate-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-               <div className="flex items-center gap-3">
-                  <span className="material-icons-round text-3xl text-primary">table_restaurant</span>
-                  <div>
-                     <h1 className="text-2xl font-black text-slate-900">Mis Mesas</h1>
-                     <p className="text-xs text-slate-500">Vista de mesas activas</p>
+   const renderTablesView = () => {
+      console.log('[WaiterView] Rendering Tables View - Orders:', orders.length);
+      return (
+         <div className="flex-1 overflow-y-auto bg-slate-50/50 animate-fadeIn text-slate-900">
+            {/* Top bar */}
+            <div className="bg-white border-b border-slate-200 px-6 py-4">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <span className="material-icons-round text-3xl text-primary">table_restaurant</span>
+                     <div>
+                        <h1 className="text-2xl font-black text-slate-900">Mis Mesas</h1>
+                        <p className="text-xs text-slate-500">Vista de mesas activas</p>
+                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     {/* View toggle */}
+                     <button onClick={() => setTableViewType('grid')} className={`p-2 rounded-lg ${tableViewType === 'grid' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                        <span className="material-icons-round text-lg">grid_view</span>
+                     </button>
+                     <button onClick={() => setTableViewType('list')} className={`p-2 rounded-lg ${tableViewType === 'list' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                        <span className="material-icons-round text-lg">view_list</span>
+                     </button>
+                     <div className="w-px h-8 bg-slate-200 mx-2"></div>
+                     <button onClick={() => setViewMode('history')} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-bold text-slate-600 transition-all">
+                        <span className="material-icons-round text-lg">history</span> Historial
+                     </button>
+                     <button onClick={() => setViewMode('summary')} className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-sm font-bold text-primary transition-all">
+                        <span className="material-icons-round text-lg">analytics</span> Resumen
+                     </button>
                   </div>
                </div>
-               <div className="flex items-center gap-2">
-                  {/* View toggle */}
-                  <button onClick={() => setTableViewType('grid')} className={`p-2 rounded-lg ${tableViewType === 'grid' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                     <span className="material-icons-round text-lg">grid_view</span>
-                  </button>
-                  <button onClick={() => setTableViewType('list')} className={`p-2 rounded-lg ${tableViewType === 'list' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                     <span className="material-icons-round text-lg">view_list</span>
-                  </button>
-                  <div className="w-px h-8 bg-slate-200 mx-2"></div>
-                  <button onClick={() => setViewMode('history')} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-bold text-slate-600 transition-all">
-                     <span className="material-icons-round text-lg">history</span> Historial
-                  </button>
-                  <button onClick={() => setViewMode('summary')} className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-sm font-bold text-primary transition-all">
-                     <span className="material-icons-round text-lg">analytics</span> Resumen
-                  </button>
+
+               {/* Status legend */}
+               <div className="flex items-center gap-4 mt-4 flex-wrap">
+                  {['available', 'occupied', 'preparing', 'ready'].map(status => {
+                     const cfg = getTableStatusConfig(status);
+                     return (
+                        <div key={status} className="flex items-center gap-1.5 text-xs">
+                           <span className={`w-3 h-3 rounded-full ${cfg.bg} border ${cfg.border}`}></span>
+                           <span className={`font-semibold ${cfg.color}`}>{cfg.label}</span>
+                        </div>
+                     );
+                  })}
                </div>
             </div>
 
-            {/* Status legend */}
-            <div className="flex items-center gap-4 mt-4 flex-wrap">
-               {['available', 'occupied', 'preparing', 'ready', 'billing'].map(status => {
+            {/* Ready orders notification bar */}
+            {readyOrders.length > 0 && (
+               <div className="mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3 animate-pulse">
+                  <span className="material-icons-round text-purple-600 text-xl">notifications_active</span>
+                  <p className="text-sm font-bold text-purple-800">
+                     {readyOrders.length} pedido(s) listo(s) para servir:
+                     {[...new Set(readyOrders.map(o => getTableLabel(o.tableId)))].map(label => ` Mesa ${label}`).join(',')}
+                  </p>
+               </div>
+            )}
+
+            {/* Tables Grid / List */}
+            <div className={`p-6 ${tableViewType === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4' : 'space-y-2'}`}>
+               {tables.map(table => {
+                  const status = getStatusForTable(table);
                   const cfg = getTableStatusConfig(status);
-                  return (
-                     <div key={status} className="flex items-center gap-1.5 text-xs">
-                        <span className={`w-3 h-3 rounded-full ${cfg.bg} border ${cfg.border}`}></span>
-                        <span className={`font-semibold ${cfg.color}`}>{cfg.label}</span>
-                     </div>
-                  );
-               })}
-            </div>
-         </div>
+                  const tableId = table.id || table.label;
 
-         {/* Ready orders notification bar */}
-         {readyOrders.length > 0 && (
-            <div className="mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3 animate-pulse">
-               <span className="material-icons-round text-purple-600 text-xl">notifications_active</span>
-               <p className="text-sm font-bold text-purple-800">
-                  {readyOrders.length} pedido(s) listo(s) para servir:
-                  {[...new Set(readyOrders.map(o => getTableLabel(o.tableId)))].map(label => ` Mesa ${label}`).join(',')}
-               </p>
-            </div>
-         )}
+                  // Aggregate all active (unpaid) orders for this table
+                  const activeTableOrders = orders.filter(o => o.tableId === tableId && !['paid', 'cancelled'].includes(o.status));
+                  const tableTotal = activeTableOrders.reduce((acc, o) => acc + (o.total || 0), 0);
 
-         {/* Tables Grid / List */}
-         <div className={`p-6 ${tableViewType === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4' : 'space-y-2'}`}>
-            {tables.map(table => {
-               const status = getTableStatus(table);
-               const cfg = getTableStatusConfig(status);
-               const tableId = table.id || table.label;
+                  if (tableViewType === 'list') {
+                     return (
+                        <button key={tableId} onClick={() => handleTableClick(table)}
+                           className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${cfg.border} ${cfg.bg} hover:shadow-md transition-all`}>
+                           <div className={`w-12 h-12 rounded-xl ${cfg.bg} border ${cfg.border} flex items-center justify-center`}>
+                              <span className={`material-icons-round ${cfg.color}`}>{cfg.icon}</span>
+                           </div>
+                           <div className="flex-1 text-left">
+                              <p className="font-black text-slate-800">{table.label}</p>
+                              <p className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</p>
+                           </div>
+                           <div className="text-right">
+                              <p className="text-xs text-slate-400">{table.seats} personas</p>
+                              {activeTableOrders.length > 0 && <p className="text-sm font-bold text-slate-700">${tableTotal.toFixed(2)}</p>}
+                           </div>
+                           <div className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap ${status === 'available' ? 'bg-emerald-600 text-white' :
+                              status === 'occupied' || status === 'preparing' ? 'bg-blue-600 text-white' :
+                                 status === 'ready' ? 'bg-purple-600 text-white' :
+                                    'bg-pink-600 text-white'
+                              }`}>
+                              {status === 'available' ? 'Abrir Mesa' :
+                                 status === 'occupied' ? 'A\u00F1adir' :
+                                    status === 'preparing' ? 'Ver' :
+                                       status === 'ready' ? 'Servir' :
+                                          'Cuenta'}
+                           </div>
+                        </button>
+                     );
+                  }
 
-               // Aggregate all active (unpaid) orders for this table
-               const activeTableOrders = orders.filter(o => o.tableId === tableId && !['paid', 'cancelled'].includes(o.status));
-               const tableTotal = activeTableOrders.reduce((acc, o) => acc + (o.total || 0), 0);
-
-               if (tableViewType === 'list') {
                   return (
                      <button key={tableId} onClick={() => handleTableClick(table)}
-                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${cfg.border} ${cfg.bg} hover:shadow-md transition-all`}>
-                        <div className={`w-12 h-12 rounded-xl ${cfg.bg} border ${cfg.border} flex items-center justify-center`}>
-                           <span className={`material-icons-round ${cfg.color}`}>{cfg.icon}</span>
+                        className={`relative rounded-2xl border-2 ${cfg.border} ${cfg.bg} p-4 h-40 flex flex-col justify-between hover:shadow-lg transition-all transform active:scale-95`}>
+                        {status === 'ready' && (
+                           <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-purple-500 rounded-full animate-ping"></div>
+                        )}
+                        <div className="flex items-start justify-between w-full">
+                           <span className="font-black text-lg text-slate-800">{table.label}</span>
+                           <span className={`material-icons-round text-lg ${cfg.color}`}>{cfg.icon}</span>
                         </div>
-                        <div className="flex-1 text-left">
-                           <p className="font-black text-slate-800">{table.label}</p>
+                        <div className="text-left">
                            <p className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</p>
+                           <p className="text-[10px] text-slate-400 font-medium">{table.seats} pers.</p>
+                           {activeTableOrders.length > 0 && <p className="text-xs font-bold text-slate-700 mt-0.5">${tableTotal.toFixed(2)}</p>}
                         </div>
-                        <div className="text-right">
-                           <p className="text-xs text-slate-400">{table.seats} personas</p>
-                           {activeTableOrders.length > 0 && <p className="text-sm font-bold text-slate-700">${tableTotal.toFixed(2)}</p>}
-                        </div>
-                        <div className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap ${status === 'available' ? 'bg-emerald-600 text-white' :
+                        {/* Contextual action label */}
+                        <div className={`w-full text-center py-1.5 rounded-xl text-xs font-black mt-1 ${status === 'available' ? 'bg-emerald-600 text-white' :
                            status === 'occupied' || status === 'preparing' ? 'bg-blue-600 text-white' :
                               status === 'ready' ? 'bg-purple-600 text-white' :
                                  'bg-pink-600 text-white'
                            }`}>
-                           {status === 'available' ? 'Abrir Mesa' :
-                              status === 'occupied' ? 'A\u00F1adir' :
-                                 status === 'preparing' ? 'Ver' :
-                                    status === 'ready' ? 'Servir' :
-                                       'Cuenta'}
+                           {status === 'available' ? '\uD83D\uDFE2 Abrir Mesa' :
+                              status === 'occupied' ? '\uD83D\uDCDD A\u00F1adir Platos' :
+                                 status === 'preparing' ? '\uD83D\uDC40 Ver Pedido' :
+                                    status === 'ready' ? '\uD83D\uDD14 Servir' :
+                                       '\uD83D\uDCB0 Ver Cuenta'}
                         </div>
                      </button>
                   );
-               }
-
-               return (
-                  <button key={tableId} onClick={() => handleTableClick(table)}
-                     className={`relative rounded-2xl border-2 ${cfg.border} ${cfg.bg} p-4 h-40 flex flex-col justify-between hover:shadow-lg transition-all transform active:scale-95`}>
-                     {status === 'ready' && (
-                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-purple-500 rounded-full animate-ping"></div>
-                     )}
-                     <div className="flex items-start justify-between w-full">
-                        <span className="font-black text-lg text-slate-800">{table.label}</span>
-                        <span className={`material-icons-round text-lg ${cfg.color}`}>{cfg.icon}</span>
-                     </div>
-                     <div className="text-left">
-                        <p className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{table.seats} pers.</p>
-                        {activeTableOrders.length > 0 && <p className="text-xs font-bold text-slate-700 mt-0.5">${tableTotal.toFixed(2)}</p>}
-                     </div>
-                     {/* Contextual action label */}
-                     <div className={`w-full text-center py-1.5 rounded-xl text-xs font-black mt-1 ${status === 'available' ? 'bg-emerald-600 text-white' :
-                        status === 'occupied' || status === 'preparing' ? 'bg-blue-600 text-white' :
-                           status === 'ready' ? 'bg-purple-600 text-white' :
-                              'bg-pink-600 text-white'
-                        }`}>
-                        {status === 'available' ? '\uD83D\uDFE2 Abrir Mesa' :
-                           status === 'occupied' ? '\uD83D\uDCDD A\u00F1adir Platos' :
-                              status === 'preparing' ? '\uD83D\uDC40 Ver Pedido' :
-                                 status === 'ready' ? '\uD83D\uDD14 Servir' :
-                                    '\uD83D\uDCB0 Ver Cuenta'}
-                     </div>
-                  </button>
-               );
-            })}
+               })}
+            </div>
          </div>
-      </div>
-   );
+      );
+   };
 
    // \u2500\u2500\u2500 ORDER VIEW \u2500\u2500\u2500
    const renderOrderView = () => (
@@ -495,20 +485,22 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
             </header>
 
             {/* Plates grid */}
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                {filteredPlates.map(plate => {
                   const inCart = cart.find(i => i.plateId === plate.id);
                   const stock = getPlateStock(plate);
 
                   return (
                      <div key={plate.id} onClick={() => stock > 0 ? addToCart(plate) : showNotification(`\u26A0\uFE0F ${plate.name} agotado`)}
-                        className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-primary group cursor-pointer transform active:scale-95 relative ${stock <= 0 ? 'opacity-60 grayscale' : ''}`}>
-                        {inCart && (
-                           <div className="absolute top-2 right-2 bg-primary text-white font-black text-xs w-6 h-6 rounded-full flex items-center justify-center z-10 shadow-md">{inCart.qty}</div>
-                        )}
-                        <div className="h-28 relative overflow-hidden">
+                        className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-primary group cursor-pointer transform active:scale-95 relative flex flex-col h-full ${stock <= 0 ? 'opacity-60 grayscale' : ''}`}>
+                        {/* Image Container */}
+                        <div className="h-32 relative overflow-hidden shrink-0">
                            <img src={plate.image} alt={plate.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                           <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-slate-800 shadow-sm">${plate.sellingPrice.toFixed(2)}</div>
+
+                           {/* Badge Quantity */}
+                           {inCart && (
+                              <div className="absolute top-2 right-2 bg-primary text-white font-black text-xs w-6 h-6 rounded-full flex items-center justify-center z-10 shadow-md transform scale-110">{inCart.qty}</div>
+                           )}
 
                            {/* Stock badge */}
                            <div className={`absolute top-2 left-2 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-sm border ${stock <= 0 ? 'bg-red-500/90 text-white border-red-400' :
@@ -518,9 +510,17 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, orders, setOrde
                               {stock <= 0 ? 'Agotado' : `${stock} disp.`}
                            </div>
                         </div>
-                        <div className="p-3">
-                           <h4 className="font-bold text-slate-800 text-sm line-clamp-1">{plate.name}</h4>
-                           <p className="text-[10px] text-slate-400">{plate.category}</p>
+
+                        {/* Content: Title, Desc, Price */}
+                        <div className="p-3 flex flex-col flex-grow">
+                           <h4 className="font-bold text-slate-800 text-sm mb-1">{plate.name}</h4>
+                           <p className="text-[10px] text-slate-500 leading-tight mb-3 line-clamp-2">
+                              {plate.description || 'Delicioso plato preparado al momento.'}
+                           </p>
+                           <div className="mt-auto flex justify-between items-center w-full">
+                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{plate.category}</span>
+                              <span className="font-black text-lg text-primary bg-primary/5 px-2 py-0.5 rounded-lg">${plate.sellingPrice.toFixed(2)}</span>
+                           </div>
                         </div>
                      </div>
                   );

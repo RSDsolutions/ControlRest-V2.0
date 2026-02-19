@@ -2,6 +2,9 @@
 import React, { useState, useMemo } from 'react';
 import { Plate, Ingredient, PlateIngredient, Order } from '../types';
 import { supabase } from '../supabaseClient';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 interface PlatesViewProps {
   plates: Plate[];
@@ -138,6 +141,110 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
   };
 
   const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Track if we are editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Helper to convert image to base64
+  const getBase64Image = (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.setAttribute('crossOrigin', 'anonymous');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const dataURL = canvas.toDataURL('image/jpeg');
+          resolve(dataURL);
+        } else {
+          reject(new Error('Canvas context failed'));
+        }
+      };
+      img.onerror = error => reject(error);
+      img.src = url;
+    });
+  };
+
+  const generatePDF = async (plate: Plate) => {
+    const doc = new jsPDF();
+    const cost = calculateCost(plate.ingredients);
+    const margin = ((plate.sellingPrice - cost) / plate.sellingPrice) * 100;
+
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Ficha Técnica: ${plate.name}`, 14, 22);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Categoría: ${plate.category}`, 14, 28);
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 32);
+
+    // Image
+    if (plate.image) {
+      try {
+        // Attempt to get base64 image
+        const base64Img = await getBase64Image(plate.image);
+        doc.addImage(base64Img, 'JPEG', 14, 40, 50, 50);
+      } catch (e) {
+        console.warn('Could not add image to PDF', e);
+        // Fallback text if image fails
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('(Imagen no disponible en exportación)', 14, 60);
+      }
+    }
+
+    // Financials - Shift down if image exists (or just keep fixed layout if image is fixed size)
+    // We used 14, 40, 50, 50 for image. Value Y ends at 90.
+    // Let's position financials to the right of image or below.
+    // Let's put them to the right of the image for a nicer layout.
+
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    const startX = 70;
+    doc.text(`Precio Venta: $${plate.sellingPrice.toFixed(2)}`, startX, 50);
+    doc.text(`Costo Total: $${cost.toFixed(2)}`, startX, 60);
+    doc.text(`Margen: ${margin.toFixed(1)}%`, startX, 70);
+
+    // Ingredients Table
+    const tableData = plate.ingredients.map(item => {
+      const ing = ingredients.find(i => i.id === item.ingredientId);
+      return [
+        ing?.name || 'Desconocido',
+        `${item.qty} ${ing?.measureUnit || 'un'}`,
+        `$${(ing?.unitPrice || 0).toFixed(2)}`,
+        `$${(item.qty * (ing?.unitPrice || 0)).toFixed(2)}`
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 100, // Below image area
+      head: [['Ingrediente', 'Cantidad', 'Costo Unit.', 'Costo Total']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      foot: [['Totals', '', '', `$${cost.toFixed(2)}`]]
+    });
+
+    doc.save(`${plate.name.replace(/\s+/g, '_')}_Ficha_Tecnica.pdf`);
+  };
+
+  const handleEditRequest = (plate: Plate) => {
+    setNewPlate({
+      ...plate,
+      ingredients: plate.ingredients.map(pi => ({
+        ingredientId: pi.ingredientId,
+        qty: pi.qty
+      }))
+    });
+    setEditingId(plate.id);
+    setIsEditing(true);
+    setIsCreating(true); // Re-use the creation form
+    setSelectedPlate(null);
+  };
   const [newPlate, setNewPlate] = useState<Partial<Plate>>({
     name: '',
     category: 'Fuertes',
@@ -180,49 +287,54 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
     }
 
     try {
-      // 1. Insert Recipe
-      const { data: recipeData, error: recipeError } = await supabase
-        .from('recipes')
-        .insert({
-          name: newPlate.name,
-          category: newPlate.category,
-          selling_price: newPlate.sellingPrice,
-          image_url: newPlate.image,
-          restaurant_id: restaurantId,
-          is_active: true
-        })
-        .select()
-        .single();
+      if (isEditing && editingId) {
+        // --- UPDATE MODE ---
+        // 1. Update Recipe Details
+        const { error: updateError } = await supabase
+          .from('recipes')
+          .update({
+            name: newPlate.name,
+            category: newPlate.category,
+            selling_price: newPlate.sellingPrice,
+            image_url: newPlate.image,
+          })
+          .eq('id', editingId);
 
-      if (recipeError) throw recipeError;
+        if (updateError) throw updateError;
 
-      if (recipeData) {
-        // 2. Insert Recipe Items
+        // 2. Sync Ingredients (Delete all and re-insert is easiest strategy here)
+        const { error: deleteError } = await supabase
+          .from('recipe_items')
+          .delete()
+          .eq('recipe_id', editingId);
+
+        if (deleteError) throw deleteError;
+
         if (newPlate.ingredients && newPlate.ingredients.length > 0) {
           const itemsToInsert = newPlate.ingredients.map(ing => ({
-            recipe_id: recipeData.id,
+            recipe_id: editingId,
             ingredient_id: ing.ingredientId,
             quantity_gr: ing.qty
           }));
-
-          const { error: itemsError } = await supabase
+          const { error: insertItemsError } = await supabase
             .from('recipe_items')
             .insert(itemsToInsert);
-
-          if (itemsError) throw itemsError;
+          if (insertItemsError) throw insertItemsError;
         }
 
         // 3. Update Local State
-        const plate: Plate = {
+        const updatedPlate: Plate = {
           ...newPlate,
-          id: recipeData.id,
+          id: editingId,
           sellingPrice: Number(newPlate.sellingPrice),
           ingredients: newPlate.ingredients || [],
           status: 'active'
         } as Plate;
 
-        setPlates([...plates, plate]);
+        setPlates(prev => prev.map(p => p.id === editingId ? updatedPlate : p));
         setIsCreating(false);
+        setIsEditing(false);
+        setEditingId(null);
 
         // Reset form
         setNewPlate({
@@ -233,6 +345,63 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
           status: 'active',
           image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop'
         });
+
+      } else {
+        // --- CREATE MODE ---
+        // 1. Insert Recipe
+        const { data: recipeData, error: recipeError } = await supabase
+          .from('recipes')
+          .insert({
+            name: newPlate.name,
+            category: newPlate.category,
+            selling_price: newPlate.sellingPrice,
+            image_url: newPlate.image,
+            restaurant_id: restaurantId,
+            is_active: true
+          })
+          .select()
+          .single();
+
+        if (recipeError) throw recipeError;
+
+        if (recipeData) {
+          // 2. Insert Recipe Items
+          if (newPlate.ingredients && newPlate.ingredients.length > 0) {
+            const itemsToInsert = newPlate.ingredients.map(ing => ({
+              recipe_id: recipeData.id,
+              ingredient_id: ing.ingredientId,
+              quantity_gr: ing.qty
+            }));
+
+            const { error: itemsError } = await supabase
+              .from('recipe_items')
+              .insert(itemsToInsert);
+
+            if (itemsError) throw itemsError;
+          }
+
+          // 3. Update Local State
+          const plate: Plate = {
+            ...newPlate,
+            id: recipeData.id,
+            sellingPrice: Number(newPlate.sellingPrice),
+            ingredients: newPlate.ingredients || [],
+            status: 'active'
+          } as Plate;
+
+          setPlates([...plates, plate]);
+          setIsCreating(false);
+
+          // Reset form
+          setNewPlate({
+            name: '',
+            category: 'Fuertes',
+            sellingPrice: 0,
+            ingredients: [],
+            status: 'active',
+            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop'
+          });
+        }
       }
     } catch (err: any) {
       console.error('Error saving plate:', err);
@@ -247,11 +416,11 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
       <div className="p-8 max-w-6xl mx-auto space-y-8 animate-fadeIn">
         <header className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Crear Nueva Receta</h1>
+            <h1 className="text-3xl font-bold text-slate-900">{isEditing ? 'Editar Receta' : 'Crear Nueva Receta'}</h1>
             <p className="text-slate-500">Define ingredientes y calcula márgenes óptimos.</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setIsCreating(false)} className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all">Cancelar</button>
+            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all">Cancelar</button>
             <button onClick={handleSave} className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-light shadow-lg transition-all active:scale-95">Publicar al Menú</button>
           </div>
         </header>
@@ -514,8 +683,8 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
               </div>
 
               <footer className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all" onClick={() => alert("Función de editar en desarrollo")}>Editar Receta</button>
-                <button className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-light shadow-lg active:scale-95 transition-all">Exportar Ficha Técnica</button>
+                <button className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all" onClick={() => handleEditRequest(selectedPlate)}>Editar Receta</button>
+                <button className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-light shadow-lg active:scale-95 transition-all" onClick={() => generatePDF(selectedPlate)}>Exportar Ficha Técnica</button>
               </footer>
             </div>
           </div>

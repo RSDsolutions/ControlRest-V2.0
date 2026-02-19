@@ -153,24 +153,34 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Editar Stock Actual ({selectedIng.measureUnit})</label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  className="flex-1 px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-accent focus:ring-0 font-bold text-lg text-slate-900"
-                  value={editQty}
-                  onChange={(e) => setEditQty(e.target.value)}
-                />
-                <button onClick={handleUpdateStock} className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all">
-                  Actualizar
-                </button>
+            {branchId !== 'GLOBAL' ? (
+              <div>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Editar Stock Actual ({selectedIng.measureUnit})</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    className="flex-1 px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-accent focus:ring-0 font-bold text-lg text-slate-900"
+                    value={editQty}
+                    onChange={(e) => setEditQty(e.target.value)}
+                  />
+                  <button onClick={handleUpdateStock} className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                    Actualizar
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
+                  <span className="material-icons-round text-sm">info</span>
+                  Esto ajustará directamente la cantidad en inventario.
+                </p>
               </div>
-              <p className="text-[10px] text-slate-400 mt-2 font-bold flex items-center gap-1">
-                <span className="material-icons-round text-sm">info</span>
-                Esto ajustará directamente la cantidad en inventario.
-              </p>
-            </div>
+            ) : (
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                <p className="text-sm font-bold text-slate-500">
+                  <span className="material-icons-round text-base align-middle mr-1">visibility</span>
+                  Modo de solo lectura para la vista global.
+                </p>
+                <p className="text-xs text-slate-400 mt-1">El stock solo puede ser editado desde la vista de sucursal.</p>
+              </div>
+            )}
 
             <div className="pt-6 border-t border-slate-100 flex justify-end">
               <button onClick={() => setSelectedIng(null)} className="text-slate-400 font-bold text-xs uppercase hover:text-slate-600">Cerrar</button>

@@ -1,43 +1,56 @@
-
 import React, { useState, useMemo } from 'react';
-import { Order, Plate, Table } from '../types';
+import { Order, Plate, Table, User } from '../types';
+import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 
 interface OrdersHistoryViewProps {
-    orders: Order[];
+    // orders: Order[]; // We ignore the prop now
     plates: Plate[];
     tables: Table[];
+    branchId: string | 'GLOBAL' | null;
+    branches?: any[];
+    currentUser?: User | null;
 }
 
-const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ orders, plates, tables }) => {
-    const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'preparing' | 'delivered' | 'paid'>('all');
-    const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('today');
+const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, branchId, branches = [], currentUser }) => {
+    // Use Realtime Hook
+    const { orders } = useRealtimeOrders(branchId === 'GLOBAL' ? null : branchId);
+
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all');
+    const [showAllDates, setShowAllDates] = useState(false);
+    const [onlyMyOrders, setOnlyMyOrders] = useState(currentUser?.role === 'CASHIER');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
     const filteredOrders = useMemo(() => {
-        let result = [...orders];
+        return orders.filter(o => {
+            if (o.optimistic) return false;
 
-        // Filter by Status
-        if (filterStatus !== 'all') {
-            result = result.filter(o => o.status === filterStatus);
-        }
+            // Date Filter
+            let matchesDate = true;
+            if (!showAllDates) {
+                const d = new Date(o.timestamp);
+                matchesDate = d.getDate() === currentDate.getDate() &&
+                    d.getMonth() === currentDate.getMonth() &&
+                    d.getFullYear() === currentDate.getFullYear();
+            }
 
-        // Filter by Date
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            // Status Filter
+            const matchesStatus = filterStatus === 'all' || o.status === filterStatus;
 
-        if (dateRange === 'today') {
-            result = result.filter(o => new Date(o.timestamp) >= today);
-        } else if (dateRange === 'week') {
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - 7);
-            result = result.filter(o => new Date(o.timestamp) >= weekStart);
-        } else if (dateRange === 'month') {
-            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-            result = result.filter(o => new Date(o.timestamp) >= monthStart);
-        }
+            // User Filter
+            let matchesUser = true;
+            if (onlyMyOrders && currentUser) {
+                matchesUser = o.cashierId === currentUser.id;
+            }
 
-        return result.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }, [orders, filterStatus, dateRange]);
+            return matchesDate && matchesStatus && matchesUser;
+        });
+    }, [orders, currentDate, filterStatus, showAllDates, onlyMyOrders, currentUser]);
+
+    // Stats
+    const totalSales = filteredOrders.reduce((sum, o) => sum + (o.status === 'paid' ? o.total : 0), 0);
+    const totalOrders = filteredOrders.length;
+    const avgTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -72,62 +85,127 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ orders, plates, t
     const formatMoney = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="p-8 space-y-8 animate-fadeIn">
+            <header className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-100 shadow-xl">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <span className="material-icons-round text-accent">history</span> Historial de Pedidos
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        <span className="material-icons-round text-blue-600">history_edu</span>
+                        Historial de Pedidos
                     </h1>
-                    <p className="text-slate-500 font-medium">Consulta y audita todas las transacciones.</p>
+                    <p className="text-slate-500 font-bold mt-1 ml-10">Consulta y audita las ventas diarias.</p>
                 </div>
+                <div className="flex flex-col gap-4 items-end">
+                    <div className="flex gap-4">
+                        <input
+                            type="date"
+                            disabled={showAllDates}
+                            className={`bg-slate-50 border-none rounded-xl px-4 py-3 font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/20 outline-none transition-opacity ${showAllDates ? 'opacity-30 cursor-not-allowed' : ''}`}
+                            value={currentDate.toISOString().split('T')[0]}
+                            onChange={(e) => setCurrentDate(new Date(e.target.value))}
+                        />
+                        <select
+                            className="bg-slate-50 border-none rounded-xl px-6 py-3 font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/20 outline-none appearance-none"
+                            value={filterStatus}
+                            onChange={(e: any) => setFilterStatus(e.target.value)}
+                        >
+                            <option value="all">Todos los Estados</option>
+                            <option value="paid">Pagados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="cancelled">Cancelados</option>
+                        </select>
+                    </div>
+                    <div className="flex gap-6 items-center">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <div className="relative inline-flex items-center">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only peer"
+                                    checked={showAllDates}
+                                    onChange={() => setShowAllDates(!showAllDates)}
+                                />
+                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </div>
+                            <span className="text-sm font-black text-slate-500 group-hover:text-blue-600 transition-colors uppercase tracking-widest">Todas las fechas</span>
+                        </label>
 
-                <div className="flex flex-wrap gap-2">
-                    <select
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        value={dateRange}
-                        onChange={e => setDateRange(e.target.value as any)}
-                    >
-                        <option value="today">Hoy</option>
-                        <option value="week">Esta Semana</option>
-                        <option value="month">Este Mes</option>
-                        <option value="all">Todo el Historial</option>
-                    </select>
-
-                    <select
-                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900"
-                        value={filterStatus}
-                        onChange={e => setFilterStatus(e.target.value as any)}
-                    >
-                        <option value="all">Todos los Estados</option>
-                        <option value="paid">Pagados</option>
-                        <option value="preparing">En Cocina</option>
-                        <option value="open">Abiertos</option>
-                    </select>
+                        {currentUser && (
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                                <div className="relative inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={onlyMyOrders}
+                                        onChange={() => setOnlyMyOrders(!onlyMyOrders)}
+                                    />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </div>
+                                <span className="text-sm font-black text-slate-500 group-hover:text-emerald-600 transition-colors uppercase tracking-widest">Solo mis cobros</span>
+                            </label>
+                        )}
+                    </div>
                 </div>
             </header>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-slate-50 border-b border-slate-100">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">ID / Hora</th>
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Mesa</th>
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Estado</th>
-                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Mesero</th>
-                                <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Total</th>
-                                <th className="px-6 py-4 text-center text-xs font-black text-slate-400 uppercase tracking-wider">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {filteredOrders.map(order => (
-                                <tr key={order.id} className="hover:bg-slate-50 transition-colors group">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-blue-50 rounded-xl text-blue-600"><span className="material-icons-round text-3xl">payments</span></div>
+                    <div>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Ventas Totales</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tight">${totalSales.toFixed(2)}</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600"><span className="material-icons-round text-3xl">receipt_long</span></div>
+                    <div>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Pedidos</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tight">{totalOrders}</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div className="p-3 bg-violet-50 rounded-xl text-violet-600"><span className="material-icons-round text-3xl">analytics</span></div>
+                    <div>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Ticket Promedio</p>
+                        <p className="text-3xl font-black text-slate-900 tracking-tight">${avgTicket.toFixed(2)}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+                <table className="w-full">
+                    <thead className="bg-slate-50 border-b border-slate-100">
+                        <tr>
+                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">ID / Hora</th>
+                            {branchId === 'GLOBAL' && <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Sucursal</th>}
+                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Mesa</th>
+                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Mesero</th>
+                            <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Total</th>
+                            <th className="px-6 py-4 text-center text-xs font-black text-slate-400 uppercase tracking-wider">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {filteredOrders.length === 0 ? (
+                            <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-bold">No se encontraron pedidos.</td></tr>
+                        ) : (
+                            filteredOrders.map(order => (
+                                <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-slate-800">#{order.id.substring(0, 6)}</div>
-                                        <div className="text-xs text-slate-400 font-medium">
-                                            {new Date(order.timestamp).toLocaleDateString()} • {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div className="flex flex-col">
+                                            <span className="font-mono text-xs text-slate-400">#{order.id.slice(0, 8)}</span>
+                                            <span className="font-bold text-slate-700 text-sm">
+                                                {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
                                         </div>
                                     </td>
+                                    {branchId === 'GLOBAL' && (
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                                                {branches?.find(b => b.id === order.branchId)?.name || 'Desconocida'}
+                                            </span>
+                                        </td>
+                                    )}
                                     <td className="px-6 py-4">
                                         <span className="font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded text-xs">{getTableLabel(order.tableId)}</span>
                                     </td>
@@ -151,17 +229,9 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ orders, plates, t
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
-                            {filteredOrders.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-bold">
-                                        No se encontraron pedidos con los filtros actuales.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                            )))}
+                    </tbody>
+                </table>
             </div>
 
             {/* Details Modal */}

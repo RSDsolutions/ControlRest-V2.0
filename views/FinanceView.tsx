@@ -1,15 +1,17 @@
 
 import React, { useState, useMemo } from 'react';
-import { Order, Ingredient, Expense, Plate } from '../types';
+import { Order, Ingredient, Expense, Plate, WasteRecord } from '../types';
 
 interface FinanceViewProps {
    orders: Order[];
    ingredients: Ingredient[];
    expenses: Expense[];
    plates: Plate[];
+   wasteRecords: WasteRecord[];
+   branchId?: string | 'GLOBAL' | null;
 }
 
-const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses, plates }) => {
+const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses, plates, wasteRecords, branchId }) => {
    const [currentDate, setCurrentDate] = useState(new Date());
 
    // --- DATA PROCESSING & CALCULATIONS ---
@@ -25,6 +27,10 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
       });
       const monthExpenses = expenses.filter(e => {
          const d = new Date(e.date);
+         return d.getMonth() === month && d.getFullYear() === year;
+      });
+      const monthWaste = wasteRecords.filter(w => {
+         const d = new Date(w.created_at);
          return d.getMonth() === month && d.getFullYear() === year;
       });
 
@@ -47,11 +53,21 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
          });
       });
 
-      // 3. Gross Profit
-      const grossProfit = sales - cogs;
+      // 3. Waste Cost
+      const wasteCost = monthWaste.reduce((acc, w) => acc + Number(w.totalCost), 0);
+
+      // 4. Gross Profit (Sales - COGS - Waste)
+      // *Wait*: Does Waste reduce Gross Profit? Yes, it's cost of goods lost.
+      // Or should it be an OpEx? Usually it's COGS adjustment.
+      // Let's put it as a deduction from Gross Profit for clear visibility, or part of Variable Costs.
+      // Net Sales = Sales
+      // COGS = COGS Sold + COGS Wasted.
+
+      const totalCOGS = cogs + wasteCost;
+      const grossProfit = sales - totalCOGS;
       const grossMargin = sales > 0 ? (grossProfit / sales) * 100 : 0;
 
-      // 4. Expenses Breakdown
+      // 5. Expenses Breakdown
       const opExpensesTotal = monthExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
 
       // Categorize Expenses for Donut & Health
@@ -61,42 +77,37 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
 
       // Fixed vs Variable for Break-even
       const fixedCosts = monthExpenses.filter(e => e.type === 'fixed' || e.type === 'semi-variable').reduce((acc, e) => acc + Number(e.amount), 0);
-      // Variable costs include COGS + variable expenses
+      // Variable costs include COGS + waste + variable expenses
       const variableExpensesOnly = monthExpenses.filter(e => e.type === 'variable').reduce((acc, e) => acc + Number(e.amount), 0);
-      const variableCosts = cogs + variableExpensesOnly;
+      const variableCosts = totalCOGS + variableExpensesOnly;
 
-      // 5. Operating Profit
+      // 6. Operating Profit
       const operatingProfit = grossProfit - opExpensesTotal;
 
-      // 6. Net Profit (Simplified: Op Profit - Taxes/Financial if any, assuming they are in expenses for now or 0)
-      // If taxes are a category, subtract them? Let's assume OpProfit = NetProfit for basic view unless specific tax logic added.
-      // User asked for "Utilidad Neta = Utilidad Operativa - Impuestos". Let's look for 'Impuestos'.
+      // 7. Net Profit
       const taxes = monthExpenses.filter(e => e.category === 'Impuestos').reduce((acc, e) => acc + Number(e.amount), 0);
       const financial = monthExpenses.filter(e => e.category === 'Financieros').reduce((acc, e) => acc + Number(e.amount), 0);
-      const netProfit = operatingProfit - taxes - financial; // Wait, if taxes were in opExpensesTotal, we double subtract? 
-      // Usually Op Expenses include rent, payroll. Taxes/Interests are below the line.
-      // Let's assume opExpensesTotal INCLUDES taxes/financial if they are in the list. 
-      // So Operating Profit should EXCLUDE Taxes/Financial.
 
-      // RE-CALCULATE OpEx excluding Taxes/Financial for strict Operating Profit
       const opExpensesStrict = opExpensesTotal - taxes - financial;
-      const operatingProfitStrict = grossProfit - opExpensesStrict;
-      const netProfitFinal = operatingProfitStrict - taxes - financial; // This equals (Gross - OpExTotal)
+      // Formula: Sales - (COGS + Waste) - OpEx(Strict) = OpProfit(Strict)
+      const operatingProfitStrict = sales - totalCOGS - opExpensesStrict;
+
+      const netProfitFinal = operatingProfitStrict - taxes - financial;
 
       const netMargin = sales > 0 ? (netProfitFinal / sales) * 100 : 0;
 
-      // 7. Break-even
-      // BE = Fixed / (1 - (Variable / Sales))
-      // Contribution Margin Ratio = (Sales - Variable) / Sales
+      // 8. Break-even
       const contributionMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0;
       const breakEvenPoint = contributionMarginRatio > 0 ? fixedCosts / contributionMarginRatio : 0;
 
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const breakEvenDays = sales > 0 ? (breakEvenPoint / (sales / daysInMonth)) : 0; // Days to reach BE volume based on current daily avg
+      const breakEvenDays = sales > 0 ? (breakEvenPoint / (sales / daysInMonth)) : 0;
 
       return {
          sales,
          cogs,
+         wasteCost,
+         totalCOGS,
          opExpenses: opExpensesTotal,
          grossProfit,
          operatingProfit: operatingProfitStrict,
@@ -171,7 +182,12 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
          {/* HEADER */}
          <header className="flex justify-between items-center mb-8">
             <div>
-               <h1 className="text-3xl font-black text-slate-900 tracking-tight">Tablero de Mando</h1>
+               <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  Tablero de Mando
+                  {branchId === 'GLOBAL' && (
+                     <span className="bg-indigo-600 text-white text-xs px-2 py-1 rounded-lg uppercase tracking-widest shadow-lg shadow-indigo-600/30">Vista Global</span>
+                  )}
+               </h1>
                <p className="text-slate-500 font-medium">Visión consolidada de la salud financiera del negocio.</p>
             </div>
             <div className="flex items-center gap-4">
@@ -245,10 +261,11 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                      <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" strokeWidth="20" />
                      {/* Segments - Simplified calculation for demo (segments need cumulative offsets) */}
                      <DonutSegment total={currentData.sales} value={currentData.cogs} offset={0} color="#f97316" />
-                     <DonutSegment total={currentData.sales} value={currentData.payroll} offset={currentData.cogs} color="#3b82f6" />
-                     <DonutSegment total={currentData.sales} value={currentData.services} offset={currentData.cogs + currentData.payroll} color="#a855f7" />
-                     <DonutSegment total={currentData.sales} value={currentData.otherExpenses} offset={currentData.cogs + currentData.payroll + currentData.services} color="#cbd5e1" />
-                     <DonutSegment total={currentData.sales} value={currentData.netProfit} offset={currentData.cogs + currentData.payroll + currentData.services + currentData.otherExpenses} color="#10b981" />
+                     <DonutSegment total={currentData.sales} value={currentData.wasteCost} offset={currentData.cogs} color="#ef4444" />
+                     <DonutSegment total={currentData.sales} value={currentData.payroll} offset={currentData.cogs + currentData.wasteCost} color="#3b82f6" />
+                     <DonutSegment total={currentData.sales} value={currentData.services} offset={currentData.cogs + currentData.wasteCost + currentData.payroll} color="#a855f7" />
+                     <DonutSegment total={currentData.sales} value={currentData.otherExpenses} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services} color="#cbd5e1" />
+                     <DonutSegment total={currentData.sales} value={currentData.netProfit} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services + currentData.otherExpenses} color="#10b981" />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                      <span className="text-xs font-bold text-slate-400 uppercase">Ventas</span>
@@ -257,11 +274,12 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                </div>
 
                <div className="grid grid-cols-2 gap-x-8 gap-y-3 w-full mt-8 px-4">
-                  <LegendItem color="bg-orange-500" label="Inventario" value={currentData.cogs} total={currentData.sales} />
+                  <LegendItem color="bg-orange-500" label="Inventario (COGS)" value={currentData.cogs} total={currentData.sales} />
+                  <LegendItem color="bg-red-500" label="Merma / Desperdicio" value={currentData.wasteCost} total={currentData.sales} />
                   <LegendItem color="bg-blue-500" label="Nómina" value={currentData.payroll} total={currentData.sales} />
                   <LegendItem color="bg-purple-500" label="Servicios" value={currentData.services} total={currentData.sales} />
                   <LegendItem color="bg-slate-300" label="Otros" value={currentData.otherExpenses} total={currentData.sales} />
-                  <LegendItem color="bg-emerald-500" label="Utilidad" value={currentData.netProfit} total={currentData.sales} />
+                  <LegendItem color="bg-emerald-500" label="Utilidad Compuesta" value={currentData.netProfit} total={currentData.sales} />
                </div>
             </div>
 

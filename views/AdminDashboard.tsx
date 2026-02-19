@@ -1,15 +1,22 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Order, Ingredient, Plate, Table } from '../types';
+import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 
 interface AdminDashboardProps {
+  // We keep 'orders' in prop type for compatibility, but will ignore it
   orders: Order[];
   ingredients: Ingredient[];
   plates: Plate[];
   tables: Table[];
+  branchName?: string;
+  branchId?: string | null; // Added branchId
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, plates, tables }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, tables, branchName, branchId }) => {
+  // Use the hook to get fresh orders + auto-refresh
+  // Shadowing the 'orders' prop intentionally to force usage of realtime data
+  const { orders } = useRealtimeOrders(branchId || null);
+  // Note: branchId is critical here. App.tsx must pass it.
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -23,10 +30,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
   const todayOrders = useMemo(() => {
     const now = new Date();
     return orders.filter(o => {
+      if (o.optimistic) return false;
       const d = new Date(o.timestamp);
       return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
-  }, [orders, currentTime]); // Re-calc on time update not strictly needed unless orders change, but ensures 'today' rollover
+  }, [orders, currentTime]); // 'orders' here refers to the hook return value
 
   // 2. Filter Yesterday's Partial Data (Same Time)
   const yesterdayPartialOrders = useMemo(() => {
@@ -35,6 +43,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
     yesterday.setDate(now.getDate() - 1);
 
     return orders.filter(o => {
+      if (o.optimistic) return false;
       const d = new Date(o.timestamp);
       return d.getDate() === yesterday.getDate() &&
         d.getMonth() === yesterday.getMonth() &&
@@ -44,13 +53,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
   }, [orders, currentTime]);
 
   // KPIs
-  const totalSalesToday = todayOrders.reduce((acc, o) => acc + o.total, 0);
-  const totalSalesYesterday = yesterdayPartialOrders.reduce((acc, o) => acc + o.total, 0);
+  const totalSalesToday = todayOrders.filter(o => o.status === 'paid').reduce((acc, o) => acc + o.total, 0);
+  const totalSalesYesterday = yesterdayPartialOrders.filter(o => o.status === 'paid').reduce((acc, o) => acc + o.total, 0);
 
   const activeTables = tables.filter(t => t.status !== 'available').length;
   const pendingOrders = todayOrders.filter(o => o.status === 'preparing' || o.status === 'open').length;
 
-  const ticketAvg = todayOrders.length > 0 ? totalSalesToday / todayOrders.length : 0;
+  const ticketAvg = todayOrders.filter(o => o.status === 'paid').length > 0 ? totalSalesToday / todayOrders.filter(o => o.status === 'paid').length : 0;
 
   // Alerts Logic
   const criticalIngredients = ingredients.filter(i => i.currentQty <= i.criticalQty);
@@ -68,7 +77,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
     todayOrders.forEach(o => {
       const id = o.waiterId || 'unknown';
       if (!waiterStats[id]) waiterStats[id] = { name: o.waiterName || 'Sin Asignar', sales: 0, count: 0 };
-      waiterStats[id].sales += o.total;
+      // Only count sales for paid orders
+      if (o.status === 'paid') {
+        waiterStats[id].sales += o.total;
+      }
       waiterStats[id].count += 1;
     });
     return Object.values(waiterStats);
@@ -77,11 +89,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
   const cashFlow = useMemo(() => {
     const flow = { cash: 0, card: 0, transfer: 0 };
     todayOrders.forEach(o => {
-      if (o.paymentMethod === 'cash') flow.cash += o.total;
-      else if (o.paymentMethod === 'card') flow.card += o.total;
-      else if (o.paymentMethod === 'transfer') flow.transfer += o.total;
-      // Default to cash if undefined for now
-      else flow.cash += o.total;
+      // STRICT FILTER: Only count paid orders in Cash Flow
+      if (o.status === 'paid') {
+        if (o.paymentMethod === 'cash') flow.cash += o.total;
+        else if (o.paymentMethod === 'card') flow.card += o.total;
+        else if (o.paymentMethod === 'transfer') flow.transfer += o.total;
+        // Default to cash if undefined for now
+        else flow.cash += o.total;
+      }
     });
     return flow;
   }, [todayOrders]);
@@ -92,7 +107,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ orders, ingredients, pl
         <div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
             <span className="material-icons-round text-accent">dashboard</span>
-            Control Operativo
+            Control Operativo {branchName && <span className="text-slate-400 font-medium text-lg ml-2">| {branchName}</span>}
           </h1>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{currentTime.toLocaleDateString()} • {currentTime.toLocaleTimeString()}</p>
         </div>

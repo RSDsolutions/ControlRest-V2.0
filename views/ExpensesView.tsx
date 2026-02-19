@@ -9,10 +9,11 @@ interface ExpensesViewProps {
     ingredients: Ingredient[];
     plates: Plate[];
     onAddExpense: (exp: Expense) => void;
-    branchId: string | null;
+    branchId: string | 'GLOBAL' | null;
+    branches?: any[];
 }
 
-const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredients, plates, onAddExpense, branchId }) => {
+const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [], ingredients = [], plates = [], onAddExpense, branchId, branches = [] }) => {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'list'>('dashboard');
     const [showAddModal, setShowAddModal] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -87,8 +88,17 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
         if (!newExpense.amount || !newExpense.category) return;
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // Try to find active shift for this user to link expense
+            let shiftId = null;
+            if (user) {
+                const { data: shiftData } = await supabase.rpc('get_active_shift', { p_user_id: user.id });
+                if (shiftData) shiftId = shiftData.id;
+            }
+
             const expensePayload = {
-                branch_id: branchId,
+                branch_id: newExpense.branchId || branchId,
                 date: newExpense.date,
                 category: newExpense.category,
                 subcategory: newExpense.subcategory,
@@ -97,7 +107,8 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                 description: newExpense.description,
                 payment_method: newExpense.paymentMethod,
                 is_recurrent: newExpense.isRecurrent,
-                recurrence_frequency: newExpense.recurrenceFreq
+                recurrence_frequency: newExpense.recurrenceFreq,
+                shift_id: shiftId // Link to active shift if exists
             };
 
             const { data, error } = await supabase.from('expenses').insert(expensePayload).select().single();
@@ -115,7 +126,8 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                     description: data.description,
                     paymentMethod: data.payment_method,
                     isRecurrent: data.is_recurrent,
-                    recurrenceFreq: data.recurrence_frequency
+                    recurrenceFreq: data.recurrence_frequency,
+                    shiftId: data.shift_id
                 };
                 onAddExpense(formatted);
                 setShowAddModal(false);
@@ -149,9 +161,11 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                         const [y, m] = e.target.value.split('-');
                         setCurrentDate(new Date(parseInt(y), parseInt(m) - 1, 1));
                     }} />
-                    <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm shadow-lg hover:bg-primary-light active:scale-95 transition-all">
-                        <span className="material-icons-round">add</span> Registrar Gasto
-                    </button>
+                    {branchId !== 'GLOBAL' && (
+                        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm shadow-lg hover:bg-primary-light active:scale-95 transition-all">
+                            <span className="material-icons-round">add</span> Registrar Gasto
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -217,6 +231,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                         <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-400 tracking-widest">
                             <tr>
                                 <th className="px-6 py-4">Fecha</th>
+                                {branchId === 'GLOBAL' && <th className="px-6 py-4">Sucursal</th>}
                                 <th className="px-6 py-4">Categoría</th>
                                 <th className="px-6 py-4">Descripción</th>
                                 <th className="px-6 py-4">Tipo</th>
@@ -227,6 +242,11 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                             {filteredExpenses.map(e => (
                                 <tr key={e.id} className="hover:bg-slate-50">
                                     <td className="px-6 py-4 text-sm font-bold text-slate-700">{e.date}</td>
+                                    {branchId === 'GLOBAL' && (
+                                        <td className="px-6 py-4 text-xs font-bold text-slate-500 bg-slate-50/50">
+                                            {branches?.find(b => b.id === e.branchId)?.name || 'Desconocida'}
+                                        </td>
+                                    )}
                                     <td className="px-6 py-4 text-sm font-bold text-slate-800">{e.category} <span className="text-xs font-normal text-slate-400 block">{e.subcategory}</span></td>
                                     <td className="px-6 py-4 text-sm text-slate-500">{e.description || '-'}</td>
                                     <td className="px-6 py-4"><span className="px-2 py-1 bg-slate-100 rounded text-[10px] font-black uppercase text-slate-500">{e.type}</span></td>
@@ -260,6 +280,22 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, orders, ingredien
                                     <input type="number" className="w-full bg-slate-50 border-none rounded-xl px-4 py-2 font-bold text-sm" value={newExpense.amount} onChange={e => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) })} />
                                 </div>
                             </div>
+
+                            {branchId === 'GLOBAL' && (
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sucursal</label>
+                                    <select
+                                        className="w-full bg-slate-50 border-none rounded-xl px-4 py-2 font-bold text-sm"
+                                        value={newExpense.branchId || ''}
+                                        onChange={e => setNewExpense({ ...newExpense, branchId: e.target.value })}
+                                    >
+                                        <option value="">Seleccione una sucursal</option>
+                                        {branches.map(b => (
+                                            <option key={b.id} value={b.id}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Categoría</label>

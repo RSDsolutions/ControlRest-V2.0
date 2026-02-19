@@ -9,10 +9,12 @@ export enum UserRole {
 export interface User {
   id: string;
   name: string;
+  email?: string;
   username?: string;
   role: UserRole;
   pin?: string;
   branchId?: string;
+  branchName?: string; // Hydrated
   restaurantId?: string; // New
   isActive?: boolean;
   lastLogin?: string;
@@ -61,6 +63,7 @@ export interface OrderItem {
   plateId: string;
   qty: number;
   notes?: string;
+  costAtSale?: number; // Snapshot of production cost at time of sale
 }
 
 export interface Order {
@@ -76,6 +79,10 @@ export interface Order {
   readyAt?: string | Date;
   servedAt?: string | Date;
   servedBy?: string;
+  branchId?: string;
+  shiftId?: string;
+  cashierId?: string;
+  optimistic?: boolean;
 }
 
 export interface Table {
@@ -99,4 +106,75 @@ export interface Expense {
   isRecurrent?: boolean;
   recurrenceFreq?: string;
   receiptUrl?: string; // or file path
+  shiftId?: string;
+}
+
+export interface WasteRecord {
+  id: string;
+  ingredientId: string;
+  quantity: number;
+  unit: string;
+  costAtTime: number;
+  totalCost: number;
+  reason: 'damaged' | 'expired' | 'kitchen_error' | 'adjustment' | 'other';
+  notes?: string;
+  userId?: string;
+  userName?: string; // hydrated
+  branchId?: string;
+  created_at: string;
+}
+
+export interface CashierShift {
+  id: string;
+  branchId: string;
+  cashierId: string;
+  openingCash: number;
+  expectedCash: number;
+  closingCash?: number;
+  cashDifference?: number;
+  totalCashSales: number;
+  totalCardSales: number;
+  totalExpenses: number;
+  openedAt: string;
+  closedAt?: string;
+  status: 'open' | 'closed';
+}
+
+export interface Branch {
+  id: string;
+  restaurantId: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  isActive: boolean;
+  isMain?: boolean;
+  status?: 'active' | 'inactive';
+}
+
+export interface CompanyProfile {
+  id: string;
+  restaurantId: string;
+  businessName: string;
+  ruc?: string;
+  legalRepresentative?: string;
+  phone?: string;
+  email?: string;
+  mainAddress?: string;
+  createdAt?: string;
+}
+
+export interface CashSession {
+  id: string;
+  restaurantId: string;
+  branchId: string;
+  openedBy: string;
+  openedAt: Date;
+  initialCash: number;
+  status: 'open' | 'closed';
+  closedAt?: Date;
+  closedBy?: string;
+  expectedCash?: number;
+  actualCash?: number;
+  difference?: number;
+  notes?: string;
 }

@@ -11,12 +11,14 @@ const AuditLogView: React.FC = () => {
     }, []);
 
     const fetchLogs = async () => {
+        const controller = new AbortController();
         const { data, error } = await supabase
             .from('activity_logs')
             .select(`
                 *,
                 users (full_name)
             `)
+            .abortSignal(controller.signal)
             .order('created_at', { ascending: false })
             .limit(100);
 

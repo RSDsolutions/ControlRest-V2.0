@@ -1,67 +1,108 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, UserRole, Order } from '../types';
+import { User, UserRole, Order, Branch } from '../types';
 import { supabase } from '../supabaseClient';
 import { logActivity } from '../services/audit';
 
 interface UserManagementViewProps {
     currentUser: User | null;
+    branches?: Branch[];
 }
 
-const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) => {
+const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, branches = [] }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [formData, setFormData] = useState({ name: '', username: '', password: '', pin: '', role: UserRole.WAITER });
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        username: '',
+        password: '',
+        pin: '',
+        role: UserRole.WAITER,
+        branchId: ''
+    });
     const [loading, setLoading] = useState(false);
     const [metrics, setMetrics] = useState<any>(null); // For selected user metrics
 
     useEffect(() => {
         fetchUsers();
+
+        // Realtime subscription
+        const channel = supabase
+            .channel('users-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+                fetchUsers();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [currentUser]);
 
     const fetchUsers = async () => {
-        if (!currentUser?.branchId) return;
+        if (!currentUser?.restaurantId) return;
+        const controller = new AbortController();
+
+        // Fetch users from the entire restaurant associated with the admin's restaurant_id
+        // Join with branches to get the name
         const { data, error } = await supabase
             .from('users')
-            .select('*')
-            .eq('branch_id', currentUser.branchId)
-            .neq('role', UserRole.ADMIN); // Only manage staff, not other admins (optional rule)
+            .select('*, branches(name)')
+            .eq('restaurant_id', currentUser.restaurantId)
+            .neq('role', UserRole.ADMIN)
+            .abortSignal(controller.signal)
+            .order('full_name');
 
         if (data) {
             const formatted: User[] = data.map((u: any) => ({
                 id: u.id,
                 name: u.full_name,
+                email: u.email,
                 username: u.username,
                 role: u.role as UserRole,
                 pin: u.pin,
                 isActive: u.is_active,
-                branchId: u.branch_id
+                branchId: u.branch_id,
+                branchName: u.branches?.name // Map branch name
             }));
             setUsers(formatted);
         }
     };
 
     const handleSave = async (e: React.FormEvent) => {
+        // ... (existing save logic needs to check branch selection if we allow changing it)
+        // For now, let's keep it simple, or allow picking branch in modal?
+        // The user verified "assign employees" via script, so editing might not be strictly required "right now" to change branch in UI
+        // But preventing regression: existing logic uses currentUser.branchId for new users.
+        // We might want to add Branch Selector in Modal later, but for now let's stick to the viewing requirement.
+
         e.preventDefault();
-        if (!currentUser?.branchId) return;
+        // Fallback to currentUser.branchId if no specific branch selected (though we should enforce selection if branches > 0)
+        const targetBranchId = formData.branchId || currentUser?.branchId;
+
+        if (!targetBranchId) return alert('Debe seleccionar una sucursal');
+
+        // ... rest of logic uses targetBranchId instead of currentUser.branchId
+        // ...
         setLoading(true);
 
         try {
             const payload = {
                 full_name: formData.name,
+                email: formData.email,
                 username: formData.username,
                 pin: formData.pin,
                 role: formData.role,
-                branch_id: currentUser.branchId,
-                restaurant_id: currentUser.restaurantId,
+                branch_id: targetBranchId,
+                restaurant_id: currentUser?.restaurantId,
                 is_active: true
             };
 
             if (editingUser) {
                 const { error } = await supabase.from('users').update(payload).eq('id', editingUser.id);
                 if (error) throw error;
-                // If password was changed, update it via RPC (bcrypt hash)
                 if (formData.password.trim()) {
                     const { error: pwError } = await supabase.rpc('update_staff_password', {
                         p_user_id: editingUser.id,
@@ -69,21 +110,20 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
                     });
                     if (pwError) throw pwError;
                 }
-                await logActivity(currentUser.id, 'edit_user', 'UserMgmt', { id: editingUser.id, ...payload });
+                await logActivity(currentUser?.id || '', 'edit_user', 'UserMgmt', { id: editingUser.id, ...payload });
             } else {
-                // Use RPC to create user with hashed password
                 const { data, error } = await supabase.rpc('create_staff_user', {
                     p_name: formData.name,
                     p_username: formData.username,
                     p_password: formData.password,
                     p_pin: formData.pin || null,
                     p_role: formData.role,
-                    p_branch_id: currentUser.branchId || null,
-                    p_restaurant_id: currentUser.restaurantId || null
+                    p_branch_id: targetBranchId,
+                    p_restaurant_id: currentUser?.restaurantId || null
                 });
 
                 if (error) throw error;
-                await logActivity(currentUser.id, 'create_user', 'UserMgmt', { username: formData.username, role: formData.role });
+                await logActivity(currentUser?.id || '', 'create_user', 'UserMgmt', { username: formData.username, role: formData.role });
             }
 
             fetchUsers();
@@ -95,6 +135,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
             setLoading(false);
         }
     };
+
+    // ... (toggleStatus, deleteUser, openModal, closeModal remain same)
 
     const toggleStatus = async (user: User) => {
         try {
@@ -123,10 +165,26 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
     const openModal = (user?: User) => {
         if (user) {
             setEditingUser(user);
-            setFormData({ name: user.name, username: user.username || '', password: '', pin: user.pin || '', role: user.role });
+            setFormData({
+                name: user.name,
+                email: user.email || '',
+                username: user.username || '',
+                password: '',
+                pin: user.pin || '',
+                role: user.role,
+                branchId: user.branchId || currentUser?.branchId || ''
+            });
         } else {
             setEditingUser(null);
-            setFormData({ name: '', username: '', password: '', pin: '', role: UserRole.WAITER });
+            setFormData({
+                name: '',
+                email: '',
+                username: '',
+                password: '',
+                pin: '',
+                role: UserRole.WAITER,
+                branchId: currentUser?.branchId || ''
+            });
         }
         setIsModalOpen(true);
     };
@@ -136,8 +194,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
         setEditingUser(null);
     };
 
-    // Metrics logic could go here or separate component
-    // For brevity, basic list now.
 
     return (
         <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
@@ -162,6 +218,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
                         <tr>
                             <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Nombre</th>
                             <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Rol</th>
+                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Sucursal</th>
                             <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">PIN</th>
                             <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Estado</th>
                             <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Acciones</th>
@@ -170,11 +227,23 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
                     <tbody className="divide-y divide-slate-100">
                         {users.map(u => (
                             <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-slate-800">{u.name} <span className="text-xs text-slate-400 font-normal">({u.username})</span></td>
+                                <td className="px-6 py-4 font-bold text-slate-800">
+                                    {u.name}
+                                    <div className="text-[10px] text-slate-400 font-normal">{u.email}</div>
+                                </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs font-black uppercase ${u.role === UserRole.WAITER ? 'bg-orange-100 text-orange-700' : u.role === UserRole.KITCHEN ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'}`}>
                                         {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
                                     </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                    {u.branchName ? (
+                                        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                                            {u.branchName}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs italic text-slate-400">Sin Asignar</span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 font-mono text-slate-500">****</td>
                                 <td className="px-6 py-4">
@@ -212,8 +281,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
                                 <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Usuario (Login)</label>
-                                <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Correo Electrónico (Login)</label>
+                                <input type="email" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="ej: cocina1@gmail.com" />
+                            </div>
+                            <div className="opacity-50 pointer-events-none">
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Usuario (Referencia)</label>
+                                <input type="text" className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-sm" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : ''}</label>
@@ -223,6 +296,22 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser }) 
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase mb-1">PIN de Bloqueo (4-6 dígitos)</label>
                                 <input type="password" required maxLength={6} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.pin} onChange={e => setFormData({ ...formData, pin: e.target.value })} placeholder="Para desbloquear pantalla" />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Sucursal</label>
+                                <select
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700"
+                                    value={formData.branchId}
+                                    onChange={e => setFormData({ ...formData, branchId: e.target.value })}
+                                >
+                                    <option value="" disabled>Seleccionar Sucursal</option>
+                                    {branches.map(b => (
+                                        <option key={b.id} value={b.id}>
+                                            {b.name} {b.isActive ? '' : '(Inactiva)'} {b.isMain ? '(Matriz)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>

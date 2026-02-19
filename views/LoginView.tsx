@@ -7,10 +7,9 @@ type LoginMode = 'select' | 'admin' | 'employee' | 'register';
 
 interface LoginViewProps {
   onLogin: (role: UserRole) => void;
-  onStaffLogin: (user: User, restaurantId: string, branchId: string) => void;
 }
 
-const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
+const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [mode, setMode] = useState<LoginMode>('select');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +23,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
   const [restaurantName, setRestaurantName] = useState('');
 
   // Employee fields
-  const [restaurantCode, setRestaurantCode] = useState('');
-  const [username, setUsername] = useState('');
+  const [staffIdentifier, setStaffIdentifier] = useState('');
   const [staffPassword, setStaffPassword] = useState('');
 
   const handleAdminLogin = async (e: React.FormEvent) => {
@@ -70,30 +68,30 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error } = await supabase.rpc('login_staff', {
-        p_restaurant_code: restaurantCode.toLowerCase().trim(),
-        p_username: username.trim(),
-        p_password: staffPassword,
+      // 1. Resolve Email (Smart Login)
+      const { data: resolvedEmail, error: rpcError } = await supabase.rpc('resolve_staff_email', {
+        p_identifier: staffIdentifier.trim().toLowerCase()
       });
-      if (error) throw error;
-      if (data && data.success && data.user) {
-        const u = data.user;
-        const staffUser: User = {
-          id: u.id,
-          name: u.full_name,
-          username: u.username,
-          role: u.role as UserRole,
-          pin: u.pin,
-          isActive: u.is_active,
-          branchId: u.branch_id,
-          restaurantId: u.restaurant_id,
-        };
-        onStaffLogin(staffUser, u.restaurant_id, u.branch_id);
-      } else {
-        setError(data?.error || 'Credenciales incorrectas.');
+
+      if (rpcError) throw rpcError;
+
+      if (!resolvedEmail) {
+        throw new Error('Usuario o correo no encontrado. Verifica tus credenciales.');
+      }
+
+      // 2. Sign In with the resolved email
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: resolvedEmail,
+        password: staffPassword
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        onLogin(UserRole.WAITER);
       }
     } catch (err: any) {
-      setError(err.message || 'Error de conexión');
+      setError(err.message || 'Error de autenticación');
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +99,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
 
   const resetFields = () => {
     setEmail(''); setPassword(''); setFullName(''); setRestaurantName('');
-    setRestaurantCode(''); setUsername(''); setStaffPassword('');
+    setStaffIdentifier(''); setStaffPassword('');
     setError(null);
   };
 
@@ -144,14 +142,9 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
   const renderStaffLogin = () => (
     <form onSubmit={handleStaffLogin} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Código del Restaurante</label>
-        <input type="text" required value={restaurantCode} onChange={e => setRestaurantCode(e.target.value)}
-          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none font-mono" placeholder="ej: la-fogata" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
-        <input type="text" required value={username} onChange={e => setUsername(e.target.value)}
-          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none" placeholder="Tu nombre de usuario" />
+        <label className="block text-sm font-medium text-slate-700 mb-1">Usuario o Correo</label>
+        <input type="text" required value={staffIdentifier} onChange={e => setStaffIdentifier(e.target.value)}
+          className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent outline-none" placeholder="ej: cocinatest1" />
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
@@ -202,7 +195,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin, onStaffLogin }) => {
   const subtitles: Record<LoginMode, string> = {
     select: 'Selecciona tu tipo de acceso',
     admin: 'Ingresa con tu correo y contraseña',
-    employee: 'Ingresa con el código de tu restaurante',
+    employee: 'Ingresa con tu usuario o correo',
     register: 'Registra tu negocio y comienza gratis',
   };
 
