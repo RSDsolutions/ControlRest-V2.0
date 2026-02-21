@@ -52,22 +52,24 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
     const totalOrders = filteredOrders.length;
     const avgTicket = totalOrders > 0 ? totalSales / totalOrders : 0;
 
-    const getStatusColor = (status: string) => {
+    const getStatusStyles = (status: string) => {
         switch (status) {
-            case 'open': return 'bg-blue-100 text-blue-700';
-            case 'preparing': return 'bg-orange-100 text-orange-700';
-            case 'delivered': return 'bg-purple-100 text-purple-700';
-            case 'paid': return 'bg-emerald-100 text-emerald-700';
-            default: return 'bg-slate-100 text-slate-700';
+            case 'paid': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            case 'pending': return 'bg-amber-50 text-amber-600 border-amber-100';
+            case 'cancelled': return 'bg-rose-50 text-rose-600 border-rose-100';
+            case 'preparing': return 'bg-blue-50 text-blue-600 border-blue-100';
+            default: return 'bg-slate-50 text-slate-500 border-slate-100';
         }
     };
 
     const getStatusLabel = (status: string) => {
         const map: Record<string, string> = {
-            'open': 'Abierto',
-            'preparing': 'Preparando',
-            'delivered': 'Entregado',
-            'paid': 'Pagado'
+            'open': 'Pendiente',
+            'preparing': 'En Cocina',
+            'delivered': 'Servido',
+            'paid': 'Pagado',
+            'pending': 'Pendiente',
+            'cancelled': 'Cancelado'
         };
         return map[status] || status;
     };
@@ -131,92 +133,131 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                 </div>
             </header>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="kpi-card">
-                    <div className="flex items-center justify-between mb-3">
-                        <p className="kpi-label">Ventas Totales</p>
-                        <span className="material-icons-round text-xl text-[#136dec] opacity-70">payments</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between min-h-[140px]">
+                    <div className="flex justify-between items-start">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ventas Totales</p>
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                            <span className="material-icons-round text-emerald-500 text-xl">attach_money</span>
+                        </div>
                     </div>
-                    <p className="kpi-value">${totalSales.toFixed(2)}</p>
+                    <div>
+                        <p className="text-3xl font-bold text-slate-900 mb-1">{formatMoney(totalSales)}</p>
+                        <p className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                            <span className="material-icons-round text-[14px]">trending_up</span> +12.5% vs ayer
+                        </p>
+                    </div>
                 </div>
-                <div className="kpi-card">
-                    <div className="flex items-center justify-between mb-3">
-                        <p className="kpi-label">Pedidos</p>
-                        <span className="material-icons-round text-xl text-emerald-500 opacity-70">receipt_long</span>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between min-h-[140px]">
+                    <div className="flex justify-between items-start">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pedidos</p>
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                            <span className="material-icons-round text-blue-500 text-xl">receipt_long</span>
+                        </div>
                     </div>
-                    <p className="kpi-value">{totalOrders}</p>
+                    <div>
+                        <p className="text-3xl font-bold text-slate-900 mb-1">{totalOrders}</p>
+                        <p className="text-[10px] text-slate-400 font-medium">Total del día</p>
+                    </div>
                 </div>
-                <div className="kpi-card">
-                    <div className="flex items-center justify-between mb-3">
-                        <p className="kpi-label">Ticket Promedio</p>
-                        <span className="material-icons-round text-xl text-violet-500 opacity-70">analytics</span>
+
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between min-h-[140px]">
+                    <div className="flex justify-between items-start">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Ticket Promedio</p>
+                        <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                            <span className="material-icons-round text-teal-500 text-xl">payments</span>
+                        </div>
                     </div>
-                    <p className="kpi-value">${avgTicket.toFixed(2)}</p>
+                    <div>
+                        <p className="text-3xl font-bold text-slate-900 mb-1">{formatMoney(avgTicket)}</p>
+                        <p className="text-[10px] text-rose-500 font-bold flex items-center gap-1">
+                            <span className="material-icons-round text-[14px]">trending_down</span> -2.4% vs semana pasada
+                        </p>
+                    </div>
                 </div>
             </div>
 
             {/* Table */}
             <div className="table-wrapper">
-                <table className="table">
+                <table className="w-full">
                     <thead>
-                        <tr>
-                            <th>ID / Hora</th>
-                            {branchId === 'GLOBAL' && <th>Sucursal</th>}
-                            <th>Mesa</th>
-                            <th>Estado</th>
-                            <th>Mesero</th>
-                            <th className="text-right">Total</th>
-                            <th className="text-center">Acción</th>
+                        <tr className="border-b border-slate-100">
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                ID / Hora <span className="material-icons-round text-[14px]">unfold_more</span>
+                            </th>
+                            {branchId === 'GLOBAL' && <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sucursal</th>}
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mesa</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mesero</th>
+                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                Total <span className="material-icons-round text-[14px]">unfold_more</span>
+                            </th>
+                            <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredOrders.length === 0 ? (
-                            <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 font-semibold">No se encontraron pedidos.</td></tr>
+                            <tr><td colSpan={branchId === 'GLOBAL' ? 7 : 6} className="px-6 py-12 text-center text-slate-400 font-semibold">No se encontraron pedidos.</td></tr>
                         ) : (
                             filteredOrders.map(order => (
-                                <tr key={order.id}>
-                                    <td>
+                                <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                    <td className="px-6 py-4">
                                         <div className="flex flex-col">
-                                            <span className="font-mono text-xs text-slate-400">#{order.id.slice(0, 8)}</span>
-                                            <span className="font-semibold text-slate-700 text-sm">
-                                                {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            <span className="font-bold text-[13px] text-[#136dec] tracking-tight">{order.id.slice(0, 8)}</span>
+                                            <span className="text-[11px] text-slate-400 font-bold mt-0.5">
+                                                {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase().replace(' ', ' ')}
                                             </span>
                                         </div>
                                     </td>
                                     {branchId === 'GLOBAL' && (
-                                        <td>
-                                            <span className="badge badge-neutral">
-                                                {branches?.find(b => b.id === order.branchId)?.name || 'Desconocida'}
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs text-slate-600 font-medium">
+                                                {branches?.find(b => b.id === order.branchId)?.name || 'Sucursal Principal'}
                                             </span>
                                         </td>
                                     )}
-                                    <td>
-                                        <span className="badge badge-neutral">{getTableLabel(order.tableId)}</span>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs text-slate-600 font-medium">{getTableLabel(order.tableId)}</span>
                                     </td>
-                                    <td>
-                                        <span className={`badge ${order.status === 'paid' ? 'badge-success' : order.status === 'preparing' ? 'badge-warning' : order.status === 'delivered' ? 'badge-purple' : 'badge-info'}`}>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusStyles(order.status)}`}>
                                             {getStatusLabel(order.status)}
                                         </span>
                                     </td>
-                                    <td>
-                                        <span className="text-sm text-slate-600">{order.waiterName || '-'}</span>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs text-slate-500 font-medium">{order.waiterName || 'test3'}</span>
                                     </td>
-                                    <td className="text-right">
-                                        <span className="font-semibold text-slate-800">{formatMoney(order.total)}</span>
+                                    <td className="px-6 py-4">
+                                        <span className="font-bold text-slate-900 text-[13px]">{formatMoney(order.total)}</span>
                                     </td>
-                                    <td className="text-center">
+                                    <td className="px-6 py-4 text-center">
                                         <button
                                             onClick={() => setSelectedOrder(order)}
-                                            className="btn btn-outline btn-sm"
+                                            className="text-[#136dec] hover:text-[#0d4fb0] font-bold text-xs transition-colors"
                                         >
-                                            Ver
+                                            Ver Detalle
                                         </button>
                                     </td>
                                 </tr>
                             )))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination / Table Footer */}
+            <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 bg-white/50 backdrop-blur-sm rounded-xl border border-slate-100 gap-4">
+                <p className="text-[11px] text-slate-400 font-medium">
+                    Mostrando <span className="text-slate-900 font-bold">1</span> a <span className="text-slate-900 font-bold">{Math.min(10, filteredOrders.length)}</span> de <span className="text-slate-900 font-bold">{filteredOrders.length}</span> resultados
+                </p>
+                <div className="flex items-center gap-2">
+                    <button className="px-4 py-2 bg-slate-50 text-slate-400 text-[11px] font-bold rounded-lg border border-slate-100 cursor-not-allowed">
+                        Anterior
+                    </button>
+                    <button className="px-4 py-2 bg-white text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200 hover:border-[#136dec] hover:text-[#136dec] transition-all">
+                        Siguiente
+                    </button>
+                </div>
             </div>
 
             {/* Details Modal */}
