@@ -57,7 +57,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
   const totalSalesToday = todayOrders.filter(o => o.status === 'paid').reduce((acc, o) => acc + o.total, 0);
   const totalSalesYesterday = yesterdayPartialOrders.filter(o => o.status === 'paid').reduce((acc, o) => acc + o.total, 0);
 
-  const activeTables = tables.filter(t => t.status !== 'available').length;
+  // Derive active tables from real orders (not stale DB table status field)
+  // This ensures correctness even if the DB table.status lags behind
+  const activeTables = useMemo(() => {
+    const activeTableIds = new Set(
+      orders
+        .filter(o => !o.optimistic && !['paid', 'cancelled'].includes(o.status))
+        .map(o => o.tableId)
+    );
+    return activeTableIds.size;
+  }, [orders]);
   const pendingOrders = todayOrders.filter(o => o.status === 'preparing' || o.status === 'open').length;
 
   const ticketAvg = todayOrders.filter(o => o.status === 'paid').length > 0 ? totalSalesToday / todayOrders.filter(o => o.status === 'paid').length : 0;
