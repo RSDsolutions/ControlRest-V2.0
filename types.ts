@@ -77,6 +77,7 @@ export interface OrderItem {
   plateId: string;
   qty: number;
   notes?: string;
+  unitPrice?: number;
   costAtSale?: number; // Snapshot of production cost at time of sale
 }
 

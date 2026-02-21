@@ -345,8 +345,8 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="font-bold text-slate-900 text-sm">{formatMoney((item.platePrice || 0) * item.qty)}</p>
-                                                    <p className="text-[10px] text-slate-400 font-medium">Unit: {formatMoney(item.platePrice || 0)}</p>
+                                                    <p className="font-bold text-slate-900 text-sm">{formatMoney((item.unitPrice || 0) * item.qty)}</p>
+                                                    <p className="text-[10px] text-slate-400 font-medium">Unit: {formatMoney(item.unitPrice || 0)}</p>
                                                 </div>
                                             </div>
                                         ))}

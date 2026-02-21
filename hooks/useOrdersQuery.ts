@@ -42,6 +42,7 @@ async function fetchOrders(
             plateId: oi.recipe_id,
             qty: oi.quantity,
             notes: oi.notes || undefined,
+            unitPrice: parseFloat(oi.unit_price || '0'),
         })),
         status: o.status,
         total: parseFloat(o.total || '0'),
