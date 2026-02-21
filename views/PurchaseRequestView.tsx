@@ -37,11 +37,10 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
         items: [{ ingredient_id: '', qty: '', cost: '' }]
     });
 
-    const fetchData = useCallback(async () => {
+    const fetchOrders = useCallback(async () => {
         if (!branchId || branchId === 'GLOBAL') { setLoading(false); return; }
         setLoading(true);
         try {
-            // Fetch POs
             const { data: poData, error: poErr } = await supabase
                 .from('purchase_orders')
                 .select(`
@@ -58,25 +57,30 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                 supplier_name: p.suppliers?.name,
                 creator_name: p.users?.raw_user_meta_data?.name || 'Usuario'
             })));
-
-            // Fetch dependencies using appropriate restaurant ID field
-            const restId = (currentUser as any)?.restaurant_id || currentUser?.restaurantId;
-            if (restId) {
-                const { data: sData } = await supabase.from('suppliers').select('*').eq('restaurant_id', restId).eq('status', 'active');
-                if (sData) setSuppliers(sData);
-
-                const { data: iData } = await supabase.from('ingredients').select('*').eq('restaurant_id', restId).order('name');
-                if (iData) setIngredients(iData);
-            }
-
         } catch (err: any) {
             console.error('Error fetching POs', err);
         } finally {
             setLoading(false);
         }
-    }, [branchId, currentUser?.restaurantId]);
+    }, [branchId]);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    const fetchDependencies = useCallback(async () => {
+        try {
+            const { data: iData } = await supabase.from('ingredients').select('*').order('name');
+            if (iData) setIngredients(iData);
+
+            const restId = (currentUser as any)?.restaurant_id || currentUser?.restaurantId;
+            if (restId) {
+                const { data: sData } = await supabase.from('suppliers').select('*').eq('restaurant_id', restId).eq('status', 'active');
+                if (sData) setSuppliers(sData);
+            }
+        } catch (err) {
+            console.error('Error fetching dependencies', err);
+        }
+    }, [currentUser?.restaurantId, currentUser]);
+
+    useEffect(() => { fetchOrders(); }, [fetchOrders]);
+    useEffect(() => { fetchDependencies(); }, [fetchDependencies]);
 
     const loadOrderItems = async (order: PurchaseOrder) => {
         try {
@@ -140,7 +144,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             setMsg('✅ Solicitud de Compra creada.');
             setShowForm(false);
             setForm({ supplier_id: '', notes: '', items: [{ ingredient_id: '', qty: '', cost: '' }] });
-            fetchData();
+            fetchOrders();
         } catch (err: any) {
             setMsg('❌ Error: ' + err.message);
         } finally {
@@ -154,7 +158,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             const { error } = await supabase.from('purchase_orders').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
             if (error) throw error;
             setSelectedOrder(prev => prev ? { ...prev, status } : null);
-            fetchData();
+            fetchOrders();
         } catch (err: any) {
             alert('Error: ' + err.message);
         }
@@ -173,7 +177,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             // Reload drawer items
             if (selectedOrder) {
                 loadOrderItems(selectedOrder);
-                fetchData(); // refresh list to potentially see status fully received
+                fetchOrders(); // refresh list to potentially see status fully received
             }
         } catch (err: any) {
             alert('Error al recibir: ' + err.message);
@@ -324,7 +328,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                     <div className="w-[500px] max-w-full bg-white h-full shadow-2xl p-6 flex flex-col pt-0 animate-slideLeft">
                         <header className="flex justify-between items-center py-4 border-b border-slate-100 mb-4 sticky top-0 bg-white z-10">
                             <h2 className="text-xl font-black text-slate-900">Orden de Compra</h2>
-                            <button onClick={() => { setSelectedOrder(null); fetchData(); }} className="p-2 rounded-xl border-2 border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors">
+                            <button onClick={() => { setSelectedOrder(null); fetchOrders(); }} className="p-2 rounded-xl border-2 border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors">
                                 <span className="material-icons-round">close</span>
                             </button>
                         </header>
