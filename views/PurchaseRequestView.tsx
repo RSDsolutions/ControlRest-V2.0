@@ -166,6 +166,12 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
     const approveOrderWithChanges = async () => {
         if (!selectedOrder) return;
+
+        if (!selectedOrder.supplier_id) {
+            alert('❌ Debes asignar un Proveedor antes de aprobar la solicitud.');
+            return;
+        }
+
         setSubmitting(true);
         try {
             // 1. Update PO supplier and status

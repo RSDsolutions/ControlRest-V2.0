@@ -46,8 +46,7 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
           users:created_by(full_name)
         `)
                 .eq('branch_id', branchId)
-                // Optionally filter by orders created by this user or just all pending for kitchen
-                // .eq('created_by', currentUser?.id) 
+                .eq('created_by', currentUser?.id)
                 .order('created_at', { ascending: false });
             if (poErr) throw poErr;
 
