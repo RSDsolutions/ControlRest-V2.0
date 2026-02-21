@@ -253,186 +253,188 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   };
 
   return (
-    <div className="p-8 space-y-10 animate-fade-in max-w-[1700px] mx-auto pb-24 font-sans">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
-        <div>
-          <h1 className="text-4xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
-            Gestión de Insumos
-          </h1>
-          <p className="text-slate-500 font-medium mt-1">Control de inventario técnico, costeo promedio ponderado y trazabilidad de lotes.</p>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setShowNewIngModal(true)}
-            className="btn btn-outline px-6 py-3 text-sm flex items-center gap-2 group"
-          >
-            <span className="material-icons-round text-primary group-hover:rotate-90 transition-transform">add</span> Nuevo Insumo
-          </button>
-          <button
-            onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
-            className="btn btn-primary px-8 py-3 text-sm flex items-center gap-2 shadow-primary/30"
-          >
-            <span className="material-icons-round">shopping_cart</span> Registrar Compra
-          </button>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <KPIItem
-          label="Catálogo Activo"
-          value={ingredients.length}
-          sub="Items registrados"
-          icon="inventory_2"
-          color="bg-slate-500"
-        />
-        <KPIItem
-          label="Stock Bajo"
-          value={ingredients.filter(i => i.currentQty <= i.minQty).length}
-          sub="Requieren reposición"
-          icon="warning"
-          color="bg-amber-500"
-        />
-        <KPIItem
-          label="Nivel Crítico"
-          value={ingredients.filter(i => i.currentQty <= i.criticalQty).length}
-          sub="Riesgo de quiebre"
-          icon="dangerous"
-          color="bg-red-500"
-        />
-        <KPIItem
-          label="Valorización de Stock"
-          value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * ing.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-          sub="Costo total en bodega"
-          icon="account_balance_wallet"
-          color="bg-emerald-500"
-        />
-      </div>
-
-      <div className="card p-0 overflow-hidden flex flex-col min-h-[600px] shadow-brand border-slate-200">
-        <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-50/50">
-          <div className="relative w-full md:w-96 group">
-            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-            <input
-              type="text"
-              placeholder="Filtrar catálogo de insumos..."
-              className="input pl-12 bg-white border-slate-200 focus:bg-white shadow-sm"
-            />
+    <>
+      <div className="p-8 space-y-10 animate-fade-in max-w-[1700px] mx-auto pb-24 font-sans">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
+          <div>
+            <h1 className="text-4xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+              Gestión de Insumos
+            </h1>
+            <p className="text-slate-500 font-medium mt-1">Control de inventario técnico, costeo promedio ponderado y trazabilidad de lotes.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
-              Mostrando {ingredients.length} items
-            </span>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowNewIngModal(true)}
+              className="btn btn-outline px-6 py-3 text-sm flex items-center gap-2 group"
+            >
+              <span className="material-icons-round text-primary group-hover:rotate-90 transition-transform">add</span> Nuevo Insumo
+            </button>
+            <button
+              onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
+              className="btn btn-primary px-8 py-3 text-sm flex items-center gap-2 shadow-primary/30"
+            >
+              <span className="material-icons-round">shopping_cart</span> Registrar Compra
+            </button>
           </div>
+        </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <KPIItem
+            label="Catálogo Activo"
+            value={ingredients.length}
+            sub="Items registrados"
+            icon="inventory_2"
+            color="bg-slate-500"
+          />
+          <KPIItem
+            label="Stock Bajo"
+            value={ingredients.filter(i => i.currentQty <= i.minQty).length}
+            sub="Requieren reposición"
+            icon="warning"
+            color="bg-amber-500"
+          />
+          <KPIItem
+            label="Nivel Crítico"
+            value={ingredients.filter(i => i.currentQty <= i.criticalQty).length}
+            sub="Riesgo de quiebre"
+            icon="dangerous"
+            color="bg-red-500"
+          />
+          <KPIItem
+            label="Valorización de Stock"
+            value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * ing.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            sub="Costo total en bodega"
+            icon="account_balance_wallet"
+            color="bg-emerald-500"
+          />
         </div>
 
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
-              <tr>
-                <th className="px-8 py-5">Insumo / Descripción</th>
-                <th className="px-8 py-5">Categoría</th>
-                <th className="px-8 py-5 text-right">Existencias</th>
-                <th className="px-8 py-5 text-right">Costo Promedio</th>
-                <th className="px-8 py-5 text-right">Lotes</th>
-                <th className="px-8 py-5 text-center">Estado Auditoría</th>
-                <th className="px-8 py-5"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {ingredients.map(ing => {
-                let status = 'Suficiente';
-                let statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
-                if (ing.currentQty <= ing.criticalQty) {
-                  status = 'Crítico';
-                  statusColor = 'bg-red-50 text-red-600 border-red-100';
-                } else if (ing.currentQty <= ing.minQty) {
-                  status = 'Reorden';
-                  statusColor = 'bg-amber-50 text-amber-600 border-amber-100';
-                }
-                const unitLabel = ing.measureUnit === 'ml' ? 'ml' : 'gr';
-                const lotCount = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0).length;
-                const expiringSoon = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length;
+        <div className="card p-0 overflow-hidden flex flex-col min-h-[600px] shadow-brand border-slate-200">
+          <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-50/50">
+            <div className="relative w-full md:w-96 group">
+              <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+              <input
+                type="text"
+                placeholder="Filtrar catálogo de insumos..."
+                className="input pl-12 bg-white border-slate-200 focus:bg-white shadow-sm"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                Mostrando {ingredients.length} items
+              </span>
+            </div>
+          </div>
 
-                return (
-                  <tr key={ing.id} className="hover:bg-slate-50/50 transition-all group">
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-3xl transition-transform group-hover:scale-110 duration-300">
-                          {ing.icon}
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
+                <tr>
+                  <th className="px-8 py-5">Insumo / Descripción</th>
+                  <th className="px-8 py-5">Categoría</th>
+                  <th className="px-8 py-5 text-right">Existencias</th>
+                  <th className="px-8 py-5 text-right">Costo Promedio</th>
+                  <th className="px-8 py-5 text-right">Lotes</th>
+                  <th className="px-8 py-5 text-center">Estado Auditoría</th>
+                  <th className="px-8 py-5"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {ingredients.map(ing => {
+                  let status = 'Suficiente';
+                  let statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                  if (ing.currentQty <= ing.criticalQty) {
+                    status = 'Crítico';
+                    statusColor = 'bg-red-50 text-red-600 border-red-100';
+                  } else if (ing.currentQty <= ing.minQty) {
+                    status = 'Reorden';
+                    statusColor = 'bg-amber-50 text-amber-600 border-amber-100';
+                  }
+                  const unitLabel = ing.measureUnit === 'ml' ? 'ml' : 'gr';
+                  const lotCount = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0).length;
+                  const expiringSoon = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length;
+
+                  return (
+                    <tr key={ing.id} className="hover:bg-slate-50/50 transition-all group">
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-3xl transition-transform group-hover:scale-110 duration-300">
+                            {ing.icon}
+                          </div>
+                          <div>
+                            <p className="font-heading font-black text-brand-black text-sm uppercase tracking-tight leading-tight">{ing.name}</p>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 line-clamp-1">
+                              {ing.description || `SKU: ${ing.id.split('-')[0]}`}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-heading font-black text-brand-black text-sm uppercase tracking-tight leading-tight">{ing.name}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 line-clamp-1">
-                            {ing.description || `SKU: ${ing.id.split('-')[0]}`}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100/50 px-2 py-1 rounded-md">
-                        {ing.category}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex flex-col items-end">
-                        <span className="font-heading font-black text-brand-black text-sm">
-                          {ing.currentQty.toLocaleString()} {unitLabel}
+                      </td>
+                      <td className="px-8 py-5">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100/50 px-2 py-1 rounded-md">
+                          {ing.category}
                         </span>
-                        <div className="w-20 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-1000 ${status === 'Crítico' ? 'bg-red-500' : status === 'Reorden' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                            style={{ width: `${Math.min(100, (ing.currentQty / (ing.minQty * 2)) * 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <p className="text-xs font-black text-primary">${ing.unitPrice.toFixed(4)}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">u/{unitLabel}</p>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      </td>
+                      <td className="px-8 py-5 text-right">
                         <div className="flex flex-col items-end">
-                          <span className="text-sm font-black text-brand-black">{lotCount}</span>
-                          {expiringSoon > 0 && <span className="text-[9px] text-amber-600 font-bold uppercase tracking-tighter">! {expiringSoon} x Expira</span>}
+                          <span className="font-heading font-black text-brand-black text-sm">
+                            {ing.currentQty.toLocaleString()} {unitLabel}
+                          </span>
+                          <div className="w-20 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                            <div
+                              className={`h-full transition-all duration-1000 ${status === 'Crítico' ? 'bg-red-500' : status === 'Reorden' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                              style={{ width: `${Math.min(100, (ing.currentQty / (ing.minQty * 2)) * 100)}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <button onClick={() => setViewBatchDetailsIngId(ing.id)} className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all flex items-center justify-center">
-                          <span className="material-icons-round text-lg">history</span>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-center">
-                      <span className={`inline-flex px-3 py-1.5 rounded-full text-[9px] font-black border tracking-widest ${statusColor}`}>
-                        {status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
-                          className="w-10 h-10 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
-                          title="Registrar Compra"
-                        >
-                          <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">add_shopping_cart</span>
-                        </button>
-                        <button
-                          onClick={() => handleDeleteIngredient(ing.id)}
-                          disabled={ing.currentQty > 0}
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${ing.currentQty > 0
-                            ? 'bg-slate-50 text-slate-200 cursor-not-allowed opacity-50'
-                            : 'bg-red-50 text-red-400 hover:bg-red-500 hover:text-white'
-                            }`}
-                          title={ing.currentQty > 0 ? "Bloqueado: Stock detectado" : "Eliminar Insumo"}
-                        >
-                          <span className="material-icons-round text-xl">delete_outline</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <p className="text-xs font-black text-primary">${ing.unitPrice.toFixed(4)}</p>
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">u/{unitLabel}</p>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="flex flex-col items-end">
+                            <span className="text-sm font-black text-brand-black">{lotCount}</span>
+                            {expiringSoon > 0 && <span className="text-[9px] text-amber-600 font-bold uppercase tracking-tighter">! {expiringSoon} x Expira</span>}
+                          </div>
+                          <button onClick={() => setViewBatchDetailsIngId(ing.id)} className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all flex items-center justify-center">
+                            <span className="material-icons-round text-lg">history</span>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-center">
+                        <span className={`inline-flex px-3 py-1.5 rounded-full text-[9px] font-black border tracking-widest ${statusColor}`}>
+                          {status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
+                            className="w-10 h-10 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
+                            title="Registrar Compra"
+                          >
+                            <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">add_shopping_cart</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteIngredient(ing.id)}
+                            disabled={ing.currentQty > 0}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${ing.currentQty > 0
+                              ? 'bg-slate-50 text-slate-200 cursor-not-allowed opacity-50'
+                              : 'bg-red-50 text-red-400 hover:bg-red-500 hover:text-white'
+                              }`}
+                            title={ing.currentQty > 0 ? "Bloqueado: Stock detectado" : "Eliminar Insumo"}
+                          >
+                            <span className="material-icons-round text-xl">delete_outline</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -638,7 +640,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
 
       {viewBatchDetailsIngId && (
         <div className="modal-overlay">
-          <div className="absolute right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl animate-slide-left p-0 flex flex-col border-l border-slate-100">
+          <div className="absolute right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl animate-fade-in p-0 flex flex-col border-l border-slate-100">
             <header className="px-10 py-10 border-b border-slate-100 bg-white sticky top-0 z-20 flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-heading font-black text-brand-black tracking-tight">Kardex de Lotes en Almacén</h2>
@@ -712,7 +714,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

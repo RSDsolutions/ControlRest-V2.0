@@ -20,17 +20,31 @@
   body {
     @apply bg-bg-main text-slate-800 font-sans antialiased;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-bold text-brand-black tracking-tight;
   }
 
-  h1 { @apply text-3xl mb-6; }
-  h2 { @apply text-2xl mb-4; }
-  h3 { @apply text-xl mb-3; }
+  h1 {
+    @apply text-3xl mb-6;
+  }
+
+  h2 {
+    @apply text-2xl mb-4;
+  }
+
+  h3 {
+    @apply text-xl mb-3;
+  }
 }
 
 @layer components {
+
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 rounded-brand font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
@@ -79,10 +93,21 @@
     @apply flex items-start gap-3 p-4 rounded-brand border-l-4 mb-4;
   }
 
-  .alert-success { @apply bg-emerald-50 text-emerald-800 border-status-success; }
-  .alert-warning { @apply bg-amber-50 text-amber-800 border-status-warning; }
-  .alert-error { @apply bg-red-50 text-red-800 border-status-error; }
-  .alert-info { @apply bg-blue-50 text-blue-800 border-status-info; }
+  .alert-success {
+    @apply bg-emerald-50 text-emerald-800 border-status-success;
+  }
+
+  .alert-warning {
+    @apply bg-amber-50 text-amber-800 border-status-warning;
+  }
+
+  .alert-error {
+    @apply bg-red-50 text-red-800 border-status-error;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 text-blue-800 border-status-info;
+  }
 
   /* Forms */
   .input {
@@ -96,8 +121,13 @@
 
 /* Animations */
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {

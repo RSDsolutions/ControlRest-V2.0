@@ -109,9 +109,9 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          if (activeOrders.length > 0) {
             status = 'occupied';
             if (activeOrders.some(o => o.status === 'ready')) status = 'ready';
-            // WAITER UI TWEAK: Treat 'billing' as 'occupied' to avoid confusion. Only Cashier cares about 'billing'.
-            // else if (activeOrders.some(o => o.status === 'billing')) status = 'billing';
             else if (activeOrders.some(o => o.status === 'preparing')) status = 'preparing';
+            // Respect the DB table status if it's 'billing' (customer asked for check)
+            else if (t.status === 'billing') status = 'billing';
          }
          statusMap[tId] = status;
       });
@@ -123,8 +123,8 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          available: { label: 'Libre', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-300', icon: 'check_circle' },
          occupied: { label: 'Ocupado', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300', icon: 'restaurant' },
          preparing: { label: 'En Cocina', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-300', icon: 'local_fire_department' },
-         ready: { label: 'Listo para Servir', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-400', icon: 'notifications_active' },
-         // billing: { label: 'Pendiente Cobro', color: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300', icon: 'point_of_sale' },
+         ready: { label: '¡Servir!', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-400', icon: 'notifications_active' },
+         billing: { label: 'Pagando...', color: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300', icon: 'point_of_sale' },
       };
       return configs[status] || configs.available;
    };
@@ -300,6 +300,23 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
       } catch (err) {
          console.error(err);
          showNotification('\u274C Error al marcar como servido');
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   const handleRequestBill = async () => {
+      if (!selectedTableId) return;
+      setIsLoading(true);
+      try {
+         const { error } = await supabase.from('tables').update({ status: 'billing' }).eq('id', selectedTableId);
+         if (error) throw error;
+         showNotification(`\uD83D\uDCB0 Cuenta solicitada para ${getTableLabel(selectedTableId)}`);
+         if (fetchOrders) fetchOrders();
+         setViewMode('tables');
+      } catch (err) {
+         console.error(err);
+         showNotification('\u274C Error al solicitar cuenta');
       } finally {
          setIsLoading(false);
       }
@@ -681,8 +698,8 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                   </div>
                </div>
 
-               {/* Send to kitchen */}
-               {cart.length > 0 && (
+               {/* Send to kitchen / Request Bill */}
+               {cart.length > 0 ? (
                   <button disabled={isLoading} onClick={handleSendToKitchen}
                      className={`w-full py-3.5 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg ${isOnline
                         ? 'bg-primary text-white hover:bg-primary-light shadow-primary/20'
@@ -690,6 +707,12 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                         }`}>
                      <span className="material-icons-round">{isOnline ? 'local_fire_department' : 'wifi_off'}</span>
                      {isLoading ? 'Guardando...' : !isOnline ? (tableOrders.length > 0 ? 'Guardar Adicional (Offline)' : 'Guardar Offline') : (tableOrders.length > 0 ? 'Enviar Adicional a Cocina' : 'Enviar a Cocina')}
+                  </button>
+               ) : tableOrders.length > 0 && (
+                  <button disabled={isLoading} onClick={handleRequestBill}
+                     className="w-full py-3.5 rounded-2xl bg-pink-600 text-white font-black text-base hover:bg-pink-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-pink-600/20">
+                     <span className="material-icons-round">point_of_sale</span>
+                     {isLoading ? 'Solicitando...' : 'Solicitar Cuenta'}
                   </button>
                )}
             </footer>
