@@ -131,6 +131,34 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         return branch ? branch.name : 'Sucursal Desconocida';
     };
 
+    const formatDescription = (desc: string) => {
+        if (!desc) return '';
+
+        let formatted = desc;
+
+        // Handle "Financial Ledger Entry: <event_type>"
+        if (formatted.startsWith('Financial Ledger Entry: ')) {
+            const type = formatted.replace('Financial Ledger Entry: ', '');
+            formatted = `Registro Financiero: ${EVENT_TYPE_LABELS[type] || type}`;
+        }
+
+        // Handle "Emergency closure requested by user"
+        if (formatted === 'Emergency closure requested by user') {
+            formatted = 'Cierre de emergencia solicitado por el usuario';
+        }
+
+        // Handle Action logs like "Acción: edit_user en UserMgmt"
+        if (formatted.startsWith('Acción: ')) {
+            formatted = formatted
+                .replace('create_user', 'crear usuario')
+                .replace('edit_user', 'editar usuario')
+                .replace('delete_user', 'eliminar usuario')
+                .replace('UserMgmt', 'Gestión de Usuarios');
+        }
+
+        return formatted;
+    };
+
     const generateAuditReportPdf = () => {
         const doc = new jsPDF();
 
@@ -318,12 +346,12 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                                         </td>
                                         <td className="py-3 px-6">
                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest bg-slate-100 text-slate-600">
-                                                {event.event_type}
+                                                {getEventName(event.event_type)}
                                             </span>
-                                            <div className="text-sm text-slate-500 mt-1 truncate max-w-xs">{event.description}</div>
+                                            <div className="text-sm text-slate-500 mt-1 truncate max-w-xs">{formatDescription(event.description)}</div>
                                         </td>
                                         <td className="py-3 px-6">
-                                            <div className="text-sm font-medium text-slate-700 font-mono truncate max-w-[150px]">{event.id}</div>
+                                            <div className="text-sm font-medium text-slate-700 font-mono truncate max-w-[150px]">{event.reference_id || event.id}</div>
                                             <div className="text-xs text-slate-400">{getBranchName(event.branch_id)}</div>
                                         </td>
                                         <td className="py-3 px-6 text-right">
@@ -362,7 +390,6 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                                     <span className="material-icons-round text-primary">analytics</span>
                                     Detalle de Evento
                                 </h3>
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">ID: {selectedEvent.id}</p>
                             </div>
                             <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-600">
                                 <span className="material-icons-round">close</span>
@@ -388,11 +415,11 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ID de Referencia</span>
-                                    <span className="font-mono text-xs font-bold text-slate-500 overflow-hidden text-ellipsis whitespace-nowrap block" title={selectedEvent.reference_id || '-'}>{selectedEvent.reference_id || '-'}</span>
+                                    <span className="font-mono text-xs font-bold text-slate-500 overflow-hidden text-ellipsis whitespace-nowrap block" title={selectedEvent.reference_id || selectedEvent.id}>{selectedEvent.reference_id || selectedEvent.id}</span>
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Descripción de la Operación</span>
-                                    <span className="font-medium text-slate-600">{selectedEvent.description}</span>
+                                    <span className="font-medium text-slate-600">{formatDescription(selectedEvent.description)}</span>
                                 </div>
                             </div>
                         </div>
