@@ -263,16 +263,16 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">Control de inventario técnico, costeo promedio ponderado y trazabilidad de lotes.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-4">
             <button
               onClick={() => setShowNewIngModal(true)}
-              className="btn btn-outline flex items-center gap-2"
+              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all flex items-center gap-2 px-6 shadow-lg shadow-slate-100 font-bold"
             >
               <span className="material-icons-round text-[18px]">add</span> Nuevo Insumo
             </button>
             <button
               onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
-              className="btn btn-primary flex items-center gap-2"
+              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center gap-2 px-6 shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
             >
               <span className="material-icons-round text-[18px]">shopping_cart</span> Registrar Compra
             </button>
@@ -677,14 +677,25 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
           ></div>
 
           <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
-            <header className="px-8 py-6 border-b border-slate-100 bg-white shrink-0 flex justify-between items-center">
+            <header className="px-8 py-7 border-b border-slate-100 bg-white shrink-0 flex justify-between items-center">
               <div>
-                <h2 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">Kardex de Lotes en Almacén</h2>
-                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5">
-                  Insumo: {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
-                </p>
+                <h2 className="text-[24px] font-bold text-slate-900 tracking-tight leading-none flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                    <span className="material-icons-round text-slate-500 text-xl">inventory_2</span>
+                  </div>
+                  Kardex de Lotes en Almacén
+                </h2>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-[10px] font-black text-white bg-[#136dec] px-2 py-0.5 rounded uppercase tracking-widest">Insumo</span>
+                  <p className="text-[12px] text-slate-500 font-bold tracking-tight">
+                    {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setViewBatchDetailsIngId(null)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+              <button
+                onClick={() => setViewBatchDetailsIngId(null)}
+                className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100"
+              >
                 <span className="material-icons-round">close</span>
               </button>
             </header>
