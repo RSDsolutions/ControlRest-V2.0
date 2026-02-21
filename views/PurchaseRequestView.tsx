@@ -241,7 +241,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                         <h3 className="font-bold text-slate-700">Ingredientes a solicitar</h3>
                         {form.items.map((item, idx) => {
                             const selectedIng = ingredients.find(i => i.id === item.ingredient_id);
-                            const unit = selectedIng?.measureUnit || 'unidades';
+                            const unit = (selectedIng as any)?.unit_base || 'unidades';
 
                             return (
                                 <div key={item.id} className="flex gap-2 items-center">
@@ -374,73 +374,78 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                 {!selectedOrder.items ? (
                                     <p className="text-slate-400 text-sm italic">Cargando...</p>
                                 ) : (
-                                    selectedOrder.items.map((item, i) => (
-                                        <div key={item.id} className={`p-4 rounded-xl border-2 transition-colors ${item.status === 'received' ? 'border-emerald-100 bg-emerald-50/50' : 'border-slate-100 bg-white'}`}>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="font-bold text-slate-900">{item.ingredient_icon} {item.ingredient_name}</span>
-                                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${item.status === 'received' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                    {item.status === 'received' ? 'Recibido' : 'Pendiente'}
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-3">
-                                                <p>Req: <span className="font-bold">{item.quantity_requested} gr</span></p>
-                                                <p>Costo Esp: <span className="font-bold">${item.expected_unit_cost.toFixed(4)}/gr</span></p>
-                                                {item.status === 'received' && (
-                                                    <>
-                                                        <p className="text-emerald-700">Recibido: <span className="font-bold">{item.quantity_received} gr</span></p>
-                                                        <p className="text-emerald-700">Costo Real: <span className="font-bold">${item.actual_unit_cost?.toFixed(4)}/gr</span></p>
-                                                    </>
-                                                )}
-                                            </div>
+                                    selectedOrder.items.map((item, i) => {
+                                        const selectedIng = ingredients.find(ing => ing.name === item.ingredient_name);
+                                        const unitUI = (selectedIng as any)?.unit_base || 'unidades';
 
-                                            {selectedOrder.status === 'approved' && item.status === 'pending' && (
-                                                <div>
-                                                    {!item.receiveMode ? (
-                                                        <button onClick={() => {
-                                                            const newItems = [...selectedOrder.items!];
-                                                            newItems[i].receiveMode = true;
-                                                            setSelectedOrder({ ...selectedOrder, items: newItems });
-                                                        }} className="w-full py-1.5 bg-slate-100 text-primary font-bold rounded hover:bg-slate-200 transition-colors text-xs">
-                                                            Recibir ahora
-                                                        </button>
-                                                    ) : (
-                                                        <form className="mt-2 space-y-2 border-t border-slate-100 pt-2" onSubmit={(e: any) => {
-                                                            e.preventDefault();
-                                                            const aq = parseFloat(e.target.aq.value);
-                                                            const ac = parseFloat(e.target.ac.value);
-                                                            const ed = e.target.ed.value;
-                                                            receiveItem(item.id, aq, ac, ed);
-                                                        }}>
-                                                            <div className="grid grid-cols-2 gap-2">
-                                                                <div>
-                                                                    <label className="text-[10px] font-bold text-slate-400">Cant. Recibida ({item.ingredient_id ? ingredients.find(ing => ing.name === item.ingredient_name)?.measureUnit || 'unidades' : 'unidades'})</label>
-                                                                    <input required name="aq" type="number" step="any" defaultValue={item.quantity_requested} className="w-full p-1 border rounded text-sm" />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-[10px] font-bold text-slate-400">Costo Real ($ / unid.)</label>
-                                                                    <input required name="ac" type="number" step="any" defaultValue={item.expected_unit_cost} className="w-full p-1 border rounded text-sm" />
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <label className="text-[10px] font-bold text-slate-400">Fecha Expiración (Opc.)</label>
-                                                                <input name="ed" type="date" className="w-full p-1 border rounded text-sm" />
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <button type="button" onClick={() => {
-                                                                    const newItems = [...selectedOrder.items!];
-                                                                    newItems[i].receiveMode = false;
-                                                                    setSelectedOrder({ ...selectedOrder, items: newItems });
-                                                                }} className="flex-1 py-1 bg-slate-100 text-slate-500 font-bold rounded text-xs">Cancerlar</button>
-                                                                <button type="submit" className="flex-1 py-1 bg-emerald-500 text-white font-bold rounded shadow-sm text-xs border border-emerald-600">
-                                                                    Confirmar Recepción
-                                                                </button>
-                                                            </div>
-                                                        </form>
+                                        return (
+                                            <div key={item.id} className={`p-4 rounded-xl border-2 transition-colors ${item.status === 'received' ? 'border-emerald-100 bg-emerald-50/50' : 'border-slate-100 bg-white'}`}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="font-bold text-slate-900">{item.ingredient_icon} {item.ingredient_name}</span>
+                                                    <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${item.status === 'received' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {item.status === 'received' ? 'Recibido' : 'Pendiente'}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-3">
+                                                    <p>Req: <span className="font-bold">{item.quantity_requested} {unitUI}</span></p>
+                                                    <p>Costo Esp: <span className="font-bold">${item.expected_unit_cost.toFixed(4)}/{unitUI}</span></p>
+                                                    {item.status === 'received' && (
+                                                        <>
+                                                            <p className="text-emerald-700">Recibido: <span className="font-bold">{item.quantity_received} {unitUI}</span></p>
+                                                            <p className="text-emerald-700">Costo Real: <span className="font-bold">${item.actual_unit_cost?.toFixed(4)}/{unitUI}</span></p>
+                                                        </>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))
+
+                                                {selectedOrder.status === 'approved' && item.status === 'pending' && (
+                                                    <div>
+                                                        {!item.receiveMode ? (
+                                                            <button onClick={() => {
+                                                                const newItems = [...selectedOrder.items!];
+                                                                newItems[i].receiveMode = true;
+                                                                setSelectedOrder({ ...selectedOrder, items: newItems });
+                                                            }} className="w-full py-1.5 bg-slate-100 text-primary font-bold rounded hover:bg-slate-200 transition-colors text-xs">
+                                                                Recibir ahora
+                                                            </button>
+                                                        ) : (
+                                                            <form className="mt-2 space-y-2 border-t border-slate-100 pt-2" onSubmit={(e: any) => {
+                                                                e.preventDefault();
+                                                                const aq = parseFloat(e.target.aq.value);
+                                                                const ac = parseFloat(e.target.ac.value);
+                                                                const ed = e.target.ed.value;
+                                                                receiveItem(item.id, aq, ac, ed);
+                                                            }}>
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    <div>
+                                                                        <label className="text-[10px] font-bold text-slate-400">Cant. Recibida ({unitUI})</label>
+                                                                        <input required name="aq" type="number" step="any" defaultValue={item.quantity_requested} className="w-full p-1 border rounded text-sm" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="text-[10px] font-bold text-slate-400">Costo Real ($ / unid.)</label>
+                                                                        <input required name="ac" type="number" step="any" defaultValue={item.expected_unit_cost} className="w-full p-1 border rounded text-sm" />
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-[10px] font-bold text-slate-400">Fecha Expiración (Opc.)</label>
+                                                                    <input name="ed" type="date" className="w-full p-1 border rounded text-sm" />
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <button type="button" onClick={() => {
+                                                                        const newItems = [...selectedOrder.items!];
+                                                                        newItems[i].receiveMode = false;
+                                                                        setSelectedOrder({ ...selectedOrder, items: newItems });
+                                                                    }} className="flex-1 py-1 bg-slate-100 text-slate-500 font-bold rounded text-xs">Cancerlar</button>
+                                                                    <button type="submit" className="flex-1 py-1 bg-emerald-500 text-white font-bold rounded shadow-sm text-xs border border-emerald-600">
+                                                                        Confirmar Recepción
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })
                                 )}
                             </div>
                         </div>
