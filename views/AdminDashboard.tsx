@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Order, Ingredient, Plate, Table } from '../types';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
+import { supabase } from '../supabaseClient';
 
 interface AdminDashboardProps {
   // We keep 'orders' in prop type for compatibility, but will ignore it
@@ -100,6 +101,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
     });
     return flow;
   }, [todayOrders]);
+
+  // ── MATERIALIZED VIEW: Monthly KPIs ──────────────────────────────
+  const [monthlyKpis, setMonthlyKpis] = useState<any | null>(null);
+  const [topRecipes, setTopRecipes] = useState<any[]>([]);
+  const [mvLoading, setMvLoading] = useState(false);
+
+  useEffect(() => {
+    if (!branchId) return;
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    const monthStr = thisMonth.toISOString().split('T')[0];
+
+    const fetchMv = async () => {
+      setMvLoading(true);
+      try {
+        const [kpiRes, recipesRes] = await Promise.all([
+          supabase
+            .from('mv_monthly_branch_kpis')
+            .select('*')
+            .eq('branch_id', branchId)
+            .eq('month', monthStr)
+            .maybeSingle(),
+          supabase
+            .from('mv_top_recipes_monthly')
+            .select('recipe_name, recipe_category, total_quantity, total_revenue')
+            .eq('branch_id', branchId)
+            .eq('month', monthStr)
+            .order('total_quantity', { ascending: false })
+            .limit(5),
+        ]);
+        if (kpiRes.data) setMonthlyKpis(kpiRes.data);
+        if (recipesRes.data) setTopRecipes(recipesRes.data);
+      } catch (_) { /* fail silently — MV is optional analytics */ }
+      finally { setMvLoading(false); }
+    };
+    fetchMv();
+  }, [branchId]);
 
   return (
     <div className="p-6 space-y-6 animate-fadeIn max-w-[1600px] mx-auto pb-20">
@@ -249,13 +287,80 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h3 className="font-bold text-slate-800 mb-4">Platos Top (Hoy)</h3>
-          {/* Simplified logic for top plates calculation would go here if needed, for now placeholder or simple calc */}
-          <div className="flex items-center justify-center h-32 text-slate-400 text-sm font-bold bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            Gráfico de Ventas por Plato
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="material-icons-round text-violet-500">auto_graph</span>Top Recetas (Mes)
+          </h3>
+          {mvLoading && <div className="text-xs text-slate-400 font-bold text-center py-6">Cargando...</div>}
+          {!mvLoading && topRecipes.length === 0 && (
+            <div className="flex items-center justify-center h-24 text-slate-400 text-xs font-bold bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              Sin datos este mes
+            </div>
+          )}
+          <div className="space-y-2">
+            {topRecipes.map((r, i) => (
+              <div key={i} className="flex items-center justify-between text-sm p-2 rounded-lg hover:bg-slate-50">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-violet-100 text-violet-700 text-[10px] font-black flex items-center justify-center">{i + 1}</span>
+                  <div>
+                    <p className="font-bold text-slate-800">{r.recipe_name}</p>
+                    <p className="text-[10px] text-slate-400 font-bold">{r.recipe_category || '—'}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-slate-700">{r.total_quantity} uds</p>
+                  <p className="text-[10px] text-slate-400">{formatMoney(r.total_revenue)}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* 7. KPIs MENSUALES — from materialized view */}
+      {monthlyKpis && (
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-xl p-6 text-white">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-bold text-white flex items-center gap-2">
+              <span className="material-icons-round text-emerald-400">insights</span>
+              KPIs Mensuales •{' '}
+              <span className="text-slate-300 font-medium">
+                {new Date(monthlyKpis.month + 'T00:00:00').toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+              </span>
+            </h3>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-700 px-2 py-1 rounded-full">
+              Vista Materializada · Refresh 1h
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Ventas Totales', value: formatMoney(Number(monthlyKpis.total_sales)), icon: 'payments', color: 'text-emerald-400' },
+              { label: 'Utilidad Bruta', value: formatMoney(Number(monthlyKpis.gross_profit)), icon: 'trending_up', color: 'text-blue-400' },
+              { label: 'Utilidad Neta', value: formatMoney(Number(monthlyKpis.net_profit)), icon: 'account_balance', color: Number(monthlyKpis.net_profit) >= 0 ? 'text-emerald-400' : 'text-red-400' },
+              { label: 'Margen Neto', value: `${Number(monthlyKpis.profit_margin).toFixed(1)}%`, icon: 'percent', color: Number(monthlyKpis.profit_margin) >= 20 ? 'text-emerald-400' : 'text-amber-400' },
+            ].map(k => (
+              <div key={k.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                <span className={`material-icons-round ${k.color} text-xl`}>{k.icon}</span>
+                <p className="text-xl font-black text-white mt-2">{k.value}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{k.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+            <div className="bg-white/5 rounded-lg p-3">
+              <p className="text-slate-400 text-[10px] font-bold uppercase">COGS</p>
+              <p className="font-black text-white">{formatMoney(Number(monthlyKpis.total_cogs))}</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-3">
+              <p className="text-slate-400 text-[10px] font-bold uppercase">Gastos Op.</p>
+              <p className="font-black text-white">{formatMoney(Number(monthlyKpis.total_expenses))}</p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-3">
+              <p className="text-slate-400 text-[10px] font-bold uppercase">Merma</p>
+              <p className="font-black text-amber-400">{formatMoney(Number(monthlyKpis.total_waste_cost))}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

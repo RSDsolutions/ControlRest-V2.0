@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Table, Plate, Order, OrderItem, User, Ingredient } from '../types';
 import { supabase } from '../supabaseClient';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
+import { useCreateOrderMutation } from '../hooks/useOrderMutations';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface WaiterViewProps {
    tables: Table[];
@@ -21,8 +23,10 @@ type ViewMode = 'tables' | 'order' | 'history' | 'serve' | 'summary';
 
 const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, branchId, currentUser, ingredients = [], restaurantId, inventoryError }) => {
    const { orders, refresh: refreshOrders } = useRealtimeOrders(branchId || null);
+   const { isOnline } = useOnlineStatus();
+   const createOrderMutation = useCreateOrderMutation(branchId || null);
 
-   // Use refreshOrders instead of fetchOrders prop if passed
+   // fetchOrders triggers query invalidation via useRealtimeOrders.refresh
    const fetchOrders = refreshOrders;
    const [viewMode, setViewMode] = useState<ViewMode>('tables');
    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
@@ -195,14 +199,16 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
    const handleSendToKitchen = async () => {
       if (!selectedTableId || cart.length === 0) return;
 
-      // Final stock validation
-      for (const item of cart) {
-         const plate = plates.find(p => p.id === item.plateId);
-         if (plate) {
-            const stock = getPlateStock(plate);
-            if (item.qty > stock) {
-               showNotification(`\u274C No se puede enviar: ${plate.name} ahora tiene stock insuficiente (${stock} disp.)`);
-               return;
+      // Offline: skip stock validation (can't verify server state)
+      if (isOnline) {
+         for (const item of cart) {
+            const plate = plates.find(p => p.id === item.plateId);
+            if (plate) {
+               const stock = getPlateStock(plate);
+               if (item.qty > stock) {
+                  showNotification(`\u274C No se puede enviar: ${plate.name} ahora tiene stock insuficiente (${stock} disp.)`);
+                  return;
+               }
             }
          }
       }
@@ -214,7 +220,6 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          const tableId = selectedTableId;
          const tableLabel = getTableLabel(tableId);
 
-         // Use Atomic RPC for Order Creation & Stock Deduction
          const orderItemsArg = cart.map(item => ({
             recipe_id: item.plateId,
             quantity: item.qty,
@@ -222,21 +227,23 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
             unit_price: plates.find(p => p.id === item.plateId)?.sellingPrice || 0
          }));
 
-         const { error: rpcErr } = await supabase.rpc('create_order_atomic', {
-            p_branch_id: branchId,
+         // useMutation: online → Supabase RPC (+ optimistic table update via onMutate);
+         //              offline → rpcService queues to IndexedDB
+         const result = await createOrderMutation.mutateAsync({
+            p_branch_id: branchId!,
             p_table_id: tableId,
             p_waiter_id: currentUser?.id || null,
             p_total: total,
             p_items: orderItemsArg
          });
 
-         if (rpcErr) throw rpcErr;
+         const isOffline = result?.isOffline ?? false;
 
-         // Table status updated by RPC in DB, we update local state for UI responsiveness
-         setTables(prev => prev.map(t => (t.id || t.label) === tableId ? { ...t, status: 'occupied' } : t));
-
-         if (fetchOrders) fetchOrders();
-         showNotification(`🔥 Comanda enviada a cocina — ${tableLabel}`);
+         if (!isOffline) {
+            showNotification(`🔥 Comanda enviada a cocina — ${tableLabel}`);
+         } else {
+            showNotification(`📴 Sin conexión — comanda guardada localmente (${tableLabel})`);
+         }
 
          setCart([]);
       } catch (err) {
@@ -301,6 +308,13 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
       console.log('[WaiterView] Rendering Tables View - Orders:', orders.length);
       return (
          <div className="flex-1 overflow-y-auto bg-slate-50/50 animate-fadeIn text-slate-900">
+            {/* Offline banner */}
+            {!isOnline && (
+               <div className="bg-amber-500 text-white px-6 py-2 flex items-center gap-2 text-sm font-bold">
+                  <span className="material-icons-round text-base">wifi_off</span>
+                  Modo Offline — Las órdenes se guardarán localmente y sincronizarán al reconectar
+               </div>
+            )}
             {/* Top bar */}
             <div className="bg-white border-b border-slate-200 px-6 py-4">
                <div className="flex items-center justify-between">
@@ -663,9 +677,12 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                {/* Send to kitchen */}
                {cart.length > 0 && (
                   <button disabled={isLoading} onClick={handleSendToKitchen}
-                     className="w-full py-3.5 rounded-2xl font-black text-base bg-primary text-white hover:bg-primary-light transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
-                     <span className="material-icons-round">local_fire_department</span>
-                     {isLoading ? 'Enviando...' : tableOrders.length > 0 ? 'Enviar Adicional a Cocina' : 'Enviar a Cocina'}
+                     className={`w-full py-3.5 rounded-2xl font-black text-base transition-all flex items-center justify-center gap-2 shadow-lg ${isOnline
+                        ? 'bg-primary text-white hover:bg-primary-light shadow-primary/20'
+                        : 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20'
+                        }`}>
+                     <span className="material-icons-round">{isOnline ? 'local_fire_department' : 'wifi_off'}</span>
+                     {isLoading ? 'Guardando...' : !isOnline ? (tableOrders.length > 0 ? 'Guardar Adicional (Offline)' : 'Guardar Offline') : (tableOrders.length > 0 ? 'Enviar Adicional a Cocina' : 'Enviar a Cocina')}
                   </button>
                )}
             </footer>

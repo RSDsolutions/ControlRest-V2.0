@@ -70,7 +70,7 @@ export interface Order {
   id: string;
   tableId: string;
   items: OrderItem[];
-  status: 'pending' | 'open' | 'preparing' | 'ready' | 'delivered' | 'billing' | 'paid' | 'cancelled';
+  status: 'pending' | 'open' | 'preparing' | 'ready' | 'delivered' | 'served' | 'billing' | 'paid' | 'cancelled';
   total: number;
   timestamp: Date;
   waiterId?: string;
@@ -89,8 +89,9 @@ export interface Table {
   id?: string;
   label: string;
   seats: number;
-  status: 'available' | 'occupied' | 'reserved' | 'billing';
+  status: 'available' | 'occupied' | 'reserved' | 'billing' | 'preparing' | 'ready';
   currentOrderId?: string;
+  branchId?: string;
 }
 
 export interface Expense {
@@ -178,3 +179,21 @@ export interface CashSession {
   difference?: number;
   notes?: string;
 }
+
+export interface DailyFinancialSnapshot {
+  id: string;
+  branchId: string;
+  snapshotDate: string;
+  cashSessionId: string;
+  totalSales: number;
+  totalCogs: number;
+  totalExpenses: number;
+  totalWasteCost: number;
+  grossProfit: number;
+  netProfit: number;
+  inventoryValue: number;
+  createdAt: string;
+  // joined
+  branchName?: string;
+}
+

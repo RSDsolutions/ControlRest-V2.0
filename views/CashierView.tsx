@@ -3,6 +3,8 @@ import { Table, Order, Plate, User } from '../types';
 import { supabase } from '../supabaseClient';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 import { useCashSession } from '../hooks/useCashSession';
+import { useCloseOrderMutation } from '../hooks/useOrderMutations';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface CashierViewProps {
    tables: Table[];
@@ -17,6 +19,8 @@ interface CashierViewProps {
 const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, branchId, currentUser }) => {
    // 1. HYBRID REALTIME: Use the hook to get orders + polling
    const { orders, refresh: refreshOrders } = useRealtimeOrders(branchId || null);
+   const { isOnline } = useOnlineStatus();
+   const closeOrderMutation = useCloseOrderMutation(branchId || null);
 
    // 2. CASH SESSION HOOK
    const { session, loading: loadingSession, openSession, closeSession, refreshSession } = useCashSession(branchId || null);
@@ -55,6 +59,28 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
       try {
          const result: any = await closeSession(parseFloat(closingCash), currentUser?.id || '');
+
+         // === ACCOUNTING PERIOD LOCK ===
+         // After the session is closed, lock the date for this branch so no
+         // retroactive financial data can be inserted or modified for that date.
+         const lockDate = new Date(currentShift.openedAt).toISOString().split('T')[0];
+         const { error: lockError } = await supabase
+            .from('accounting_period_locks')
+            .upsert(
+               {
+                  branch_id: currentShift.branchId,
+                  lock_date: lockDate,
+                  cash_session_id: currentShift.id,
+                  locked_by: currentUser?.id ?? null,
+               },
+               { onConflict: 'branch_id,lock_date', ignoreDuplicates: true }
+            );
+         if (lockError) {
+            // Non-fatal: lock table write failure should not block the cashier UI
+            console.warn('[AccountingLock] Could not write period lock:', lockError.message);
+         }
+         // ==============================
+
          // Result contains { id, expected_cash, difference }
          setClosingSummary({
             expected: result.expected_cash,
@@ -89,21 +115,22 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
       try {
          const orderIds = tableOrders.map(o => o.id);
-         // Use RPC for atomic payment & table release
-         const { error: rpcErr } = await supabase.rpc('close_order_with_payment', {
+
+         // useMutation: online → Supabase RPC; offline → IndexedDB queue via rpcService
+         const result = await closeOrderMutation.mutateAsync({
             p_order_ids: orderIds,
             p_payment_method: paymentMethod,
             p_total_paid: aggregateTotal,
-            p_shift_id: currentShift.id // Pass active shift
+            p_shift_id: currentShift.id
          });
-
-         if (rpcErr) throw rpcErr;
 
          setProcessingTableId(null);
          setShowClosure(false);
 
-         // Force refresh to update UI immediately
-         if (refreshOrders) refreshOrders();
+         if (result?.isOffline) {
+            alert('📴 Sin conexión — el pago se guardó localmente y se procesará automáticamente al reconectar.');
+         }
+         // Invalidation is automatic via useCloseOrderMutation.onSuccess
 
       } catch (err) {
          console.error('Error processing payment:', err);

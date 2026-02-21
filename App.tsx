@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import GlobalModeWarning from './components/GlobalModeWarning';
 import { UserRole, Ingredient, Plate, Order, Table, Expense, User, WasteRecord } from './types';
 import { INITIAL_INGREDIENTS, INITIAL_PLATES, INITIAL_TABLES } from './constants';
 import { supabase } from './supabaseClient';
+import { useSyncEngine } from './hooks/useSyncEngine';
+import { useQueryClient } from '@tanstack/react-query';
+import { useOrdersQuery } from './hooks/useOrdersQuery';
+import { useTablesQuery } from './hooks/useTablesQuery';
+import { queryKeys } from './lib/queryKeys';
 
 // Views
 import LoginView from './views/LoginView';
 import AdminDashboard from './views/AdminDashboard';
 import IngredientsView from './views/IngredientsView';
 import InventoryView from './views/InventoryView';
+import InventoryBatchesView from './views/InventoryBatchesView';
 import PlatesView from './views/PlatesView';
 import WaiterView from './views/WaiterView';
 import CashierView from './views/CashierView';
@@ -19,6 +25,8 @@ import TablesView from './views/TablesView';
 import OrdersHistoryView from './views/OrdersHistoryView';
 import UserManagementView from './views/UserManagementView';
 import AuditLogView from './views/AuditLogView';
+import SnapshotHistoryView from './views/SnapshotHistoryView';
+import AccountingPeriodLocksView from './views/AccountingPeriodLocksView';
 import EnterpriseProfileView from './views/EnterpriseProfileView';
 import KitchenView from './views/KitchenView';
 import WasteView from './views/WasteView';
@@ -30,24 +38,43 @@ import Sidebar from './components/Sidebar';
 import LockScreen from './components/LockScreen';
 
 const App: React.FC = () => {
+  // Start the offline sync engine — runs a 5s loop flushing pending_operations to Supabase
+  const { pendingCount } = useSyncEngine();
+
   const [user, setUser] = useState<User | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const isStaffLoginRef = useRef(false);
   const [ingredients, setIngredients] = useState<Ingredient[]>(INITIAL_INGREDIENTS);
   const [plates, setPlates] = useState<Plate[]>(INITIAL_PLATES);
-  const [tables, setTables] = useState<Table[]>(INITIAL_TABLES);
-  const [orders, setOrders] = useState<Order[]>([]);
+  // orders and tables are now managed via TanStack Query (see below)
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [wasteRecords, setWasteRecords] = useState<WasteRecord[]>([]);
   const [branches, setBranches] = useState<any[]>([]); // Branch[]
   const [inventoryError, setInventoryError] = useState<string | null>(null);
 
 
-
   const [branchId, setBranchId] = useState<string | 'GLOBAL' | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  // TanStack Query: server state for orders and tables (must be after branchId)
+  const qc = useQueryClient();
+  const branchIds = useMemo(() => branches.map((b: any) => b.id), [branches]);
+  const { data: orders = [] } = useOrdersQuery(branchId, branchIds);
+  const { data: tables = INITIAL_TABLES } = useTablesQuery(branchId, branchIds);
+
+  // Backward-compat setters so KitchenView / TablesView props continue working
+  const setOrders: React.Dispatch<React.SetStateAction<Order[]>> = (updater) => {
+    const current = qc.getQueryData<Order[]>(queryKeys.orders(branchId)) ?? [];
+    const next = typeof updater === 'function' ? (updater as (prev: Order[]) => Order[])(current) : updater;
+    qc.setQueryData(queryKeys.orders(branchId), next);
+  };
+  const setTables: React.Dispatch<React.SetStateAction<Table[]>> = (updater) => {
+    const current = qc.getQueryData<Table[]>(queryKeys.tables(branchId)) ?? [];
+    const next = typeof updater === 'function' ? (updater as (prev: Table[]) => Table[])(current) : updater;
+    qc.setQueryData(queryKeys.tables(branchId), next);
+  };
 
   // Helper for targeted single order fetch (needed for new orders with relations)
   // We use a delay to allow relational snapshot to become visible in Postgres (Race Condition fix)
@@ -344,34 +371,9 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchTables = async (bId: string) => {
-    const controller = new AbortController();
-    try {
-      let query = supabase.from('tables').select('*').abortSignal(controller.signal);
-
-      if (bId === 'GLOBAL') {
-        const branchIds = branches.map(b => b.id);
-        if (branchIds.length > 0) query = query.in('branch_id', branchIds);
-        else return; // No branches
-      } else {
-        query = query.eq('branch_id', bId);
-      }
-
-      const { data, error } = await query.order('label');
-      if (error) throw error;
-      if (data) {
-        const formatted: Table[] = data.map((t: any) => ({
-          id: t.id,
-          seats: t.seats,
-          status: t.status as any,
-          label: bId === 'GLOBAL' ? `${t.label} (Sucursal)` : t.label, // Ideally show branch name but we need join
-          branchId: t.branch_id
-        }));
-        setTables(formatted);
-      }
-    } catch (err) {
-      console.error('Error fetching tables:', err);
-    }
+  // fetchTables → invalidates TanStack Query cache (triggers useTablesQuery refetch)
+  const fetchTables = (_bId: string) => {
+    qc.invalidateQueries({ queryKey: queryKeys.tables(branchId) });
   };
 
   const fetchExpenses = async (bId: string) => {
@@ -410,55 +412,9 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchOrders = async (bId: string) => {
-    const controller = new AbortController();
-    try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - 30);
-      startDate.setHours(0, 0, 0, 0);
-      const startDateISO = startDate.toISOString();
-
-      let query = supabase
-        .from('orders')
-        .select('*, order_items(*), users:waiter_id(full_name)')
-        .abortSignal(controller.signal);
-
-      if (bId === 'GLOBAL') {
-        const branchIds = branches.map(b => b.id);
-        if (branchIds.length > 0) query = query.in('branch_id', branchIds);
-        else return;
-      } else {
-        query = query.eq('branch_id', bId);
-      }
-
-      const { data, error } = await query
-        .or(`status.neq.paid,created_at.gte."${startDateISO}"`)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      if (data) {
-        const formatted: Order[] = data.map((o: any) => ({
-          id: o.id,
-          tableId: o.table_id,
-          items: (o.order_items || []).map((oi: any) => ({
-            plateId: oi.recipe_id,
-            qty: oi.quantity,
-            notes: oi.notes || undefined,
-          })),
-          status: o.status,
-          total: parseFloat(o.total || '0'),
-          timestamp: new Date(o.created_at),
-          waiterId: o.waiter_id,
-          waiterName: o.users?.full_name || 'Sin Asignar',
-          readyAt: o.ready_at,
-          servedAt: o.served_at,
-          servedBy: o.served_by,
-          branchId: o.branch_id,
-        }));
-        setOrders(formatted);
-      }
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-    }
+  // fetchOrders → invalidates TanStack Query cache (triggers useOrdersQuery refetch)
+  const fetchOrders = (_bId: string) => {
+    qc.invalidateQueries({ queryKey: queryKeys.orders(branchId) });
   };
 
   const fetchWasteRecords = async (bId: string) => {
@@ -687,11 +643,14 @@ const App: React.FC = () => {
             <Route path="/waste" element={<WasteView ingredients={ingredients} currentUser={user} restaurantId={restaurantId || ''} branchId={branchId || ''} branches={branches} />} />
             <Route path="/ingredients" element={<IngredientsView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} restaurantId={restaurantId} />} />
             <Route path="/inventory" element={<InventoryView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} />} />
+            <Route path="/inventory-batches" element={<InventoryBatchesView branchId={branchId} currentUser={user} />} />
             <Route path="/tables" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <TablesView tables={tables} setTables={setTables} branchId={branchId} />} />
             <Route path="/orders-history" element={<OrdersHistoryView plates={plates} tables={tables} branchId={branchId} branches={branches} currentUser={user} />} />
             <Route path="/users" element={<UserManagementView currentUser={user} branches={branches} />} />
             <Route path="/enterprise-profile" element={<EnterpriseProfileView currentUser={user} branches={branches} setBranches={setBranches} />} />
             <Route path="/audit" element={<AuditLogView />} />
+            <Route path="/period-locks" element={<AccountingPeriodLocksView currentUser={user} branches={branches} />} />
+            <Route path="/snapshots" element={<SnapshotHistoryView currentUser={user} branches={branches} />} />
             <Route path="/plates" element={<PlatesView plates={plates} ingredients={ingredients} setPlates={setPlates} restaurantId={restaurantId} orders={orders} />} />
             <Route path="/finance" element={<FinanceView orders={orders} ingredients={ingredients} expenses={expenses} plates={plates} wasteRecords={wasteRecords} branchId={branchId} />} />
             <Route path="/expenses" element={<ExpensesView expenses={expenses} onAddExpense={(newExp) => setExpenses(prev => Array.isArray(prev) ? [newExp, ...prev] : [newExp])} branchId={branchId} branches={branches} orders={orders} ingredients={ingredients} plates={plates} />} />

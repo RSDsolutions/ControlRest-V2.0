@@ -23,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
       { label: 'Auditoría', path: '/audit', icon: 'history' },
       { label: 'Ingredientes', icon: 'restaurant', path: '/ingredients' },
       { label: 'Inventario', icon: 'inventory_2', path: '/inventory' },
+      { label: 'Lotes FIFO', icon: 'playlist_add_check', path: '/inventory-batches' },
       { label: 'Control Merma', icon: 'delete_forever', path: '/waste' },
       { label: 'Platos', icon: 'dinner_dining', path: '/plates' },
       {
@@ -31,7 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
         path: '/finance',
         children: [
           { label: 'Resumen', icon: 'bar_chart', path: '/finance' },
-          { label: 'Gastos Ops.', icon: 'payments', path: '/expenses' }
+          { label: 'Gastos Ops.', icon: 'payments', path: '/expenses' },
+          { label: 'Períodos Bloqueados', icon: 'lock_clock', path: '/period-locks' },
+          { label: 'Snapshots Diarios', icon: 'assessment', path: '/snapshots' }
         ]
       },
     ],
