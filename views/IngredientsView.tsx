@@ -440,28 +440,33 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       </div>
 
       {showNewIngModal && (
-        <div className="modal-overlay">
-          <div className="modal-content max-w-3xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
-            <header className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+            onClick={() => setShowNewIngModal(false)}
+          ></div>
+
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
               <div>
-                <h3 className="font-heading font-black text-2xl text-brand-black tracking-tight">Alta de Insumo Maestro</h3>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Configuración técnica de almacén</p>
+                <h3 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">Alta de Insumo Maestro</h3>
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5">CONFIGURACIÓN TÉCNICA DE ALMACÉN</p>
               </div>
               <button onClick={() => setShowNewIngModal(false)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
                 <span className="material-icons-round">close</span>
               </button>
             </header>
 
-            <div className="p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
               {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="col-span-1 md:col-span-2">
-                  <label className="label">Nombre Descriptivo</label>
-                  <input type="text" className="input font-bold" placeholder="Ej. Lomo Alto de Res (Angus)" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} />
+                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Nombre Descriptivo</label>
+                  <input type="text" className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold" placeholder="Ej. Lomo Alto de Res (Angus)" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <label className="label">Categoría del Insumo</label>
-                  <select className="input font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
+                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Categoría del Insumo</label>
+                  <select className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
                     <option>Proteínas (Carnes y Sustitutos)</option>
                     <option>Verduras y Hortalizas</option>
                     <option>Cereales y Harinas</option>
@@ -477,21 +482,21 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
               </div>
 
               <div className="space-y-6">
-                <h4 className="font-heading font-black text-brand-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                   <span className="material-icons-round text-primary text-lg">straighten</span> Unidades y Costeo Inicial
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
-                  <div className="space-y-3">
-                    <label className="label">Estado Físico</label>
-                    <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'kg' })} className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'solid' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>Sólido</button>
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'L' })} className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'liquid' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>Líquido</button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-inner">
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Estado Físico</label>
+                    <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                      <button onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'kg' })} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'solid' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>Sólido</button>
+                      <button onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'L' })} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'liquid' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>Líquido</button>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <label className="label">Unidad de Gestión</label>
-                    <select className="input font-black" value={newIng.measureUnit} onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}>
+                  <div className="space-y-2">
+                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Unidad de Gestión</label>
+                    <select className="w-full px-4 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-black h-[42px]" value={newIng.measureUnit} onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}>
                       {newIng.unitType === 'solid' ? (
                         <>
                           <option value="kg">Kilogramos (kg)</option>
@@ -508,69 +513,84 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     </select>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="label">Cantidad Apertura</label>
-                    <input type="number" className="input font-black text-lg" placeholder="0" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
+                  <div className="space-y-1">
+                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Cantidad Apertura</label>
+                    <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-slate-900" placeholder="0" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
                   </div>
-                  <div className="space-y-2">
-                    <label className="label">Valor factura (USD)</label>
+                  <div className="space-y-1">
+                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Valor factura (USD)</label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                      <input type="number" className="input pl-8 font-black text-lg text-emerald-600" placeholder="0.00" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
+                      <input type="number" className="w-full pl-8 pr-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-emerald-600" placeholder="0.00" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
                     </div>
                   </div>
                 </div>
 
-                <div className="px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Costo Técnico x {getBaseUnit(newIng.unitType)}</span>
-                  <span className="text-sm font-black text-primary">
+                <div className="px-6 py-4 bg-[#136dec]/5 rounded-xl border border-[#136dec]/10 flex items-center justify-between">
+                  <span className="text-[10px] font-black text-[#136dec]/60 uppercase tracking-widest">Costo Técnico x {getBaseUnit(newIng.unitType)}</span>
+                  <span className="text-sm font-black text-[#136dec]">
                     ${newIng.initialQty > 0 ? (newIng.initialPrice / convertToBase(newIng.initialQty, newIng.measureUnit)).toFixed(5) : '0.00000'}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <label className="label">Stock de Seguridad ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="input font-bold" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseInt(e.target.value) || 0 })} />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Stock de Seguridad ({getBaseUnit(newIng.unitType)})</label>
+                  <input type="number" className="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-bold" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseInt(e.target.value) || 0 })} />
                 </div>
-                <div className="space-y-2">
-                  <label className="label">Alerta Crítica ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="input font-bold border-red-100 bg-red-50/20 text-red-600" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseInt(e.target.value) || 0 })} />
+                <div className="space-y-1">
+                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Alerta Crítica ({getBaseUnit(newIng.unitType)})</label>
+                  <input type="number" className="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-200 bg-red-50/20 text-red-600 font-bold" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
             </div>
 
-            <footer className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-              <button onClick={() => setShowNewIngModal(false)} className="btn btn-outline px-8 py-3 text-[10px] font-black uppercase tracking-widest">Cancelar</button>
-              <button onClick={handleCreateIngredient} className="btn btn-primary px-10 py-3 text-[10px] font-black uppercase tracking-widest shadow-primary/20">Registrar en Almacén</button>
+            <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
+              <button
+                onClick={() => setShowNewIngModal(false)}
+                className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleCreateIngredient}
+                className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200"
+              >
+                Registrar en Almacén
+              </button>
             </footer>
           </div>
         </div>
       )}
 
       {showPurchaseModal && (
-        <div className="modal-overlay">
-          <div className="modal-content max-w-lg p-0 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] shadow-[0_40px_100px_rgba(0,0,0,0.15)]">
-            <header className="px-10 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="material-icons-round text-2xl">shopping_cart</span>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+            onClick={() => setShowPurchaseModal(false)}
+          ></div>
+
+          <div className="relative bg-white w-full max-w-lg rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
+                  <span className="material-icons-round text-xl">shopping_cart</span>
                 </div>
                 <div>
-                  <h3 className="font-heading font-black text-2xl text-brand-black tracking-tight">Ingreso de Compra</h3>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Actualización de Stock Maestro</p>
+                  <h3 className="text-[20px] font-bold text-slate-900 tracking-tight leading-none">Ingreso de Compra</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1.5">ACTUALIZACIÓN DE STOCK</p>
                 </div>
               </div>
-              <button onClick={() => setShowPurchaseModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+              <button onClick={() => setShowPurchaseModal(false)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
                 <span className="material-icons-round">close</span>
               </button>
             </header>
 
-            <div className="p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
               <div className="space-y-3">
-                <label className="label">Insumo a Reponer</label>
-                <select className="input font-black text-sm uppercase tracking-tight h-14" value={selectedIngId || ''} onChange={e => {
+                <label className="text-[13px] font-bold text-slate-700 block">Insumo a Reponer</label>
+                <select className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-black" value={selectedIngId || ''} onChange={e => {
                   const newId = e.target.value;
                   setSelectedIngId(newId);
                   const newIng = ingredients.find(i => i.id === newId);
@@ -581,14 +601,14 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <label className="label">Cantidad Comprada</label>
-                  <input type="number" className="input font-black text-lg h-14" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
+                  <label className="text-[13px] font-bold text-slate-700 block">Cantidad Comprada</label>
+                  <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-slate-900" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
                 </div>
                 <div className="space-y-3">
-                  <label className="label">Unidad Medida</label>
-                  <select className="input font-black text-xs uppercase h-14" value={purchaseUnit} onChange={e => setPurchaseUnit(e.target.value as any)}>
+                  <label className="text-[13px] font-bold text-slate-700 block">Unidad Medida</label>
+                  <select className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-bold h-[52px]" value={purchaseUnit} onChange={e => setPurchaseUnit(e.target.value as any)}>
                     {isLiquidType ? (
                       <>
                         <option value="L">Litros (L)</option>
@@ -606,11 +626,11 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 </div>
               </div>
 
-              <div className="p-6 bg-emerald-50 border-[3px] border-emerald-100 rounded-3xl flex items-center gap-6 shadow-sm">
-                <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg"><span className="material-icons-round text-2xl">scale</span></div>
+              <div className="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-2xl flex items-center gap-6 shadow-sm">
+                <div className="w-12 h-12 shrink-0 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg"><span className="material-icons-round text-xl">scale</span></div>
                 <div>
-                  <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 leading-none">Neto Entrante</p>
-                  <p className="text-xl font-heading font-black text-brand-black leading-tight">
+                  <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1.5 leading-none">Neto Entrante</p>
+                  <p className="text-xl font-bold text-slate-900 leading-none">
                     {(() => {
                       let val = purchaseQty;
                       if (purchaseUnit === 'kg' || purchaseUnit === 'L') val *= 1000;
@@ -623,38 +643,53 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
               </div>
 
               <div className="space-y-3">
-                <label className="label">Total Inversión Bruta (USD)</label>
+                <label className="text-[13px] font-bold text-slate-700 block">Total Inversión Bruta (USD)</label>
                 <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-2xl">$</span>
-                  <input type="number" className="input pl-12 h-20 text-4xl font-heading font-black text-primary border-slate-200" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-3xl">$</span>
+                  <input type="number" className="w-full pl-12 pr-6 py-6 text-4xl font-bold text-primary rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
                 </div>
               </div>
             </div>
 
-            <footer className="px-10 py-10 bg-slate-50 border-t border-slate-100 flex justify-end gap-4 shrink-0">
-              <button onClick={() => setShowPurchaseModal(false)} className="btn btn-outline px-8 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descartar</button>
-              <button onClick={handleRegisterPurchase} className="btn btn-primary px-10 py-3 text-[10px] font-black uppercase tracking-widest shadow-primary/30">Confirmar Ingreso</button>
+            <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleRegisterPurchase}
+                className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200"
+              >
+                Confirmar Ingreso
+              </button>
             </footer>
           </div>
         </div>
       )}
 
       {viewBatchDetailsIngId && (
-        <div className="modal-overlay">
-          <div className="absolute right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl animate-fade-in p-0 flex flex-col border-l border-slate-100">
-            <header className="px-10 py-10 border-b border-slate-100 bg-white sticky top-0 z-20 flex justify-between items-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+            onClick={() => setViewBatchDetailsIngId(null)}
+          ></div>
+
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 bg-white shrink-0 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-heading font-black text-brand-black tracking-tight">Kardex de Lotes en Almacén</h2>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                <h2 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">Kardex de Lotes en Almacén</h2>
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5">
                   Insumo: {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
                 </p>
               </div>
-              <button onClick={() => setViewBatchDetailsIngId(null)} className="w-12 h-12 rounded-full border border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors flex items-center justify-center">
-                <span className="material-icons-round text-2xl">close</span>
+              <button onClick={() => setViewBatchDetailsIngId(null)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+                <span className="material-icons-round">close</span>
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scrollbar bg-slate-50/30">
+            <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/30">
               {(() => {
                 const ingBatches = batches.filter(b => b.ingredient_id === viewBatchDetailsIngId);
                 if (ingBatches.length === 0) return (
@@ -662,47 +697,47 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto border border-slate-200">
                       <span className="material-icons-round text-slate-300 text-4xl">inventory</span>
                     </div>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se detectan lotes vigentes para este insumo</p>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No se detectan lotes vigentes para este insumo</p>
                   </div>
                 );
 
                 return ingBatches.map(b => (
-                  <div key={b.id} className="card p-8 group relative hover:shadow-xl transition-all border-slate-200">
-                    <div className="flex justify-between items-start mb-6">
+                  <div key={b.id} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <span className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">Lot</span>
+                        <span className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 uppercase">Lote</span>
                         <div>
-                          <p className="text-sm font-black text-brand-black uppercase tracking-tight">#{b.id.split('-')[0]}</p>
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${b.quantity_remaining > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                          <p className="text-sm font-bold text-slate-900">#{b.id.split('-')[0]}</p>
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${b.quantity_remaining > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
                             {b.quantity_remaining > 0 ? 'En Existencias' : 'Agotado'}
                           </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Costo Unit.</p>
-                        <p className="text-lg font-black text-primary">${Number(b.unit_cost).toFixed(4)}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Costo Unit.</p>
+                        <p className="text-lg font-bold text-[#136dec]">${Number(b.unit_cost).toFixed(4)}</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Proveedor</p>
-                        <p className="text-xs font-bold text-brand-black">{b.suppliers?.name || 'Distribución Global'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Proveedor</p>
+                        <p className="text-xs font-semibold text-slate-700">{b.suppliers?.name || 'Distribución Global'}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha de Caducidad</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha de Caducidad</p>
                         {b.expiration_date ? (
-                          <p className={`text-xs font-black ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-600' : 'text-emerald-500'}`}>
+                          <p className={`text-xs font-bold ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-600' : 'text-emerald-500'}`}>
                             {new Date(b.expiration_date).toLocaleDateString()}
                           </p>
                         ) : <p className="text-xs text-slate-400">Sin vigencia</p>}
                       </div>
                     </div>
 
-                    <div className="mt-6 flex justify-between items-center">
+                    <div className="flex justify-between items-end">
                       <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Saldo Restante</p>
-                        <p className="text-2xl font-heading font-black text-brand-black">{b.quantity_remaining.toLocaleString()} gr</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Saldo Restante</p>
+                        <p className="text-xl font-bold text-slate-900">{b.quantity_remaining.toLocaleString()} gr</p>
                       </div>
                       <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
                         <div className="h-full bg-emerald-500" style={{ width: '100%' }}></div>
@@ -712,6 +747,9 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 ));
               })()}
             </div>
+            <footer className="px-8 py-4 border-t border-slate-100 bg-white shrink-0 flex justify-end">
+              <button onClick={() => setViewBatchDetailsIngId(null)} className="px-6 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-200 transition-all">Cerrar Detalle</button>
+            </footer>
           </div>
         </div>
       )}
