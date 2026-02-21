@@ -31,10 +31,10 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
     const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
 
     // New PO State
-    const [form, setForm] = useState<{ supplier_id: string; notes: string; items: { ingredient_id: string; qty: string; cost: string }[] }>({
+    const [form, setForm] = useState<{ supplier_id: string; notes: string; items: { id: string; ingredient_id: string; qty: string; cost: string }[] }>({
         supplier_id: '',
         notes: '',
-        items: [{ ingredient_id: '', qty: '', cost: '' }]
+        items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }]
     });
 
     const fetchOrders = useCallback(async () => {
@@ -143,7 +143,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
             setMsg('✅ Solicitud de Compra creada.');
             setShowForm(false);
-            setForm({ supplier_id: '', notes: '', items: [{ ingredient_id: '', qty: '', cost: '' }] });
+            setForm({ supplier_id: '', notes: '', items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] });
             fetchOrders();
         } catch (err: any) {
             setMsg('❌ Error: ' + err.message);
@@ -244,7 +244,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                             const unit = selectedIng?.measureUnit || 'unidades';
 
                             return (
-                                <div key={idx} className="flex gap-2 items-center">
+                                <div key={item.id} className="flex gap-2 items-center">
                                     <select
                                         required
                                         value={item.ingredient_id}
@@ -278,14 +278,14 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                     </div>
                                     <button type="button" onClick={() => {
                                         const newItems = form.items.filter((_, i) => i !== idx);
-                                        setForm({ ...form, items: newItems.length ? newItems : [{ ingredient_id: '', qty: '', cost: '' }] });
+                                        setForm({ ...form, items: newItems.length ? newItems : [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] });
                                     }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                                         <span className="material-icons-round text-[20px]">delete</span>
                                     </button>
                                 </div>
                             );
                         })}
-                        <button type="button" onClick={() => setForm({ ...form, items: [...form.items, { ingredient_id: '', qty: '', cost: '' }] })} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
+                        <button type="button" onClick={() => setForm({ ...form, items: [...form.items, { id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] })} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
                             <span className="material-icons-round text-[16px]">add_circle</span> Añadir Fila
                         </button>
                     </div>
