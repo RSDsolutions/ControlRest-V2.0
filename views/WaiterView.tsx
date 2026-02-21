@@ -238,11 +238,18 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          });
 
          const isOffline = result?.isOffline ?? false;
+         const error = result?.error;
+
+         if (error) {
+            console.error('[WaiterView] RPC Error:', error);
+            showNotification(`\u274C Error: ${error.message || 'Error al enviar pedido'}`);
+            return;
+         }
 
          if (!isOffline) {
-            showNotification(`🔥 Comanda enviada a cocina — ${tableLabel}`);
+            showNotification(`\uD83D\uDD25 Comanda enviada a cocina — ${tableLabel}`);
          } else {
-            showNotification(`📴 Sin conexión — comanda guardada localmente (${tableLabel})`);
+            showNotification(`\uD83D\uDCF4 Sin conexi\u00F3n — comanda guardada localmente (${tableLabel})`);
          }
 
          setCart([]);
