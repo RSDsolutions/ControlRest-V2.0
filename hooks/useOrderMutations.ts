@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { rpcService, CreateOrderParams, CloseOrderParams } from '../services/rpcService';
+import { rpcService, CreateOrderParams, CloseOrderParams, CloseOrderSplitParams } from '../services/rpcService';
 import { queryKeys } from '../lib/queryKeys';
 import { Table } from '../types';
 
@@ -58,6 +58,22 @@ export function useCloseOrderMutation(branchId: string | null) {
 
     return useMutation({
         mutationFn: (params: CloseOrderParams) => rpcService.closeOrder(params),
+
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: queryKeys.orders(branchId) });
+            qc.invalidateQueries({ queryKey: queryKeys.tables(branchId) });
+        },
+    });
+}
+
+/**
+ * useMutation for close_order_with_split_payments.
+ */
+export function useCloseOrderSplitMutation(branchId: string | null) {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: (params: CloseOrderSplitParams) => rpcService.closeOrderSplit(params),
 
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: queryKeys.orders(branchId) });

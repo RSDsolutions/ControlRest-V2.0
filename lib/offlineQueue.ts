@@ -5,6 +5,7 @@ import Dexie, { type EntityTable } from 'dexie';
 export type OperationType =
     | 'create_order'
     | 'close_order'
+    | 'close_order_split'
     | 'update_order_status'
     | 'register_payment';
 

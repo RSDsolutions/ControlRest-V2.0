@@ -97,37 +97,36 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                 if (shiftData) shiftId = shiftData.id;
             }
 
-            const expensePayload = {
-                branch_id: newExpense.branchId || branchId,
-                date: newExpense.date,
-                category: newExpense.category,
-                subcategory: newExpense.subcategory,
-                amount: newExpense.amount,
-                type: newExpense.type,
-                description: newExpense.description,
-                payment_method: newExpense.paymentMethod,
-                is_recurrent: newExpense.isRecurrent,
-                recurrence_frequency: newExpense.recurrenceFreq,
-                shift_id: shiftId // Link to active shift if exists
-            };
+            const { data, error } = await supabase.rpc('record_operational_expense', {
+                p_branch_id: newExpense.branchId || branchId,
+                p_category: newExpense.category,
+                p_amount: newExpense.amount,
+                p_payment_method: newExpense.paymentMethod,
+                p_description: newExpense.description,
+                p_user_id: user.id
+            });
 
-            const { data, error } = await supabase.from('expenses').insert(expensePayload).select().single();
             if (error) throw error;
 
             if (data) {
+                // Since the table is 'expenses', we might need to fetch the full record again or assume RPC returns it
+                // For now, let's just refresh the view or manually add it if data has the ID
+                const { data: fullRecord, error: fetchErr } = await supabase.from('expenses').select('*').eq('id', data.id).single();
+                if (fetchErr) throw fetchErr;
+
                 const formatted: Expense = {
-                    id: data.id,
-                    branchId: data.branch_id,
-                    date: data.date,
-                    category: data.category,
-                    subcategory: data.subcategory,
-                    amount: data.amount,
-                    type: data.type,
-                    description: data.description,
-                    paymentMethod: data.payment_method,
-                    isRecurrent: data.is_recurrent,
-                    recurrenceFreq: data.recurrence_frequency,
-                    shiftId: data.shift_id
+                    id: fullRecord.id,
+                    branchId: fullRecord.branch_id,
+                    date: fullRecord.date,
+                    category: fullRecord.category,
+                    subcategory: fullRecord.subcategory,
+                    amount: fullRecord.amount,
+                    type: fullRecord.type,
+                    description: fullRecord.description,
+                    paymentMethod: fullRecord.payment_method,
+                    isRecurrent: fullRecord.is_recurrent,
+                    recurrenceFreq: fullRecord.recurrence_frequency,
+                    shiftId: fullRecord.shift_id
                 };
                 onAddExpense(formatted);
                 setShowAddModal(false);

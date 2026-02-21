@@ -36,7 +36,15 @@ export const useCashSession = (branchId: string | null) => {
                     expectedCash: data.expected_cash,
                     actualCash: data.actual_cash,
                     difference: data.difference,
-                    notes: data.notes
+                    notes: data.notes,
+                    openingAmount: data.opening_amount,
+                    openingComment: data.opening_comment,
+                    countedCash: data.counted_cash,
+                    countedCard: data.counted_card,
+                    countedTransfer: data.counted_transfer,
+                    countedOther: data.counted_other,
+                    closingComment: data.closing_comment,
+                    cashDifference: data.cash_difference
                 });
             } else {
                 setSession(null);
@@ -53,14 +61,15 @@ export const useCashSession = (branchId: string | null) => {
         fetchSession();
     }, [fetchSession]);
 
-    const openSession = async (initialCash: number, userId: string) => {
+    const openSession = async (openingCash: number, comment: string, userId: string) => {
         if (!branchId) throw new Error("No Branch ID");
 
         try {
             const { data, error } = await supabase
                 .rpc('open_cash_session', {
                     p_branch_id: branchId,
-                    p_initial_cash: initialCash,
+                    p_opening_cash: openingCash,
+                    p_comment: comment,
                     p_user_id: userId
                 });
 
@@ -74,23 +83,31 @@ export const useCashSession = (branchId: string | null) => {
         }
     };
 
-    const closeSession = async (actualCash: number, userId: string) => {
+    const closeSession = async (
+        countedCash: number,
+        countedCard: number,
+        countedTransfer: number,
+        countedOther: number,
+        comment: string,
+        userId: string
+    ) => {
         if (!session) throw new Error("No active session to close");
 
         try {
             const { data, error } = await supabase
                 .rpc('close_cash_session', {
                     p_session_id: session.id,
-                    p_actual_cash: actualCash,
+                    p_counted_cash: countedCash,
+                    p_counted_card: countedCard,
+                    p_counted_transfer: countedTransfer,
+                    p_counted_other: countedOther,
+                    p_comment: comment,
                     p_user_id: userId
                 });
 
             if (error) throw error;
 
-            await fetchSession(); // Should clear the session or update status?
-            // Usually we want to clear the active session from state or show the closed summary
-            // For now, refetching will likely return null (as get_active_session filters by 'open')
-            // So we might want to return the result to the UI to show the summary before clearing.
+            await fetchSession();
             return data;
         } catch (err) {
             console.error('Error closing session:', err);

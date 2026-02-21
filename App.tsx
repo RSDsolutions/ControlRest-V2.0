@@ -35,6 +35,8 @@ import KitchenView from './views/KitchenView';
 import WasteView from './views/WasteView';
 import KitchenRecipeView from './views/KitchenRecipeView';
 import KitchenWasteView from './views/KitchenWasteView';
+import SupplierInvoicesView from './views/SupplierInvoicesView';
+import AccountsPayableView from './views/AccountsPayableView';
 
 // Components
 import Sidebar from './components/Sidebar';
@@ -675,6 +677,8 @@ const App: React.FC = () => {
             <Route path="/inventory-batches" element={<InventoryBatchesView branchId={branchId} currentUser={user} />} />
             <Route path="/tables" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <TablesView tables={tables} setTables={setTables} branchId={branchId} />} />
             <Route path="/orders-history" element={<OrdersHistoryView plates={plates} tables={tables} branchId={branchId} branches={branches} currentUser={user} />} />
+            <Route path="/supplier-invoices" element={<SupplierInvoicesView currentUser={user} branches={branches} branchId={branchId} />} />
+            <Route path="/accounts-payable" element={<AccountsPayableView currentUser={user} branches={branches} branchId={branchId} />} />
             <Route path="/users" element={<UserManagementView currentUser={user} branches={branches} />} />
             <Route path="/enterprise-profile" element={<EnterpriseProfileView currentUser={user} branches={branches} setBranches={setBranches} />} />
             <Route path="/audit" element={<AuditLogView />} />

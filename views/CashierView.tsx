@@ -3,7 +3,7 @@ import { Table, Order, Plate, User } from '../types';
 import { supabase } from '../supabaseClient';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 import { useCashSession } from '../hooks/useCashSession';
-import { useCloseOrderMutation } from '../hooks/useOrderMutations';
+import { useCloseOrderMutation, useCloseOrderSplitMutation } from '../hooks/useOrderMutations';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 interface CashierViewProps {
@@ -21,17 +21,33 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    const { orders, refresh: refreshOrders } = useRealtimeOrders(branchId || null);
    const { isOnline } = useOnlineStatus();
    const closeOrderMutation = useCloseOrderMutation(branchId || null);
+   const closeOrderSplitMutation = useCloseOrderSplitMutation(branchId || null);
 
    // 2. CASH SESSION HOOK
    const { session, loading: loadingSession, openSession, closeSession, refreshSession } = useCashSession(branchId || null);
 
    const [processingTableId, setProcessingTableId] = useState<string | null>(null);
    const [showClosure, setShowClosure] = useState(false);
-   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
+   const [showSplitPayment, setShowSplitPayment] = useState(false);
+
+   // Payment split state
+   const [splitPayments, setSplitPayments] = useState({
+      CASH: 0,
+      CARD: 0,
+      TRANSFER: 0,
+      OTHER: 0
+   });
 
    // Form states
    const [openingCash, setOpeningCash] = useState<string>('');
-   const [closingCash, setClosingCash] = useState<string>('');
+   const [openingComment, setOpeningComment] = useState<string>('');
+
+   const [countedCash, setCountedCash] = useState<string>('');
+   const [countedCard, setCountedCard] = useState<string>('');
+   const [countedTransfer, setCountedTransfer] = useState<string>('');
+   const [countedOther, setCountedOther] = useState<string>('');
+   const [closingComment, setClosingComment] = useState<string>('');
+
    const [closingSummary, setClosingSummary] = useState<any>(null);
 
    // Derived state from session
@@ -46,8 +62,9 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          const targetBranchId = branchId || currentUser.branchId;
          if (!targetBranchId) return alert('No tienes una sucursal asignada.');
 
-         await openSession(parseFloat(openingCash), currentUser.id);
+         await openSession(parseFloat(openingCash), openingComment, currentUser.id);
          setOpeningCash('');
+         setOpeningComment('');
 
       } catch (err: any) {
          alert('Error abriendo caja: ' + err.message);
@@ -58,7 +75,14 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       if (!currentShift) return;
 
       try {
-         const result: any = await closeSession(parseFloat(closingCash), currentUser?.id || '');
+         const result: any = await closeSession(
+            parseFloat(countedCash || '0'),
+            parseFloat(countedCard || '0'),
+            parseFloat(countedTransfer || '0'),
+            parseFloat(countedOther || '0'),
+            closingComment,
+            currentUser?.id || ''
+         );
 
          // === ACCOUNTING PERIOD LOCK ===
          // After the session is closed, lock the date for this branch so no
@@ -113,27 +137,33 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          return;
       }
 
+      const totalPaid = (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0);
+      if (Math.abs(totalPaid - aggregateTotal) > 0.01) {
+         alert(`El monto total ($${totalPaid.toFixed(2)}) no coincide con el total de la orden ($${aggregateTotal.toFixed(2)})`);
+         return;
+      }
+
       try {
          const orderIds = tableOrders.map(o => o.id);
+         const paymentsPayload = Object.entries(splitPayments)
+            .filter(([_, amount]) => (amount as number) > 0)
+            .map(([method, amount]) => ({ method: method as any, amount: amount as number }));
 
-         // useMutation: online → Supabase RPC; offline → IndexedDB queue via rpcService
-         const result = await closeOrderMutation.mutateAsync({
+         const result = await closeOrderSplitMutation.mutateAsync({
             p_order_ids: orderIds,
-            p_payment_method: paymentMethod,
-            p_total_paid: aggregateTotal,
-            p_shift_id: currentShift.id
+            p_payments: paymentsPayload,
+            p_cash_session_id: currentShift.id
          });
 
          setProcessingTableId(null);
-         setShowClosure(false);
+         setShowSplitPayment(false);
+         setSplitPayments({ CASH: 0, CARD: 0, TRANSFER: 0, OTHER: 0 });
 
          if (result?.isOffline) {
             alert('📴 Sin conexión — el pago se guardó localmente y se procesará automáticamente al reconectar.');
          }
-         // Invalidation is automatic via useCloseOrderMutation.onSuccess
-
-      } catch (err) {
-         console.error('Error processing payment:', err);
+      } catch (err: any) {
+         alert('Error al procesar pago: ' + err.message);
       }
    };
 
@@ -161,7 +191,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
                <form onSubmit={handleOpenShift} className="text-left space-y-6">
                   <div>
-                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Monto Inicial en Efectivo</label>
+                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">opening_cash_amount (required)</label>
                      <div className="relative">
                         <input
                            type="number"
@@ -177,8 +207,18 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         <span className="absolute left-4 top-4.5 text-slate-400 text-lg">$</span>
                      </div>
                   </div>
+                  <div>
+                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">opening_comment (optional)</label>
+                     <textarea
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium text-slate-700 focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        rows={2}
+                        placeholder="Ej. Dinero para cambio..."
+                        value={openingComment}
+                        onChange={e => setOpeningComment(e.target.value)}
+                     />
+                  </div>
                   <button type="submit" className="w-full py-4 bg-primary text-white font-black rounded-xl text-lg shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
-                     Abrir Turno
+                     → Abrir Caja
                   </button>
                </form>
             </div>
@@ -353,20 +393,12 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         </div>
 
                         <div className="space-y-6">
-                           <div>
-                              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Método de Pago</label>
-                              <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1">
-                                 <button onClick={() => setPaymentMethod('cash')} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${paymentMethod === 'cash' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}>EFECTIVO</button>
-                                 <button onClick={() => setPaymentMethod('card')} className={`flex-1 py-3 text-xs font-black rounded-xl transition-all ${paymentMethod === 'card' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}>TARJETA</button>
-                              </div>
-                           </div>
-
                            <div className="pt-4 space-y-3">
                               <button
-                                 onClick={confirmPayment}
+                                 onClick={() => setShowSplitPayment(true)}
                                  className="w-full py-5 bg-accent hover:bg-accent-hover text-white rounded-3xl font-black text-xl shadow-xl shadow-accent/30 transition-all transform active:scale-95 flex items-center justify-center gap-3"
                               >
-                                 <span className="material-icons-round">print</span> Finalizar Pago
+                                 <span className="material-icons-round">payments</span> Procesar Pago
                               </button>
                               <button onClick={() => setProcessingTableId(null)} className="w-full py-4 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors uppercase tracking-widest">Cancelar Operación</button>
                            </div>
@@ -392,33 +424,117 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                      <h3 className="text-3xl font-black text-primary">Cierre de Caja</h3>
                      <p className="text-slate-400 font-bold text-xs uppercase mt-3 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
                   </header>
-                  <div className="px-10 py-8 space-y-8">
-                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Efectivo Real en Caja</label>
-                        <div className="relative">
-                           <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              required
-                              className="w-full pl-10 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-xl text-slate-800 focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                              placeholder="0.00"
-                              value={closingCash}
-                              onChange={e => setClosingCash(e.target.value)}
-                           />
-                           <span className="absolute left-4 top-4.5 text-slate-400 text-lg">$</span>
+                  <div className="px-10 py-8 space-y-6 max-h-[400px] overflow-y-auto">
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_efectivo</label>
+                           <div className="relative">
+                              <input
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 value={countedCash} onChange={e => setCountedCash(e.target.value)}
+                              />
+                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                           </div>
                         </div>
+                        <div>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_tarjeta</label>
+                           <div className="relative">
+                              <input
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 value={countedCard} onChange={e => setCountedCard(e.target.value)}
+                              />
+                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                           </div>
+                        </div>
+                        <div>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_transferencia</label>
+                           <div className="relative">
+                              <input
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 value={countedTransfer} onChange={e => setCountedTransfer(e.target.value)}
+                              />
+                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                           </div>
+                        </div>
+                        <div>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_otro</label>
+                           <div className="relative">
+                              <input
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 value={countedOther} onChange={e => setCountedOther(e.target.value)}
+                              />
+                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                           </div>
+                        </div>
+                     </div>
+                     <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">closing_comment</label>
+                        <textarea
+                           className="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium text-slate-700 outline-none"
+                           rows={2}
+                           value={closingComment} onChange={e => setClosingComment(e.target.value)}
+                        />
                      </div>
                   </div>
                   <footer className="p-10 bg-slate-50/80 border-t flex flex-col gap-4">
                      <button
                         onClick={handleCloseShiftCalculation}
-                        disabled={!closingCash}
-                        className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-lg hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50"
+                        className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-lg hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
                      >
-                        <span className="material-icons-round">lock</span> Cerrar Turno
+                        <span className="material-icons-round">lock</span> → Cerrar Caja
                      </button>
                      <button onClick={() => setShowClosure(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">Cancelar</button>
+                  </footer>
+               </div>
+            </div>
+         )}
+
+         {/* Modal de Pago Dividido */}
+         {showSplitPayment && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+               <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowSplitPayment(false)}></div>
+               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp">
+                  <header className="p-10 text-center bg-accent/90 text-white">
+                     <div className="w-24 h-24 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"><span className="material-icons-round text-5xl">payments</span></div>
+                     <h3 className="text-3xl font-black">Pago Dividido</h3>
+                     <p className="text-white/70 font-bold text-xs uppercase mt-3 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
+                  </header>
+                  <div className="px-10 py-8 space-y-6">
+                     {Object.entries(splitPayments).map(([method, amount]) => (
+                        <div key={method}>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                              {method === 'CASH' ? 'efectivo' : method === 'CARD' ? 'tarjeta' : method === 'TRANSFER' ? 'transferencia' : 'otro'}
+                           </label>
+                           <div className="relative">
+                              <input
+                                 type="number"
+                                 min="0"
+                                 step="0.01"
+                                 className="w-full pl-10 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-xl text-slate-800 focus:ring-4 focus:ring-accent/20 focus:border-accent outline-none transition-all"
+                                 placeholder="0.00"
+                                 value={amount === 0 ? '' : (amount as number).toFixed(2)}
+                                 onChange={e => setSplitPayments(prev => ({ ...prev, [method]: parseFloat(e.target.value || '0') }))}
+                              />
+                              <span className="absolute left-4 top-4.5 text-slate-400 text-lg">$</span>
+                           </div>
+                        </div>
+                     ))}
+                     <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+                        <span className="font-black text-slate-900 text-lg">Monto Pendiente</span>
+                        <span className={`text-3xl font-black font-mono ${aggregateTotal - (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0) > 0.01 ? 'text-red-500' : 'text-emerald-500'}`}>
+                           ${(aggregateTotal - (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0)).toFixed(2)}
+                        </span>
+                     </div>
+                  </div>
+                  <footer className="p-10 bg-slate-50/80 border-t flex flex-col gap-4">
+                     <button
+                        onClick={confirmPayment}
+                        disabled={Math.abs((Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0) - aggregateTotal) > 0.01}
+                        className="w-full py-5 bg-accent text-white rounded-[24px] font-black text-lg hover:bg-accent-hover transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                        <span className="material-icons-round">check_circle</span> Confirmar Pago
+                     </button>
+                     <button onClick={() => setShowSplitPayment(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">Cancelar</button>
                   </footer>
                </div>
             </div>

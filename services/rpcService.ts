@@ -23,6 +23,12 @@ export interface CloseOrderParams {
     p_shift_id: string;
 }
 
+export interface CloseOrderSplitParams {
+    p_order_ids: string[];
+    p_payments: Array<{ method: 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER'; amount: number }>;
+    p_cash_session_id: string;
+}
+
 export interface RpcResult<T = unknown> {
     data: T | null;
     error: Error | null;
@@ -64,6 +70,18 @@ export const rpcService = {
         }
 
         await offlineQueue.enqueue('close_order', params as unknown as Record<string, unknown>);
+        return { data: null, error: null, isOffline: true };
+    },
+
+    async closeOrderSplit(params: CloseOrderSplitParams): Promise<RpcResult> {
+        if (navigator.onLine) {
+            const { data, error } = await supabase.rpc('close_order_with_split_payments', params);
+            return { data, error: error as Error | null };
+        }
+
+        // Offline support for split payments? 
+        // For now, let's enqueue as 'close_order_split'
+        await offlineQueue.enqueue('close_order_split', params as unknown as Record<string, unknown>);
         return { data: null, error: null, isOffline: true };
     },
 };

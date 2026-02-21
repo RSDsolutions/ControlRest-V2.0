@@ -189,6 +189,14 @@ export interface CashSession {
   actualCash?: number;
   difference?: number;
   notes?: string;
+  openingAmount?: number;
+  openingComment?: string;
+  countedCash?: number;
+  countedCard?: number;
+  countedTransfer?: number;
+  countedOther?: number;
+  closingComment?: string;
+  cashDifference?: number;
 }
 
 export interface DailyFinancialSnapshot {
@@ -238,4 +246,44 @@ export interface PurchaseOrder {
   created_at: string;
   updated_at: string;
   items?: PurchaseOrderItem[];
+}
+
+export interface SupplierInvoice {
+  id: string;
+  branch_id: string;
+  supplier_id: string;
+  purchase_order_id: string | null;
+  invoice_number: string;
+  total_amount: number;
+  payment_type: 'CASH' | 'CREDIT';
+  invoice_date: string;
+  created_by: string;
+  created_at: string;
+  // Hydrated
+  supplier_name?: string;
+  branch_name?: string;
+}
+
+export interface AccountsPayable {
+  id: string;
+  branch_id: string;
+  supplier_id: string;
+  supplier_invoice_id: string;
+  amount: number;
+  status: 'PENDING' | 'PAID';
+  due_date: string;
+  created_at: string;
+  // Hydrated
+  supplier_name?: string;
+}
+export interface AccountsPayablePayment {
+  id: string;
+  branch_id: string;
+  accounts_payable_id: string;
+  supplier_invoice_id: string;
+  amount: number;
+  payment_date: string;
+  cash_session_id: string | null;
+  created_by: string;
+  created_at: string;
 }

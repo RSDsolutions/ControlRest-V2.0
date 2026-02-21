@@ -35,6 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
         children: [
           { label: 'Resumen', icon: 'bar_chart', path: '/finance' },
           { label: 'Gastos Ops.', icon: 'payments', path: '/expenses' },
+          { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
+          { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
           { label: 'Períodos Bloqueados', icon: 'lock_clock', path: '/period-locks' },
           { label: 'Snapshots Diarios', icon: 'assessment', path: '/snapshots' }
         ]
@@ -46,6 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
     [UserRole.CASHIER]: [
       { label: 'Caja y Cobros', icon: 'point_of_sale', path: '/cashier' },
       { label: 'Historial', icon: 'history', path: '/cashier-history' },
+      { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
+      { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
     ],
     [UserRole.KITCHEN]: [
       { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
