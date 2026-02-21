@@ -193,6 +193,9 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
         );
     }
 
+    const selectedIng = ingredients.find(i => i.id === form.ingredient_id);
+    const formUnitUI = (selectedIng as any)?.unit_base || 'gr';
+
     return (
         <div className="p-8 space-y-8 animate-fadeIn">
             {/* Header */}
@@ -265,7 +268,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cantidad (gr) *</label>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cantidad ({formUnitUI}) *</label>
                             <input
                                 required type="number" min="0.0001" step="any"
                                 value={form.quantity}
@@ -275,7 +278,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Costo unitario ($/gr) *</label>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Costo unitario ($/{formUnitUI}) *</label>
                             <input
                                 required type="number" min="0" step="any"
                                 value={form.unit_cost}
@@ -343,6 +346,9 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                 <div className="space-y-3">
                     {batches.map(b => {
                         const pct = consumedPct(b);
+                        const bIng = ingredients.find(i => i.id === b.ingredient_id);
+                        const listUnitUI = (bIng as any)?.unit_base || 'gr';
+
                         return (
                             <div key={b.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center hover:shadow-md transition-all">
                                 {/* Icon + name */}
@@ -377,7 +383,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                                 <div className="flex-1">
                                     <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-1">
                                         <span>Consumido: {pct}%</span>
-                                        <span>Restante: {b.quantity_remaining.toLocaleString()} gr</span>
+                                        <span>Restante: {b.quantity_remaining.toLocaleString()} {listUnitUI}</span>
                                     </div>
                                     <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                                         <div
@@ -387,7 +393,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                                     </div>
                                     <div className="flex justify-between text-[9px] font-bold text-slate-300 mt-1">
                                         <span>0</span>
-                                        <span>{b.quantity_received.toLocaleString()} gr</span>
+                                        <span>{b.quantity_received.toLocaleString()} {listUnitUI}</span>
                                     </div>
                                 </div>
 
@@ -396,7 +402,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${statusBadge(b.status)}`}>
                                         {statusLabel(b.status)}
                                     </span>
-                                    <p className="text-xs font-black text-slate-600">${b.unit_cost.toFixed(6)}/gr</p>
+                                    <p className="text-xs font-black text-slate-600">${b.unit_cost.toFixed(6)}/{listUnitUI}</p>
                                     <p className="text-[10px] text-slate-400 font-bold">
                                         Valor lote: ${(b.quantity_remaining * b.unit_cost).toFixed(2)}
                                     </p>
