@@ -507,7 +507,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                                 <input
                                                                     type="number"
                                                                     step="any"
-                                                                    value={(item.expected_unit_cost * item.quantity_requested).toFixed(2)}
+                                                                    value={item.expected_unit_cost * item.quantity_requested || ''}
                                                                     onChange={e => {
                                                                         const total = parseFloat(e.target.value) || 0;
                                                                         const newItems = [...selectedOrder.items!];
@@ -559,7 +559,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                                     </div>
                                                                     <div>
                                                                         <label className="text-[10px] font-bold text-slate-400">Costo TOTAL Factura ($)</label>
-                                                                        <input required id={`totalCost-${item.id}`} name="totalCost" type="number" step="any" defaultValue={(item.expected_unit_cost * item.quantity_requested).toFixed(2)} className="w-full p-1 border rounded text-sm" />
+                                                                        <input required id={`totalCost-${item.id}`} name="totalCost" type="number" step="any" defaultValue={item.expected_unit_cost * item.quantity_requested} className="w-full p-1 border rounded text-sm" />
                                                                     </div>
                                                                 </div>
                                                                 <div>
