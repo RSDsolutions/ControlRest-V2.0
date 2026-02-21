@@ -162,72 +162,77 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
                     ></div>
 
                     {/* Contenido del Modal */}
-                    <div className="relative bg-white w-full max-w-md rounded-brand border border-slate-200 shadow-modal overflow-hidden animate-fade-in">
-                        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div className="relative bg-white w-full max-w-[480px] rounded-xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in">
+                        {/* Header */}
+                        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start">
                             <div>
-                                <h3 className="text-lg font-semibold text-slate-900 leading-none">
-                                    {editingTable ? 'Editar Mesa' : 'Nueva Mesa'}
+                                <h3 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">
+                                    {editingTable ? 'Modificar Mesa' : 'Nueva Mesa'}
                                 </h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">Configuración de salón</p>
+                                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5">CONFIGURACIÓN DE SALÓN</p>
                             </div>
                             <button
                                 onClick={closeModal}
-                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+                                className="text-slate-400 hover:text-slate-600 transition-colors"
                             >
-                                <span className="material-icons-round text-xl">close</span>
+                                <span className="material-icons-round text-2xl">close</span>
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                            <div className="space-y-1.5">
-                                <label className="label">Identificador de Mesa</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Ej: Mesa VIP 1, Terraza A"
-                                    className="input"
-                                    value={formData.label}
-                                    onChange={e => setFormData({ ...formData, label: e.target.value })}
-                                    autoFocus
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="label">Capacidad (Personas)</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-icons-round text-slate-400 text-lg">groups</span>
+                        {/* Form Body */}
+                        <form onSubmit={handleSubmit}>
+                            <div className="p-8 space-y-7">
+                                <div className="space-y-3">
+                                    <label className="text-[13px] font-bold text-slate-700">Identificador de Mesa</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         required
-                                        min="1"
-                                        className="input pl-10"
-                                        value={formData.seats}
-                                        onChange={e => setFormData({ ...formData, seats: parseInt(e.target.value) })}
+                                        placeholder="Ej: Mesa VIP 1, Terraza A"
+                                        className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-4 focus:ring-slate-50 transition-all"
+                                        value={formData.label}
+                                        onChange={e => setFormData({ ...formData, label: e.target.value })}
+                                        autoFocus
                                     />
+                                    <p className="text-[11px] text-slate-400 font-medium">Nombre único para identificar la mesa en el plano.</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[13px] font-bold text-slate-700">Capacidad (Personas)</label>
+                                    <div className="relative w-32">
+                                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                            <span className="material-icons-round text-slate-400 text-[18px]">groups</span>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            required
+                                            min="1"
+                                            className="w-full pl-10 pr-4 py-3 text-sm font-bold rounded-lg border border-slate-200 bg-white text-slate-700 focus:outline-none focus:border-slate-300 focus:ring-4 focus:ring-slate-50 transition-all font-sans"
+                                            value={formData.seats}
+                                            onChange={e => setFormData({ ...formData, seats: parseInt(e.target.value) })}
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="material-icons-round text-emerald-500 text-[16px]">check_circle</span>
+                                        <p className="text-[11px] text-slate-400 font-medium tracking-tight">Capacidad válida para reservas estándar.</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 pt-4">
+                            {/* Footer */}
+                            <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 btn btn-outline"
+                                    className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-[2] btn btn-primary shadow-primary/20"
+                                    className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-50"
                                 >
-                                    {loading ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                                            Guardando...
-                                        </span>
-                                    ) : (
-                                        'Guardar Mesa'
-                                    )}
+                                    {loading ? 'Guardando...' : 'Guardar Mesa'}
                                 </button>
                             </div>
                         </form>
