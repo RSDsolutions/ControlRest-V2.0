@@ -208,3 +208,32 @@ export interface DailyFinancialSnapshot {
   branchName?: string;
 }
 
+export interface PurchaseOrderItem {
+  id: string;
+  purchase_order_id: string;
+  ingredient_id: string;
+  ingredient_name?: string;
+  ingredient_icon?: string;
+  quantity_requested: number;
+  quantity_received: number;
+  expected_unit_cost: number;
+  actual_unit_cost: number | null;
+  status: 'pending' | 'received';
+  created_at: string;
+  // UI state
+  receiveMode?: boolean;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  branch_id: string;
+  supplier_id: string | null;
+  supplier_name?: string;
+  created_by: string;
+  creator_name?: string;
+  status: 'pending' | 'approved' | 'received' | 'cancelled';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: PurchaseOrderItem[];
+}

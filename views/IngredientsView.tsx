@@ -18,6 +18,20 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   const [purchaseUnit, setPurchaseUnit] = useState<string>('kg');
   const [purchasePrice, setPurchasePrice] = useState(15.00);
 
+  // Batches
+  const [batches, setBatches] = useState<any[]>([]);
+  const [viewBatchDetailsIngId, setViewBatchDetailsIngId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (branchId && branchId !== 'GLOBAL') {
+      supabase.from('inventory_batches')
+        .select('*, suppliers(name)')
+        .eq('branch_id', branchId)
+        .order('expiration_date', { ascending: true })
+        .then(({ data }) => setBatches(data || []));
+    }
+  }, [branchId]);
+
   // Sync purchase unit when ingredient changes
   React.useEffect(() => {
     if (selectedIngId) {
@@ -287,6 +301,9 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 <th className="px-6 py-5">Categoría</th>
                 <th className="px-6 py-5 text-right">Stock</th>
                 <th className="px-6 py-5 text-right">Costo Base</th>
+                <th className="px-6 py-5 text-right">Lotes Activos</th>
+                <th className="px-6 py-5 text-right">Expirando</th>
+                <th className="px-6 py-5 text-right">Caducados</th>
                 <th className="px-6 py-5 text-center">Salud Stock</th>
                 <th className="px-6 py-5"></th>
               </tr>
@@ -317,11 +334,27 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     <td className="px-6 py-4 text-xs text-slate-500 font-black uppercase tracking-widest">{ing.category}</td>
                     <td className="px-6 py-4 text-right font-black text-slate-800 font-mono text-sm">{ing.currentQty.toLocaleString()} {unitLabel}</td>
                     <td className="px-6 py-4 text-right text-xs font-mono text-slate-400 font-bold">${ing.unitPrice.toFixed(4)} / {unitLabel}</td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-bold text-slate-800">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'valid').length}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-bold text-amber-500">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length}</span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-bold text-red-500">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expired').length}</span>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black border-2 tracking-widest ${statusColor}`}>{status.toUpperCase()}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setViewBatchDetailsIngId(ing.id)}
+                          className="p-2 text-slate-300 hover:text-blue-500 hover:bg-white rounded-xl transition-all active:scale-95 shadow-none hover:shadow-sm"
+                          title="Ver Lotes"
+                        >
+                          <span className="material-icons-round text-xl">view_list</span>
+                        </button>
                         <button
                           onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
                           className="p-2 text-slate-300 hover:text-primary hover:bg-white rounded-xl transition-all active:scale-95 shadow-none hover:shadow-sm"
@@ -539,6 +572,52 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
               <button onClick={() => setShowPurchaseModal(false)} className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descartar</button>
               <button onClick={handleRegisterPurchase} className="px-10 py-4 bg-primary text-white rounded-[20px] font-black text-sm uppercase shadow-xl shadow-primary/30 active:scale-95 transition-all">Confirmar y Actualizar</button>
             </footer>
+          </div>
+        </div>
+      )}
+
+      {viewBatchDetailsIngId && (
+        <div className="fixed inset-0 z-[60] flex justify-end bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
+          <div className="w-[600px] max-w-full bg-white h-full shadow-2xl p-6 flex flex-col pt-0 animate-slideLeft">
+            <header className="flex justify-between items-center py-4 border-b border-slate-100 mb-4 sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Detalles de Lotes</h2>
+                <p className="text-sm font-bold text-slate-400">
+                  {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
+                </p>
+              </div>
+              <button onClick={() => setViewBatchDetailsIngId(null)} className="p-2 rounded-xl border-2 border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors">
+                <span className="material-icons-round">close</span>
+              </button>
+            </header>
+
+            <div className="flex-1 overflow-y-auto space-y-3 pb-20">
+              {(() => {
+                const ingBatches = batches.filter(b => b.ingredient_id === viewBatchDetailsIngId);
+                if (ingBatches.length === 0) return <p className="text-slate-400 text-sm font-bold">No hay lotes registrados.</p>;
+
+                return ingBatches.map(b => (
+                  <div key={b.id} className="p-4 rounded-xl border-2 border-slate-100 bg-slate-50 relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs font-mono text-slate-400">ID: {b.id.split('-')[0]}</span>
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${b.quantity_remaining > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
+                        {b.quantity_remaining > 0 ? 'Activo' : 'Agotado'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm text-slate-700">
+                      <p><span className="font-bold">Proveedor:</span> {b.suppliers?.name || 'N/A'}</p>
+                      <p><span className="font-bold">Costo Unit.:</span> ${Number(b.unit_cost).toFixed(4)}</p>
+                      <p className="text-primary font-black"><span className="text-slate-500 font-bold">Cant. Restante:</span> {b.quantity_remaining} gr</p>
+                      {b.expiration_date && (
+                        <p className={`font-black ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-500' : 'text-emerald-500'}`}>
+                          Expira: {new Date(b.expiration_date).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
           </div>
         </div>
       )}
