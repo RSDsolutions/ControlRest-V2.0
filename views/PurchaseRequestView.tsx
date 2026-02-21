@@ -239,40 +239,52 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
                     <div className="space-y-3">
                         <h3 className="font-bold text-slate-700">Ingredientes a solicitar</h3>
-                        {form.items.map((item, idx) => (
-                            <div key={idx} className="flex gap-2 items-center">
-                                <select
-                                    required value={item.ingredient_id}
-                                    onChange={e => {
-                                        const newItems = [...form.items];
-                                        newItems[idx].ingredient_id = e.target.value;
-                                        const ing = ingredients.find(i => i.id === e.target.value);
-                                        if (ing) newItems[idx].cost = ing.unitPrice.toString(); // pre-fill with current PMP
-                                        setForm({ ...form, items: newItems });
-                                    }}
-                                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
-                                >
-                                    <option value="">Seleccionar...</option>
-                                    {ingredients.map(i => <option key={i.id} value={i.id}>{i.icon} {i.name}</option>)}
-                                </select>
-                                <input
-                                    required type="number" min="0.1" step="any" placeholder="Cant. (gr)" value={item.qty}
-                                    onChange={e => { const newItems = [...form.items]; newItems[idx].qty = e.target.value; setForm({ ...form, items: newItems }); }}
-                                    className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
-                                />
-                                <input
-                                    required type="number" min="0" step="any" placeholder="Costo Unit." value={item.cost}
-                                    onChange={e => { const newItems = [...form.items]; newItems[idx].cost = e.target.value; setForm({ ...form, items: newItems }); }}
-                                    className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
-                                />
-                                <button type="button" onClick={() => {
-                                    const newItems = form.items.filter((_, i) => i !== idx);
-                                    setForm({ ...form, items: newItems.length ? newItems : [{ ingredient_id: '', qty: '', cost: '' }] });
-                                }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
-                                    <span className="material-icons-round text-[20px]">delete</span>
-                                </button>
-                            </div>
-                        ))}
+                        {form.items.map((item, idx) => {
+                            const selectedIng = ingredients.find(i => i.id === item.ingredient_id);
+                            const unit = selectedIng?.measureUnit || 'unidades';
+
+                            return (
+                                <div key={idx} className="flex gap-2 items-center">
+                                    <select
+                                        required
+                                        value={item.ingredient_id}
+                                        onChange={e => {
+                                            const newItems = [...form.items];
+                                            const ingId = e.target.value;
+                                            newItems[idx] = { ...newItems[idx], ingredient_id: ingId };
+                                            const ing = ingredients.find(i => i.id === ingId);
+                                            if (ing) newItems[idx].cost = ing.unitPrice.toString();
+                                            setForm({ ...form, items: newItems });
+                                        }}
+                                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
+                                    >
+                                        <option value="">Seleccionar...</option>
+                                        {ingredients.map(i => <option key={i.id} value={i.id}>{i.icon} {i.name}</option>)}
+                                    </select>
+                                    <input
+                                        required type="number" min="0.1" step="any" placeholder={`Cant. (${unit})`} value={item.qty}
+                                        onChange={e => { const newItems = [...form.items]; newItems[idx].qty = e.target.value; setForm({ ...form, items: newItems }); }}
+                                        className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
+                                        title={`Cantidad en ${unit}`}
+                                    />
+                                    <div className="relative w-32">
+                                        <span className="absolute left-3 top-2 text-slate-400 text-sm font-bold">$</span>
+                                        <input
+                                            required type="number" min="0" step="any" placeholder="Costo Unit." value={item.cost}
+                                            onChange={e => { const newItems = [...form.items]; newItems[idx].cost = e.target.value; setForm({ ...form, items: newItems }); }}
+                                            className="w-full pl-6 pr-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
+                                            title={`Costo por ${unit}`}
+                                        />
+                                    </div>
+                                    <button type="button" onClick={() => {
+                                        const newItems = form.items.filter((_, i) => i !== idx);
+                                        setForm({ ...form, items: newItems.length ? newItems : [{ ingredient_id: '', qty: '', cost: '' }] });
+                                    }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                        <span className="material-icons-round text-[20px]">delete</span>
+                                    </button>
+                                </div>
+                            );
+                        })}
                         <button type="button" onClick={() => setForm({ ...form, items: [...form.items, { ingredient_id: '', qty: '', cost: '' }] })} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
                             <span className="material-icons-round text-[16px]">add_circle</span> Añadir Fila
                         </button>
@@ -399,11 +411,11 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                         }}>
                                                             <div className="grid grid-cols-2 gap-2">
                                                                 <div>
-                                                                    <label className="text-[10px] font-bold text-slate-400">Cant. Recibida (gr)</label>
+                                                                    <label className="text-[10px] font-bold text-slate-400">Cant. Recibida ({item.ingredient_id ? ingredients.find(ing => ing.name === item.ingredient_name)?.measureUnit || 'unidades' : 'unidades'})</label>
                                                                     <input required name="aq" type="number" step="any" defaultValue={item.quantity_requested} className="w-full p-1 border rounded text-sm" />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="text-[10px] font-bold text-slate-400">Costo Real ($/gr)</label>
+                                                                    <label className="text-[10px] font-bold text-slate-400">Costo Real ($ / unid.)</label>
                                                                     <input required name="ac" type="number" step="any" defaultValue={item.expected_unit_cost} className="w-full p-1 border rounded text-sm" />
                                                                 </div>
                                                             </div>
