@@ -117,9 +117,9 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
     const fetchIngredientsAndSuppliers = useCallback(async () => {
         const { data: ingData } = await supabase
             .from('ingredients')
-            .select('id, name, icon')
+            .select('id, name, icon, unit_base')
             .order('name');
-        if (ingData) setIngredients(ingData.map((d: any) => ({ id: d.id, name: d.name, icon: d.icon ?? '📦' })));
+        if (ingData) setIngredients(ingData.map((d: any) => ({ id: d.id, name: d.name, icon: d.icon ?? '📦', unit_base: d.unit_base })));
 
         if (currentUser?.restaurantId) {
             const { data: supData } = await supabase
