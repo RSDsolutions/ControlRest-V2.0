@@ -262,65 +262,111 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
 
             {/* Details Modal */}
             {selectedOrder && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+                        onClick={() => setSelectedOrder(null)}
+                    ></div>
+
+                    {/* Modal Content */}
+                    <div className="relative bg-white w-full max-w-[520px] rounded-xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in">
+                        {/* Header */}
+                        <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start">
                             <div>
-                                <h3 className="text-base font-semibold text-slate-900">Pedido #{selectedOrder.id.substring(0, 8)}</h3>
-                                <p className="text-xs text-slate-400 mt-0.5">
-                                    {new Date(selectedOrder.timestamp).toLocaleString()}
+                                <h3 className="text-[20px] font-bold text-slate-900 tracking-tight leading-none">
+                                    Pedido #{selectedOrder.id.substring(0, 8)}
+                                </h3>
+                                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5 flex items-center gap-1.5">
+                                    <span className="material-icons-round text-[14px]">calendar_today</span>
+                                    {new Date(selectedOrder.timestamp).toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedOrder(null)} className="btn btn-ghost btn-icon text-slate-400">
-                                <span className="material-icons-round text-[20px]">close</span>
+                            <button
+                                onClick={() => setSelectedOrder(null)}
+                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                <span className="material-icons-round text-2xl">close</span>
                             </button>
                         </div>
 
-                        <div className="modal-body space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-slate-50 p-3 rounded-[8px] border border-slate-100">
-                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Mesa</p>
-                                    <p className="font-semibold text-slate-800">{getTableLabel(selectedOrder.tableId)}</p>
+                        {/* Body */}
+                        <div className="p-8 space-y-7">
+                            {/* Summary Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ubicación</p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-icons-round text-[#136dec] text-[18px]">chair</span>
+                                        <p className="font-bold text-slate-700 text-sm">{getTableLabel(selectedOrder.tableId)}</p>
+                                    </div>
                                 </div>
-                                <div className="bg-slate-50 p-3 rounded-[8px] border border-slate-100">
-                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Estado</p>
-                                    <span className={`badge ${selectedOrder.status === 'paid' ? 'badge-success' : selectedOrder.status === 'preparing' ? 'badge-warning' : 'badge-info'}`}>
+                                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Estado del Pago</p>
+                                    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold border ${getStatusStyles(selectedOrder.status)}`}>
                                         {getStatusLabel(selectedOrder.status)}
                                     </span>
                                 </div>
-                                {selectedOrder.waiterName && (
-                                    <div className="bg-slate-50 p-3 rounded-[8px] border border-slate-100 col-span-2">
-                                        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Atendido por</p>
-                                        <p className="font-semibold text-slate-800">{selectedOrder.waiterName}</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div>
-                                <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2 text-sm">
-                                    <span className="material-icons-round text-slate-400 text-[16px]">restaurant_menu</span> Ítems
-                                </h4>
-                                <div className="space-y-2">
-                                    {selectedOrder.items.map((item, idx) => (
-                                        <div key={idx} className="flex justify-between items-start py-2 border-b border-slate-50 last:border-0">
-                                            <div className="flex items-start gap-3">
-                                                <span className="bg-slate-100 text-slate-600 font-semibold text-xs min-w-[24px] h-6 rounded flex items-center justify-center">
-                                                    {item.qty}
-                                                </span>
-                                                <div>
-                                                    <p className="font-semibold text-slate-700 text-sm">{item.plateId ? getPlateName(item.plateId) : 'Ítem desconocido'}</p>
-                                                    {item.notes && <p className="text-xs text-slate-400 italic mt-0.5">{item.notes}</p>}
-                                                </div>
-                                            </div>
+                                <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 col-span-2">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Personal a Cargo</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                            {(selectedOrder.waiterName || 'U').charAt(0)}
                                         </div>
-                                    ))}
+                                        <p className="font-bold text-slate-700 text-sm">{selectedOrder.waiterName || 'Usuario Desconocido'}</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex justify-between items-center pt-3 border-t border-slate-100">
-                                <span className="font-semibold text-slate-500 text-sm">Total Pagado</span>
-                                <span className="font-bold text-2xl text-slate-900">{formatMoney(selectedOrder.total)}</span>
+                            {/* Items List */}
+                            <div className="space-y-4">
+                                <h4 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2 py-1 border-b border-slate-100">
+                                    <span className="material-icons-round text-slate-400 text-[18px]">restaurant_menu</span>
+                                    Detalle de Consumo
+                                </h4>
+                                <div className="max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+                                    <div className="divide-y divide-slate-50">
+                                        {selectedOrder.items.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-center py-4 group">
+                                                <div className="flex items-start gap-4">
+                                                    <span className="mt-0.5 bg-slate-100 text-slate-600 font-bold text-[11px] px-2 py-0.5 rounded-md border border-slate-200">
+                                                        {item.qty}x
+                                                    </span>
+                                                    <div>
+                                                        <p className="font-bold text-slate-800 text-sm group-hover:text-[#136dec] transition-colors">
+                                                            {item.plateId ? getPlateName(item.plateId) : 'Producto Directo'}
+                                                        </p>
+                                                        {item.notes && (
+                                                            <div className="flex items-center gap-1 mt-1">
+                                                                <span className="material-icons-round text-[12px] text-slate-300">notes</span>
+                                                                <p className="text-[11px] text-slate-400 italic leading-tight">{item.notes}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-slate-900 text-sm">{formatMoney((item.platePrice || 0) * item.qty)}</p>
+                                                    <p className="text-[10px] text-slate-400 font-medium">Unit: {formatMoney(item.platePrice || 0)}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
+                            <div className="flex flex-col">
+                                <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Final</span>
+                                <span className="text-2xl font-bold text-slate-900 leading-none">{formatMoney(selectedOrder.total)}</span>
+                            </div>
+                            <button
+                                onClick={() => setSelectedOrder(null)}
+                                className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200"
+                            >
+                                Cerrar Detalle
+                            </button>
                         </div>
                     </div>
                 </div>
