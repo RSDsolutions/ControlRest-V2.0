@@ -59,14 +59,15 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                 creator_name: p.users?.raw_user_meta_data?.name || 'Usuario'
             })));
 
-            // Fetch dependencies
-            if (currentUser?.restaurantId) {
-                const { data: sData } = await supabase.from('suppliers').select('*').eq('restaurant_id', currentUser.restaurantId).eq('status', 'active');
+            // Fetch dependencies using appropriate restaurant ID field
+            const restId = (currentUser as any)?.restaurant_id || currentUser?.restaurantId;
+            if (restId) {
+                const { data: sData } = await supabase.from('suppliers').select('*').eq('restaurant_id', restId).eq('status', 'active');
                 if (sData) setSuppliers(sData);
-            }
 
-            const { data: iData } = await supabase.from('ingredients').select('*').order('name');
-            if (iData) setIngredients(iData);
+                const { data: iData } = await supabase.from('ingredients').select('*').eq('restaurant_id', restId).order('name');
+                if (iData) setIngredients(iData);
+            }
 
         } catch (err: any) {
             console.error('Error fetching POs', err);
