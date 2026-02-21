@@ -323,7 +323,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                                             <div className="text-sm text-slate-500 mt-1 truncate max-w-xs">{event.description}</div>
                                         </td>
                                         <td className="py-3 px-6">
-                                            <div className="text-sm font-medium text-slate-700 font-mono truncate max-w-[150px]">{event.reference_id || '-'}</div>
+                                            <div className="text-sm font-medium text-slate-700 font-mono truncate max-w-[150px]">{event.id}</div>
                                             <div className="text-xs text-slate-400">{getBranchName(event.branch_id)}</div>
                                         </td>
                                         <td className="py-3 px-6 text-right">
@@ -386,21 +386,13 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Usuario / Responsable</span>
                                     <span className="font-bold text-slate-800">{getUserName(selectedEvent.user_id)}</span>
                                 </div>
-                                <div className="col-span-2">
+                                <div>
+                                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">ID de Referencia</span>
+                                    <span className="font-mono text-xs font-bold text-slate-500 overflow-hidden text-ellipsis whitespace-nowrap block" title={selectedEvent.reference_id || '-'}>{selectedEvent.reference_id || '-'}</span>
+                                </div>
+                                <div>
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Descripción de la Operación</span>
                                     <span className="font-medium text-slate-600">{selectedEvent.description}</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                    <span className="material-icons-round text-slate-400 text-sm">data_object</span>
-                                    Metadatos del Evento (JSON)
-                                </h4>
-                                <div className="bg-slate-900 rounded-3xl p-6 overflow-x-auto">
-                                    <pre className="text-emerald-400 font-mono text-xs leading-relaxed">
-                                        {JSON.stringify(selectedEvent.details, null, 2)}
-                                    </pre>
                                 </div>
                             </div>
                         </div>
