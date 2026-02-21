@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.financial_ledger (
     type text NOT NULL, -- e.g. 'SUPPLIER_PURCHASE_EXPENSE'
     description text,
     occurred_at timestamptz DEFAULT now(),
-    created_by uuid REFERENCES auth.users(id),
+    created_by uuid REFERENCES public.users(id),
     created_at timestamptz DEFAULT now()
 );
 
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.cash_session_transactions (
     reference_id uuid, -- ID of source transaction (e.g. supplier_invoice_id)
     reference_type text, -- e.g. 'SUPPLIER_INVOICE'
     notes text,
-    created_by uuid REFERENCES auth.users(id),
+    created_by uuid REFERENCES public.users(id),
     created_at timestamptz DEFAULT now()
 );
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS public.supplier_invoices (
     total_amount numeric(12,2) NOT NULL,
     payment_type text CHECK (payment_type IN ('CASH', 'CREDIT')),
     invoice_date date NOT NULL,
-    created_by uuid REFERENCES auth.users(id),
+    created_by uuid REFERENCES public.users(id),
     created_at timestamptz DEFAULT now()
 );
 

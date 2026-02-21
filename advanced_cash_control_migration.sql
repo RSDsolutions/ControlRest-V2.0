@@ -18,6 +18,10 @@ ADD COLUMN IF NOT EXISTS cash_difference numeric(12,2) DEFAULT 0;
 ALTER TABLE public.payments
 ADD COLUMN IF NOT EXISTS payment_method text CHECK (payment_method IN ('CASH', 'CARD', 'TRANSFER', 'OTHER'));
 
+-- 2.0 FIX payments_user_id_fkey to point to public.users instead of auth.users
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_user_id_fkey;
+ALTER TABLE public.payments ADD CONSTRAINT payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
 -- 2.1 EXTEND financial_ledger constraints
 ALTER TABLE public.financial_ledger DROP CONSTRAINT IF EXISTS financial_ledger_entry_type_check;
 

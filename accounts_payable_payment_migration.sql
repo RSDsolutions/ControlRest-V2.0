@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.accounts_payable_payments (
     amount numeric(12,2) NOT NULL,
     payment_date date NOT NULL,
     cash_session_id uuid REFERENCES public.cash_sessions(id),
-    created_by uuid REFERENCES auth.users(id),
+    created_by uuid REFERENCES public.users(id),
     created_at timestamptz DEFAULT now()
 );
 
