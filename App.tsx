@@ -27,7 +27,7 @@ import ExpensesView from './views/ExpensesView';
 import TablesView from './views/TablesView';
 import OrdersHistoryView from './views/OrdersHistoryView';
 import UserManagementView from './views/UserManagementView';
-import AuditLogView from './views/AuditLogView';
+import { AuditLogView } from './views/AuditLogView';
 import SnapshotHistoryView from './views/SnapshotHistoryView';
 import AccountingPeriodLocksView from './views/AccountingPeriodLocksView';
 import EnterpriseProfileView from './views/EnterpriseProfileView';
@@ -681,7 +681,7 @@ const App: React.FC = () => {
             <Route path="/accounts-payable" element={<AccountsPayableView currentUser={user} branches={branches} branchId={branchId} />} />
             <Route path="/users" element={<UserManagementView currentUser={user} branches={branches} />} />
             <Route path="/enterprise-profile" element={<EnterpriseProfileView currentUser={user} branches={branches} setBranches={setBranches} />} />
-            <Route path="/audit" element={<AuditLogView />} />
+            <Route path="/audit" element={<AuditLogView branches={branches} />} />
             <Route path="/period-locks" element={<AccountingPeriodLocksView currentUser={user} branches={branches} />} />
             <Route path="/snapshots" element={<SnapshotHistoryView currentUser={user} branches={branches} />} />
             <Route path="/plates" element={<PlatesView plates={plates} ingredients={ingredients} setPlates={setPlates} restaurantId={restaurantId} orders={orders} />} />

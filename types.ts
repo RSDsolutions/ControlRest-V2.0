@@ -31,6 +31,20 @@ export interface ActivityLog {
   created_at: string;
 }
 
+export interface AuditEvent {
+  id: string;
+  event_type: string;
+  timestamp: string;
+  restaurant_id: string;
+  branch_id: string;
+  user_id?: string;
+  reference_id?: string;
+  amount: number;
+  description: string;
+  details?: any;
+}
+
+
 export interface Ingredient {
   id: string;
   name: string;
