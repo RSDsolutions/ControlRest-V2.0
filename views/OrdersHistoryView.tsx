@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Order, Plate, Table, User } from '../types';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
+import { supabase } from '../supabaseClient';
+import { useEffect } from 'react';
 
 interface OrdersHistoryViewProps {
     // orders: Order[]; // We ignore the prop now
@@ -18,8 +20,24 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
     const [currentDate, setCurrentDate] = useState(new Date());
     const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all');
     const [showAllDates, setShowAllDates] = useState(false);
-    const [onlyMyOrders, setOnlyMyOrders] = useState(currentUser?.role === 'CASHIER');
+    const [selectedUserId, setSelectedUserId] = useState<string>('all');
+    const [users, setUsers] = useState<{ id: string, full_name: string }[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            if (!currentUser?.restaurantId) return;
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, full_name')
+                .eq('restaurant_id', currentUser.restaurantId)
+                .is('deleted_at', null)
+                .order('full_name');
+
+            if (!error && data) setUsers(data);
+        };
+        fetchUsers();
+    }, [currentUser]);
 
     const filteredOrders = useMemo(() => {
         return orders.filter(o => {
@@ -39,13 +57,13 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
 
             // User Filter
             let matchesUser = true;
-            if (onlyMyOrders && currentUser) {
-                matchesUser = o.cashierId === currentUser.id;
+            if (selectedUserId !== 'all') {
+                matchesUser = o.waiterId === selectedUserId || o.cashierId === selectedUserId;
             }
 
             return matchesDate && matchesStatus && matchesUser;
         });
-    }, [orders, currentDate, filterStatus, showAllDates, onlyMyOrders, currentUser]);
+    }, [orders, currentDate, filterStatus, showAllDates, selectedUserId]);
 
     // Stats
     const totalSales = filteredOrders.reduce((sum, o) => sum + (o.status === 'paid' ? o.total : 0), 0);
@@ -121,14 +139,17 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                         </div>
                         <span className="text-xs font-semibold text-slate-500">Todas las fechas</span>
                     </label>
-                    {currentUser && (
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <div className="relative inline-flex items-center">
-                                <input type="checkbox" className="sr-only peer" checked={onlyMyOrders} onChange={() => setOnlyMyOrders(!onlyMyOrders)} />
-                                <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                            </div>
-                            <span className="text-xs font-semibold text-slate-500">Solo mis cobros</span>
-                        </label>
+                    {currentUser?.role === 'admin' && (
+                        <select
+                            className="input text-sm w-auto min-w-[160px]"
+                            value={selectedUserId}
+                            onChange={(e) => setSelectedUserId(e.target.value)}
+                        >
+                            <option value="all">Todos los Usuarios</option>
+                            {users.map(u => (
+                                <option key={u.id} value={u.id}>{u.full_name || 'Sin Nombre'}</option>
+                            ))}
+                        </select>
                     )}
                 </div>
             </header>
