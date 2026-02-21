@@ -636,7 +636,7 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-light">
+      <div className="min-h-screen flex items-center justify-center bg-bg-main">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
       </div>
     );
@@ -653,7 +653,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex h-screen overflow-hidden bg-bg-light">
+      <div className="flex h-screen overflow-hidden bg-bg-main">
         <Sidebar
           user={user}
           onLogout={handleLogout}

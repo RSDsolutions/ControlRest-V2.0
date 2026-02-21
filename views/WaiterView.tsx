@@ -314,7 +314,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
    const renderTablesView = () => {
       console.log('[WaiterView] Rendering Tables View - Orders:', orders.length);
       return (
-         <div className="flex-1 overflow-y-auto bg-slate-50/50 animate-fadeIn text-slate-900">
+         <div className="flex-1 overflow-y-auto bg-bg-main animate-fadeIn text-slate-900">
             {/* Offline banner */}
             {!isOnline && (
                <div className="bg-amber-500 text-white px-6 py-2 flex items-center gap-2 text-sm font-bold">

@@ -9,13 +9,18 @@ interface InventoryViewProps {
 }
 
 const KPIItem = ({ label, value, sub, icon, color }: any) => (
-  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
-    <div className={`absolute -right-4 -top-4 w-20 h-20 ${color} opacity-10 rounded-full blur-xl transition-all group-hover:scale-150`}></div>
-    <div>
-      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-      <h3 className="text-2xl font-black text-slate-900 mt-1">{value}</h3>
+  <div className="card p-6 flex flex-col justify-between h-36 relative overflow-hidden group">
+    <div className={`absolute -right-4 -top-4 w-24 h-24 ${color.split(' ')[0]} opacity-10 rounded-full blur-2xl transition-all group-hover:scale-150`}></div>
+    <div className="relative z-10">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${color}`}>
+        <span className="material-icons-round text-xl">{icon}</span>
+      </div>
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+      <h3 className="text-3xl font-heading font-black text-brand-black mt-1 tracking-tight">{value}</h3>
     </div>
-    <p className="text-[10px] font-bold text-slate-500">{sub}</p>
+    <p className="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1 uppercase tracking-tight">
+      <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> {sub}
+    </p>
   </div>
 );
 
@@ -24,53 +29,64 @@ const InventoryCard: React.FC<{ ingredient: Ingredient; onViewDetails: (ing: Ing
   const isCritical = ingredient.currentQty <= ingredient.criticalQty;
   const isLow = ingredient.currentQty <= ingredient.minQty;
 
-  let statusText = 'NORMAL';
+  let statusText = 'Nivel Óptimo';
   let colorClass = 'text-primary';
   let iconName = 'check_circle';
 
   if (isCritical) {
-    statusText = 'CRÍTICO';
+    statusText = 'Stock Crítico';
     colorClass = 'text-red-500';
-    iconName = 'error';
+    iconName = 'error_outline';
   } else if (isLow) {
-    statusText = 'STOCK BAJO';
+    statusText = 'Stock Bajo';
     colorClass = 'text-amber-500';
-    iconName = 'warning';
+    iconName = 'info';
   }
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col gap-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300">
+    <div className="card p-6 group flex flex-col gap-6">
       <div className="flex justify-between items-start">
-        <div>
-          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-100 text-slate-500 mb-2">{ingredient.category}</span>
-          <h3 className="font-bold text-lg text-slate-900 leading-tight">{ingredient.name}</h3>
+        <div className="space-y-1">
+          <span className="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.1em] bg-slate-100 text-slate-500">{ingredient.category}</span>
+          <h3 className="font-heading font-black text-xl text-brand-black leading-tight tracking-tight mt-2">{ingredient.name}</h3>
         </div>
-        <span className="text-2xl">{ingredient.icon}</span>
+        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform">
+          {ingredient.icon}
+        </div>
       </div>
-      <div className="flex items-center gap-4 py-2">
-        <div className="relative w-16 h-16 flex-shrink-0">
+
+      <div className="flex items-center gap-6">
+        <div className="relative w-20 h-20 flex-shrink-0">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            <path className="text-slate-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3"></path>
-            <path className={colorClass} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeDasharray={`${Math.min(percentage, 100)}, 100`} strokeLinecap="round" strokeWidth="3"></path>
+            <circle cx="18" cy="18" r="16" fill="transparent" stroke="#f1f5f9" strokeWidth="3" />
+            <circle cx="18" cy="18" r="16" fill="transparent" stroke="currentColor" strokeWidth="4"
+              className={`${colorClass} transition-all duration-1000`}
+              strokeDasharray={`${Math.min(percentage, 100)}, 100`}
+              strokeLinecap="round" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className={`text-[10px] font-bold ${colorClass}`}>{Math.round(percentage)}%</span>
+            <span className={`text-xs font-black ${colorClass}`}>{Math.round(percentage)}%</span>
           </div>
         </div>
-        <div className="flex-1">
-          <div className="flex justify-between items-baseline mb-1">
-            <span className="text-xl font-black text-slate-900">{ingredient.currentQty.toLocaleString()}<span className="text-[10px] font-bold text-slate-400 ml-1">{ingredient.measureUnit}</span></span>
+        <div className="flex-1 space-y-2">
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-heading font-black text-brand-black tracking-tighter">{ingredient.currentQty.toLocaleString()}</span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{ingredient.measureUnit}</span>
           </div>
-          <div className={`flex items-center gap-1 text-[10px] font-bold ${colorClass}`}>
-            <span className="material-icons-round text-[16px]">{iconName}</span>
+          <div className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+            <span className="material-icons-round text-[14px]">{iconName}</span>
             {statusText}
           </div>
         </div>
       </div>
-      <div className="pt-4 border-t text-[10px] font-bold text-slate-400 uppercase flex justify-between items-center">
-        <span>Mín: {ingredient.minQty} {ingredient.measureUnit}</span>
-        <button onClick={() => onViewDetails(ingredient)} className="text-primary hover:text-accent transition-colors font-black flex items-center gap-1">
-          VER DETALLES <span className="material-icons-round text-sm">chevron_right</span>
+
+      <div className="pt-5 border-t border-slate-50 flex justify-between items-center">
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mínimo Requerido</span>
+          <span className="text-xs font-bold text-brand-black">{ingredient.minQty} <span className="text-[10px] text-slate-400">{ingredient.measureUnit}</span></span>
+        </div>
+        <button onClick={() => onViewDetails(ingredient)} className="btn btn-ghost px-3 py-2 text-[10px] group/btn">
+          DETALLES <span className="material-icons-round text-sm ml-1 group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
         </button>
       </div>
     </div>
@@ -139,68 +155,80 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
   };
 
   return (
-    <div className="p-8 space-y-8 animate-fadeIn">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="p-8 space-y-8 animate-fade-in max-w-[1600px] mx-auto pb-24 font-sans">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-brand shadow-brand border border-slate-100">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Vista de Inventario</h1>
-          <p className="text-slate-500 mt-1">Control logístico total: existencias físicas, histórico de lotes y alertas sanitarias.</p>
+          <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight">Centro Logístico</h1>
+          <p className="text-slate-500 font-medium mt-1">Gestión avanzada de existencias, trazabilidad por lotes y caducidades.</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-2xl">
-          <button onClick={() => setActiveTab('stock')} className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'stock' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}>Resumen Físico</button>
-          <button onClick={() => setActiveTab('batches')} className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'batches' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}>Trazabilidad (Lotes)</button>
-          <button onClick={() => setActiveTab('expr')} className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'expr' ? 'bg-white shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700'}`}>Alertas Sanitarias</button>
+        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+          <button onClick={() => setActiveTab('stock')} className={`px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'stock' ? 'bg-white shadow-brand text-primary' : 'text-slate-500 hover:text-primary'}`}>Existencias</button>
+          <button onClick={() => setActiveTab('batches')} className={`px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'batches' ? 'bg-white shadow-brand text-primary' : 'text-slate-500 hover:text-primary'}`}>Trazabilidad</button>
+          <button onClick={() => setActiveTab('expr')} className={`px-6 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === 'expr' ? 'bg-white shadow-brand text-primary' : 'text-slate-500 hover:text-primary'}`}>Caducidades</button>
         </div>
       </header>
 
       {activeTab === 'stock' && (
-        <div className="animate-fadeIn space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPIItem label="Valor de Stock" value={`$${ingredients.reduce((acc, i) => acc + (i.currentQty * i.unitPrice), 0).toFixed(2)}`} sub="Total Calculado" icon="monetization_on" color="bg-emerald-50 text-emerald-600" />
-            <KPIItem label="Items Críticos" value={`${ingredients.filter(i => i.currentQty <= i.criticalQty).length} Ítems`} sub="Riesgo de Agotamiento" icon="priority_high" color="bg-red-50 text-red-600" />
-            <KPIItem label="Alertas de Stock" value={`${ingredients.filter(i => i.currentQty <= i.minQty).length} Ítems`} sub="Requieren atención" icon="warning" color="bg-amber-50 text-amber-600" />
-            <KPIItem label="Categorías Activas" value={`${new Set(ingredients.map(i => i.category)).size} Activas`} sub="En la bodega" icon="inventory_2" color="bg-primary/5 text-primary" />
+        <div className="animate-fade-in space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KPIItem label="Valoración de Almacén" value={`$${ingredients.reduce((acc, i) => acc + (i.currentQty * i.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} sub="Capital Inmovilizado" icon="account_balance_wallet" color="bg-emerald-50 text-emerald-600" />
+            <KPIItem label="Items en Quiebre" value={`${ingredients.filter(i => i.currentQty <= i.criticalQty).length} Ítems`} sub="Riesgo Operativo" icon="history_edu" color="bg-red-50 text-red-600" />
+            <KPIItem label="Reposición Pendiente" value={`${ingredients.filter(i => i.currentQty <= i.minQty).length} Ítems`} sub="Bajo Nivel Mínimo" icon="pending_actions" color="bg-amber-50 text-amber-600" />
+            <KPIItem label="Tipos de Insumos" value={`${new Set(ingredients.map(i => i.category)).size} Categorías`} sub="Diversidad de Stock" icon="category" color="bg-primary/5 text-primary" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {ingredients.map(ing => (
               <InventoryCard key={ing.id} ingredient={ing} onViewDetails={(i) => { setSelectedIng(i); setEditQty(i.currentQty.toString()); }} />
             ))}
           </div>
 
           {selectedIng && (
-            <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-              <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setSelectedIng(null)}></div>
-              <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp p-8 space-y-6">
-                <header className="flex justify-between items-start">
-                  <div>
-                    <span className="inline-block px-2 py-1 rounded-lg bg-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{selectedIng.category}</span>
-                    <h2 className="text-2xl font-black text-slate-900">{selectedIng.name}</h2>
-                    <p className="text-xs text-slate-400 font-bold">{selectedIng.description || 'Sin descripción'}</p>
-                  </div>
-                  <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl shadow-inner">{selectedIng.icon}</div>
-                </header>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Costo Unitario (PMP)</label>
-                    <p className="text-lg font-black text-slate-700">${selectedIng.unitPrice.toFixed(4)} <span className="text-[10px] text-slate-400">/ {selectedIng.measureUnit}</span></p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Valor Total Físico</label>
-                    <p className="text-lg font-black text-emerald-600">${(selectedIng.currentQty * selectedIng.unitPrice).toFixed(2)}</p>
-                  </div>
-                </div>
-                {branchId !== 'GLOBAL' ? (
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Editar Stock Actual ({selectedIng.measureUnit})</label>
-                    <div className="flex gap-2">
-                      <input type="number" className="flex-1 px-4 py-3 bg-white border-2 border-slate-200 rounded-xl focus:border-accent font-bold text-lg text-slate-900" value={editQty} onChange={(e) => setEditQty(e.target.value)} />
-                      <button onClick={handleUpdateStock} className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm uppercase shadow-lg shadow-primary/20 hover:bg-primary-light transition-all">
-                        Ajustar Físico
-                      </button>
+            <div className="modal-overlay">
+              <div className="modal-content max-w-lg p-0">
+                <header className="p-8 border-b border-slate-100 flex justify-between items-start bg-slate-50/50">
+                  <div className="flex gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-4xl shadow-sm">{selectedIng.icon}</div>
+                    <div className="space-y-1">
+                      <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-primary/10 text-primary">{selectedIng.category}</span>
+                      <h2 className="text-2xl font-heading font-black text-brand-black tracking-tight">{selectedIng.name}</h2>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-tight">{selectedIng.description || 'Sin especificaciones'}</p>
                     </div>
                   </div>
-                ) : (
-                  <div className="p-4 bg-slate-50 rounded-2xl text-center"><p className="text-sm font-bold text-slate-500">Solo lectura.</p></div>
-                )}
+                  <button onClick={() => setSelectedIng(null)} className="w-10 h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-400">
+                    <span className="material-icons-round text-xl">close</span>
+                  </button>
+                </header>
+
+                <div className="p-8 space-y-8">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Coste Unitario Promedio</label>
+                      <p className="text-xl font-heading font-black text-brand-black tracking-tighter">${selectedIng.unitPrice.toFixed(4)} <span className="text-xs font-bold text-slate-400">/ {selectedIng.measureUnit}</span></p>
+                    </div>
+                    <div className="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                      <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-2">Valoración en Bodega</label>
+                      <p className="text-xl font-heading font-black text-emerald-600 tracking-tighter">${(selectedIng.currentQty * selectedIng.unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                    </div>
+                  </div>
+
+                  {branchId !== 'GLOBAL' ? (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="label">Ajuste Manual de Existencias ({selectedIng.measureUnit})</label>
+                        <input type="number" className="input text-2xl font-black py-4" value={editQty} onChange={(e) => setEditQty(e.target.value)} placeholder="0.00" />
+                      </div>
+                      <button onClick={handleUpdateStock} className="btn btn-primary w-full py-4 text-sm shadow-primary/30 uppercase tracking-widest">
+                        Sincronizar Inventario Físico
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                      <span className="material-icons-round text-slate-300 text-4xl mb-2">lock_outline</span>
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Acceso Restringido en Vista Global</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -208,87 +236,139 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
       )}
 
       {activeTab === 'batches' && (
-        <div className="animate-fadeIn bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-          {loadingExtras ? <p className="p-8 text-center text-slate-400 font-bold">Cargando lotes...</p> : (
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                <tr>
-                  <th className="px-6 py-4">Lote ID</th>
-                  <th className="px-6 py-4">Ingrediente</th>
-                  <th className="px-6 py-4">Proveedor</th>
-                  <th className="px-6 py-4 text-right">Costo Unit.</th>
-                  <th className="px-6 py-4 text-right">Cant. Restante</th>
-                  <th className="px-6 py-4 text-right">Expira</th>
-                  <th className="px-6 py-4 text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {batches.map(b => (
-                  <tr key={b.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-3 text-xs font-mono text-slate-400">{b.id.split('-')[0]}</td>
-                    <td className="px-6 py-3 font-bold text-slate-900">{b.ingredients?.name}</td>
-                    <td className="px-6 py-3 text-xs text-slate-600">{b.suppliers?.name || '-'}</td>
-                    <td className="px-6 py-3 text-right font-mono text-xs">${Number(b.unit_cost).toFixed(4)}</td>
-                    <td className="px-6 py-3 text-right font-bold text-primary">{b.quantity_remaining}</td>
-                    <td className="px-6 py-3 text-right text-xs text-slate-500 font-bold">{b.expiration_date ? new Date(b.expiration_date).toLocaleDateString() : 'N/A'}</td>
-                    <td className="px-6 py-3 text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${b.quantity_remaining > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
-                        {b.quantity_remaining > 0 ? 'Activo' : 'Agotado'}
-                      </span>
-                    </td>
+        <div className="animate-fade-in card overflow-hidden p-0 border-slate-200">
+          <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-heading font-black text-xl text-brand-black tracking-tight">Histórico de Ingresos y Lotes</h3>
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Flujo FIFO Activo
+            </div>
+          </div>
+          {loadingExtras ? (
+            <div className="p-20 text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary mx-auto"></div>
+              <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Auditando Trazabilidad...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <tr>
+                    <th className="px-8 py-5">Identificador</th>
+                    <th className="px-8 py-5">Insumo</th>
+                    <th className="px-8 py-5">Origen / Proveedor</th>
+                    <th className="px-8 py-5 text-right">Coste Ingreso</th>
+                    <th className="px-8 py-5 text-right">Existencia</th>
+                    <th className="px-8 py-5 text-right">Vencimiento</th>
+                    <th className="px-8 py-5 text-center">Estado</th>
                   </tr>
-                ))}
-                {batches.length === 0 && <tr><td colSpan={7} className="p-8 justify-center text-center text-slate-400 font-bold">No hay lotes registrados</td></tr>}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {batches.map(b => (
+                    <tr key={b.id} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-8 py-4 text-xs font-mono text-slate-400 group-hover:text-primary transition-colors">#{b.id.split('-')[0]}</td>
+                      <td className="px-8 py-4 font-bold text-brand-black">{b.ingredients?.name}</td>
+                      <td className="px-8 py-4 text-xs font-medium text-slate-600">{b.suppliers?.name || 'ENTRADA DIRECTA'}</td>
+                      <td className="px-8 py-4 text-right font-mono text-xs font-bold text-slate-500">${Number(b.unit_cost).toFixed(4)}</td>
+                      <td className="px-8 py-4 text-right font-black text-primary">{b.quantity_remaining}</td>
+                      <td className="px-8 py-4 text-right text-xs text-slate-500 font-black">{b.expiration_date ? new Date(b.expiration_date).toLocaleDateString() : 'PERECEDERO'}</td>
+                      <td className="px-8 py-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${b.quantity_remaining > 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}>
+                          {b.quantity_remaining > 0 ? 'Disponible' : 'Agotado'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {batches.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="p-20 text-center">
+                        <span className="material-icons-round text-slate-200 text-6xl mb-4">inventory_2</span>
+                        <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No se han registrado movimientos de lotes</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
       {activeTab === 'expr' && (
-        <div className="animate-fadeIn bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-          {loadingExtras ? <p className="p-8 text-center text-slate-400 font-bold">Analizando caducidades...</p> : (
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                <tr>
-                  <th className="px-6 py-4">Alerta</th>
-                  <th className="px-6 py-4">Lote ID</th>
-                  <th className="px-6 py-4">Ingrediente</th>
-                  <th className="px-6 py-4 text-right">Expira en (Días)</th>
-                  <th className="px-6 py-4 text-right">Mermas en Riesgo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {expiringBatches.map(eb => {
-                  const isExpired = eb.days_remaining < 0;
-                  const isWarning = eb.days_remaining >= 0 && eb.days_remaining <= 3;
-                  return (
-                    <tr key={eb.batch_id} className={`hover:bg-slate-50/50 ${isExpired ? 'bg-red-50/30' : isWarning ? 'bg-amber-50/30' : ''}`}>
-                      <td className="px-6 py-4">
-                        {isExpired ? (
-                          <span className="flex items-center gap-1 text-red-600 font-bold text-xs"><span className="material-icons-round text-sm">dangerous</span> Caducado</span>
-                        ) : isWarning ? (
-                          <span className="flex items-center gap-1 text-amber-600 font-bold text-xs"><span className="material-icons-round text-sm">warning</span> Por Caducar</span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-emerald-600 font-bold text-xs"><span className="material-icons-round text-sm">check_circle</span> Vigente</span>
-                        )}
+        <div className="animate-fade-in card overflow-hidden p-0 border-slate-200">
+          <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="font-heading font-black text-xl text-brand-black tracking-tight">Gestión de Riesgo Sanitario</h3>
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase text-red-500 tracking-widest">
+              <span className="material-icons-round text-sm">notification_important</span> Alertas Críticas Activas
+            </div>
+          </div>
+          {loadingExtras ? (
+            <div className="p-20 text-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-red-500 mx-auto"></div>
+              <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Analizando ciclo de vida...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                  <tr>
+                    <th className="px-8 py-5">Estado de Riesgo</th>
+                    <th className="px-8 py-5">Lote ID</th>
+                    <th className="px-8 py-5">Ingrediente</th>
+                    <th className="px-8 py-5 text-right">Tiempo Restante</th>
+                    <th className="px-8 py-5 text-right">Mermas en Riesgo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {expiringBatches.map(eb => {
+                    const isExpired = eb.days_remaining < 0;
+                    const isWarning = eb.days_remaining >= 0 && eb.days_remaining <= 3;
+                    return (
+                      <tr key={eb.batch_id} className={`hover:bg-slate-50/50 transition-colors ${isExpired ? 'bg-red-50/20' : isWarning ? 'bg-amber-50/20' : ''}`}>
+                        <td className="px-8 py-5">
+                          {isExpired ? (
+                            <div className="flex items-center gap-2 text-red-600 font-black text-[10px] uppercase tracking-widest">
+                              <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div> CADUCADO
+                            </div>
+                          ) : isWarning ? (
+                            <div className="flex items-center gap-2 text-amber-600 font-black text-[10px] uppercase tracking-widest">
+                              <span className="material-icons-round text-sm">warning</span> RIESGO ALTO
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
+                              <span className="material-icons-round text-sm">check_circle</span> VIGENTE
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-8 py-5 text-xs font-mono text-slate-400">#{eb.batch_id.split('-')[0]}</td>
+                        <td className="px-8 py-5">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{eb.ingredient_icon}</span>
+                            <span className="font-bold text-brand-black">{eb.ingredient_name}</span>
+                          </div>
+                        </td>
+                        <td className={`px-8 py-5 text-right font-heading font-black text-xl tracking-tighter ${isExpired ? 'text-red-600' : isWarning ? 'text-amber-500' : 'text-emerald-500'}`}>
+                          {eb.days_remaining} <span className="text-[10px] font-black uppercase tracking-widest ml-1">Días</span>
+                        </td>
+                        <td className="px-8 py-5 text-right font-black text-brand-black tracking-tight">{eb.quantity_remaining} <span className="text-[10px] text-slate-400 font-bold uppercase">GR/ML</span></td>
+                      </tr>
+                    );
+                  })}
+                  {expiringBatches.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-24 text-center">
+                        <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <span className="material-icons-round text-3xl">verified_user</span>
+                        </div>
+                        <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No se detectaron riesgos de caducidad en el inventario actual</p>
                       </td>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-400">{eb.batch_id.split('-')[0]}</td>
-                      <td className="px-6 py-4 font-bold text-slate-900">{eb.ingredient_icon} {eb.ingredient_name}</td>
-                      <td className={`px-6 py-4 text-right font-black ${isExpired ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-emerald-500'}`}>
-                        {eb.days_remaining} días
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-slate-600">{eb.quantity_remaining} gr/ml</td>
                     </tr>
-                  );
-                })}
-                {expiringBatches.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-400 font-bold">No se detectaron lotes con alertas de caducidad próximas.</td></tr>}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
-
     </div>
   );
 };

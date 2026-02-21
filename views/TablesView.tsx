@@ -87,52 +87,62 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
     };
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
-            <header className="flex justify-between items-center mb-8">
+        <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-24">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-brand shadow-brand border border-slate-100">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <span className="material-icons-round text-accent">table_restaurant</span> Gestión de Mesas
+                    <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+                        Configuración de Mesas
                     </h1>
-                    <p className="text-slate-500 font-medium">Configura la distribución del restaurante.</p>
+                    <p className="text-slate-500 font-medium mt-1">Organiza la distribución física de tu restaurante y gestiona capacidades.</p>
                 </div>
                 <button
                     onClick={() => openModal()}
-                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                    className="btn btn-primary px-6 py-3 text-sm flex items-center gap-2"
                 >
-                    <span className="material-icons-round">add</span> Nueva Mesa
+                    <span className="material-icons-round text-base">add</span> Nueva Mesa
                 </button>
             </header>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {tables.map(table => (
-                    <div key={table.id || table.label} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center gap-4 relative group hover:shadow-md transition-all">
-                        {/* Status Badge */}
-                        <div className={`absolute top-4 right-4 w-3 h-3 rounded-full ${table.status === 'available' ? 'bg-emerald-400' :
-                                table.status === 'occupied' ? 'bg-rose-500' :
-                                    table.status === 'billing' ? 'bg-amber-400' : 'bg-slate-400'
-                            }`}></div>
-
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
-                            <span className="material-icons-round text-3xl">table_restaurant</span>
+                    <div key={table.id || table.label} className="card p-8 group relative overflow-hidden flex flex-col items-center">
+                        {/* Status Pulse Indicator */}
+                        <div className="absolute top-6 right-6 flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${table.status === 'available' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]' :
+                                    table.status === 'occupied' ? 'bg-rose-500 shadow-[0_0_12px_rgba(239,68,68,0.4)]' :
+                                        table.status === 'billing' ? 'bg-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.4)]' : 'bg-slate-400'
+                                }`}></div>
                         </div>
 
-                        <div className="text-center">
-                            <h3 className="font-black text-xl text-slate-800">{table.label}</h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{table.seats} Personas</p>
+                        <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-6 transition-transform group-hover:scale-110 duration-300">
+                            <span className="material-icons-round text-5xl">table_restaurant</span>
                         </div>
 
-                        <div className="flex gap-2 w-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="text-center space-y-1">
+                            <h3 className="text-2xl font-heading font-black text-brand-black tracking-tight">{table.label}</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{table.seats} PERSONAS</p>
+                            <span className={`inline-block mt-3 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${table.status === 'available' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                    table.status === 'occupied' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                        table.status === 'billing' ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-slate-50 text-slate-500 border-slate-100'
+                                }`}>
+                                {table.status === 'available' ? 'Disponible' :
+                                    table.status === 'occupied' ? 'Ocupada' :
+                                        table.status === 'billing' ? 'En Cuenta' : 'Inactiva'}
+                            </span>
+                        </div>
+
+                        <div className="flex gap-3 w-full mt-8 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 duration-300">
                             <button
                                 onClick={() => openModal(table)}
-                                className="flex-1 bg-blue-50 text-blue-600 py-2 rounded-lg font-bold text-xs hover:bg-blue-100"
+                                className="flex-1 btn btn-outline py-2 text-[10px]"
                             >
-                                Editar
+                                <span className="material-icons-round text-sm mr-1">edit</span> Editar
                             </button>
                             <button
                                 onClick={() => table.id && handleDelete(table.id)}
-                                className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-bold text-xs hover:bg-red-100"
+                                className="flex-1 btn btn-danger py-2 text-[10px]"
                             >
-                                Eliminar
+                                <span className="material-icons-round text-sm mr-1">delete</span> Eliminar
                             </button>
                         </div>
                     </div>
@@ -141,44 +151,58 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-black text-xl text-slate-800">{editingTable ? 'Editar Mesa' : 'Nueva Mesa'}</h3>
-                            <button onClick={closeModal} className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors">
-                                <span className="material-icons-round text-lg">close</span>
+                <div className="modal-overlay">
+                    <div className="modal-content max-w-md">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div>
+                                <h3 className="text-2xl font-heading font-black text-brand-black tracking-tight">
+                                    {editingTable ? 'Configurar Mesa' : 'Registro de Mesa'}
+                                </h3>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Definición de Salón</p>
+                            </div>
+                            <button onClick={closeModal} className="w-10 h-10 rounded-full bg-white border border-slate-200 hover:border-red-200 hover:text-red-500 flex items-center justify-center text-slate-400 transition-all shadow-sm">
+                                <span className="material-icons-round text-xl">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre / Identificador</label>
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="label">Identificador de Mesa</label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Ej: Mesa 1, Barra 2"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                    placeholder="Ej: Mesa VIP 1, Terraza A, Barra"
+                                    className="input"
                                     value={formData.label}
                                     onChange={e => setFormData({ ...formData, label: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Capacidad (Personas)</label>
+                            <div className="space-y-2">
+                                <label className="label">Capacidad de Puestos</label>
                                 <input
                                     type="number"
                                     required
                                     min="1"
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
+                                    className="input"
                                     value={formData.seats}
                                     onChange={e => setFormData({ ...formData, seats: parseInt(e.target.value) })}
                                 />
                             </div>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-black text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-                            >
-                                {loading ? 'Guardando...' : 'Guardar Cambios'}
-                            </button>
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="flex-1 btn btn-outline py-4 text-sm"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-[2] btn btn-primary py-4 text-sm shadow-primary/30"
+                                >
+                                    {loading ? 'Sincronizando...' : 'Confirmar Mesa'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

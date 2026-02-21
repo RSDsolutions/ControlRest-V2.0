@@ -413,83 +413,120 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
 
   if (isCreating) {
     return (
-      <div className="p-8 max-w-6xl mx-auto space-y-8 animate-fadeIn">
-        <header className="flex justify-between items-center">
+      <div className="p-8 max-w-7xl mx-auto space-y-10 animate-fade-in font-sans pb-32">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">{isEditing ? 'Editar Receta' : 'Crear Nueva Receta'}</h1>
-            <p className="text-slate-500">Define ingredientes y calcula márgenes óptimos.</p>
+            <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+              {isEditing ? 'Gestión de Receta Maestra' : 'Ingeniería de Producto'}
+            </h1>
+            <p className="text-slate-500 font-medium mt-1">Define el ADN de tu plato: costeo técnico, rentabilidad proyectada y visualización.</p>
           </div>
-          <div className="flex gap-3">
-            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition-all">Cancelar</button>
-            <button onClick={handleSave} className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-light shadow-lg transition-all active:scale-95">Publicar al Menú</button>
+          <div className="flex gap-4">
+            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="btn btn-outline px-8 py-3 text-sm">Cancelar</button>
+            <button onClick={handleSave} className="btn btn-primary px-8 py-3 text-sm shadow-primary/30">
+              {isEditing ? 'Guardar Cambios' : 'Publicar al Menú'}
+            </button>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-              <div
-                className="aspect-video w-full bg-slate-100 rounded-xl overflow-hidden relative group cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <img src={newPlate.image} alt="Dish" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="material-icons-round text-white text-4xl">add_a_photo</span>
-                  <p className="text-white text-xs font-bold mt-2">Cambiar Imagen</p>
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Nombre del Plato</label>
-                  <input type="text" className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-xl transition-all" placeholder="ej. Risotto de Verano" value={newPlate.name} onChange={e => setNewPlate({ ...newPlate, name: e.target.value })} />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Categoría</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-xl" value={newPlate.category} onChange={e => setNewPlate({ ...newPlate, category: e.target.value })}>
-                      <option>Entradas</option>
-                      <option>Fuertes</option>
-                      <option>Pizza</option>
-                      <option>Postres</option>
-                    </select>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-5 space-y-8">
+            <div className="card p-0 overflow-hidden">
+              <div className="p-6 bg-slate-50 border-b border-slate-100"><h3 className="font-heading font-black text-brand-black uppercase tracking-widest text-[11px]">Identidad Visual y Comercial</h3></div>
+              <div className="p-8 space-y-8">
+                <div
+                  className="aspect-video w-full bg-slate-100 rounded-3xl overflow-hidden relative group cursor-pointer border-2 border-dashed border-slate-200 hover:border-primary/30 transition-all shadow-inner"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <img src={newPlate.image} alt="Dish" className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700" />
+                  <div className="absolute inset-0 bg-brand-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white mb-3 shadow-2xl">
+                      <span className="material-icons-round text-3xl">photo_camera</span>
+                    </div>
+                    <p className="text-white text-xs font-black uppercase tracking-[0.2em]">Actualizar Fotografía</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Precio Menú</label>
-                    <input type="number" className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-xl font-bold" value={newPlate.sellingPrice} onChange={e => setNewPlate({ ...newPlate, sellingPrice: parseFloat(e.target.value) || 0 })} />
+                  <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="label">Nombre del Plato en Carta</label>
+                    <input type="text" className="input text-lg font-bold" placeholder="ej. Salmón en Crosta de Pistacho" value={newPlate.name} onChange={e => setNewPlate({ ...newPlate, name: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="label">Categoría</label>
+                      <select className="input" value={newPlate.category} onChange={e => setNewPlate({ ...newPlate, category: e.target.value })}>
+                        <option>Entradas</option>
+                        <option>Fuertes</option>
+                        <option>Pizza</option>
+                        <option>Postres</option>
+                        <option>Bebidas</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="label">Precio de Venta</label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                        <input type="number" className="input pl-8 font-black text-xl text-brand-black" value={newPlate.sellingPrice} onChange={e => setNewPlate({ ...newPlate, sellingPrice: parseFloat(e.target.value) || 0 })} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-primary p-6 rounded-2xl shadow-xl text-white space-y-4">
-              <h3 className="font-bold flex items-center gap-2"><span className="material-icons-round text-emerald-400">insights</span>Análisis de Rentabilidad</h3>
-              <div className="flex justify-between items-end border-b border-white/10 pb-4">
-                <div>
-                  <p className="text-xs font-bold text-white/50 uppercase">Costo Alimento</p>
-                  <p className="text-3xl font-extrabold">${currentCost.toFixed(2)}</p>
+
+            <div className={`card p-8 border-l-[6px] transition-all duration-500 ${currentMargin > 70 ? 'border-l-emerald-500 bg-emerald-50/10' : 'border-l-amber-500 bg-amber-50/10'}`}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="font-heading font-black text-brand-black uppercase tracking-widest text-[11px] flex items-center gap-2">
+                  <span className="material-icons-round text-lg">analytics</span> Simulación de Márgenes
+                </h3>
+                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${currentMargin > 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {currentMargin > 70 ? 'Altamente Rentable' : 'Margen Ajustado'}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo Técnico Alimento</p>
+                  <p className="text-4xl font-heading font-black text-brand-black tracking-tighter">${currentCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-white/50 uppercase">Margen Calculado</p>
-                  <p className={`text-3xl font-extrabold ${currentMargin > 70 ? 'text-emerald-400' : 'text-amber-400'}`}>{currentMargin.toFixed(0)}%</p>
+                <div className="text-right space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rentabilidad Proyectada</p>
+                  <p className={`text-4xl font-heading font-black tracking-tighter ${currentMargin > 70 ? 'text-emerald-600' : 'text-amber-600'}`}>{currentMargin.toFixed(1)}%</p>
                 </div>
               </div>
-              <p className="text-xs text-white/60 italic">{currentMargin > 70 ? "✅ Margen Saludable: Superior al estándar de la industria." : "⚠️ Margen Bajo: Considera ajustar el precio o cantidades."}</p>
+
+              <div className="mt-8 p-4 bg-white/50 rounded-2xl border border-slate-100 flex items-start gap-3">
+                <span className={`material-icons-round ${currentMargin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  {currentMargin > 70 ? 'task_alt' : 'error_outline'}
+                </span>
+                <p className="text-[11px] leading-relaxed font-bold text-slate-500">
+                  {currentMargin > 70
+                    ? "Excelente ratio de costo. Este producto contribuye significativamente al EBITDA global de la operación."
+                    : "El margen está por debajo del estándar óptimo (75%). Se recomienda auditar el costo de insumos o incrementar el precio de carta."}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[calc(100vh-20rem)] flex flex-col">
-              <div className="p-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center"><h3 className="font-bold">Ingredientes de la Receta</h3></div>
-              <div className="flex-1 overflow-y-auto p-0">
+          <div className="lg:col-span-7 space-y-8">
+            <div className="card p-0 overflow-hidden h-[calc(100vh-22rem)] flex flex-col shadow-brand border-slate-200">
+              <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="font-heading font-black text-brand-black uppercase tracking-widest text-[11px]">Estructura de la Receta (Items)</h3>
+                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                  {newPlate.ingredients?.length || 0} Insumos
+                </span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-0 scroll-smooth">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50/50 text-[10px] uppercase font-bold text-slate-400 sticky top-0 z-10">
-                    <tr><th className="px-6 py-3">Ingrediente</th><th className="px-6 py-3">Cant. (gr)</th><th className="px-6 py-3 text-right">Costo</th><th className="px-6 py-3"></th></tr>
+                  <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-400 sticky top-0 z-10 border-b border-slate-100">
+                    <tr>
+                      <th className="px-8 py-4">Ingrediente / Insumo</th>
+                      <th className="px-8 py-4">Gramaje / Vol.</th>
+                      <th className="px-8 py-4 text-right">Costo Proporcional</th>
+                      <th className="px-8 py-4 text-right">Acciones</th>
+                    </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {newPlate.ingredients?.map((item) => {
@@ -507,24 +544,31 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                     })}
                     {(newPlate.ingredients?.length || 0) === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-20 text-center text-slate-400 italic text-sm">Añada ingredientes desde la sección inferior</td>
+                        <td colSpan={4} className="py-24 text-center">
+                          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
+                            <span className="material-icons-round text-slate-300 text-3xl">restaurant_menu</span>
+                          </div>
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Añade insumos al plato para calcular el costeo Técnico</p>
+                        </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ingredientes Disponibles</h4>
-              <div className="space-y-6 overflow-y-auto max-h-80 pr-2 options-scroll">
+
+            <div className="card p-6">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-2">Bodega de Insumos Disponibles</h4>
+              <div className="space-y-8 overflow-y-auto max-h-96 pr-2 custom-scrollbar">
                 {Array.from(new Set(ingredients.map(i => i.category))).map(category => (
-                  <div key={category}>
-                    <h5 className="text-xs font-bold text-slate-500 mb-3 sticky top-0 bg-white py-1 uppercase">{category}</h5>
+                  <div key={category} className="space-y-4">
+                    <h5 className="text-[10px] font-black text-primary/60 border-b border-primary/10 pb-2 uppercase tracking-widest pl-2">{category}</h5>
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {ingredients.filter(i => i.category === category).map(ing => (
-                        <button key={ing.id} onClick={() => handleAddIngredient(ing.id)} className="flex flex-col items-center gap-2 p-3 bg-slate-50 border-2 border-transparent hover:border-accent rounded-xl transition-all group">
-                          <span className="text-2xl group-hover:scale-125 transition-transform">{ing.icon}</span>
-                          <span className="text-[10px] font-bold text-slate-600 truncate w-full text-center uppercase">{ing.name}</span>
+                        <button key={ing.id} onClick={() => handleAddIngredient(ing.id)} className="flex flex-col items-center gap-3 p-4 bg-slate-50 border border-slate-200 hover:border-primary hover:bg-white rounded-2xl transition-all group relative overflow-hidden">
+                          <span className="text-3xl group-hover:scale-125 transition-transform duration-300 relative z-10">{ing.icon}</span>
+                          <span className="text-[9px] font-black text-slate-600 uppercase tracking-tight text-center leading-tight relative z-10">{ing.name}</span>
+                          <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </button>
                       ))}
                     </div>
@@ -539,12 +583,20 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
   }
 
   return (
-    <div className="p-8 space-y-8 animate-fadeIn">
-      <header className="flex justify-between items-center">
-        <div><h1 className="text-3xl font-bold text-slate-900">Ingeniería de Menú</h1><p className="text-slate-500 mt-1">Gestiona tus platos y maximiza la rentabilidad.</p></div>
-        <button onClick={() => setIsCreating(true)} className="bg-primary hover:bg-primary-light text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all active:scale-95"><span className="material-icons-round">add</span>Crear Nuevo Plato</button>
+    <div className="p-8 space-y-10 animate-fade-in max-w-[1700px] mx-auto pb-24 font-sans">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
+        <div>
+          <h1 className="text-4xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+            Ingeniería de Menú
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
+        </div>
+        <button onClick={() => setIsCreating(true)} className="btn btn-primary px-8 py-4 text-sm flex items-center gap-3 shadow-primary/30 group">
+          <span className="material-icons-round text-xl group-hover:rotate-90 transition-transform">add</span> Crear Nuevo Plato
+        </button>
       </header>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {plates.map(plate => {
           const cost = calculateCost(plate.ingredients);
           const margin = ((plate.sellingPrice - cost) / plate.sellingPrice) * 100;
@@ -552,32 +604,46 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
           const isAvailable = currentStock > 0;
 
           return (
-            <div key={plate.id} className={`bg-white rounded-2xl border-2 border-transparent hover:border-accent shadow-sm overflow-hidden group hover:shadow-xl transition-all ${!isAvailable ? 'opacity-75 grayscale' : ''}`}>
-              <div className="h-40 relative overflow-hidden">
-                <img src={plate.image} alt={plate.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+            <div key={plate.id} className={`card p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border-slate-100 ${!isAvailable ? 'opacity-80' : ''}`}>
+              <div className="h-48 relative overflow-hidden">
+                <img src={plate.image} alt={plate.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 {!isAvailable && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="px-3 py-1 bg-red-500 text-white font-black text-xs uppercase rounded-full tracking-widest">Agotado</span>
+                  <div className="absolute inset-0 bg-brand-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                    <span className="px-4 py-2 bg-red-600 text-white font-black text-[10px] uppercase rounded-full tracking-widest shadow-xl ring-4 ring-red-600/20">Insumos Agotados</span>
                   </div>
                 )}
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 bg-white/95 backdrop-blur text-brand-black font-black text-[9px] uppercase rounded-lg shadow-sm border border-slate-100 tracking-widest">
+                    {plate.category}
+                  </span>
+                </div>
                 {isAvailable && (
-                  <div className="absolute top-3 right-3">
-                    <span className="px-2 py-1 bg-white/90 backdrop-blur text-slate-800 font-bold text-[10px] uppercase rounded-lg shadow-sm">
-                      Stock: {currentStock}
-                    </span>
+                  <div className="absolute bottom-4 right-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="px-3 py-1 bg-emerald-500 text-white font-black text-[9px] uppercase rounded-lg shadow-lg flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"></span>
+                      Disponibilidad: {currentStock}
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="p-5">
-                <h3 className="font-bold text-slate-900 text-lg mb-4 line-clamp-1">{plate.name}</h3>
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1"><p className="text-[10px] font-bold text-slate-400 uppercase">Margen</p><p className={`text-xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p></div>
-                  <div className="text-right space-y-1"><p className="text-[10px] font-bold text-slate-400 uppercase">Precio</p><p className="text-xl font-black text-slate-900 font-mono">${plate.sellingPrice.toFixed(2)}</p></div>
+              <div className="p-6 space-y-6">
+                <h3 className="font-heading font-black text-brand-black text-xl tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{plate.name}</h3>
+
+                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rentabilidad</p>
+                    <p className={`text-2xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Precio Carta</p>
+                    <p className="text-2xl font-black text-brand-black">${plate.sellingPrice.toLocaleString('en-US', { minimumFractionDigits: 0 })}</p>
+                  </div>
                 </div>
-                <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                  <p className="text-xs text-slate-500">Costo: <span className="font-bold font-mono">${cost.toFixed(2)}</span></p>
-                  <button onClick={() => setSelectedPlate(plate)} className="text-primary hover:text-accent font-black text-[10px] uppercase flex items-center gap-1 transition-colors">
-                    GESTIONAR <span className="material-icons-round text-sm">chevron_right</span>
+
+                <div className="flex justify-between items-center border-t border-slate-50 pt-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo Técnico: <span className="text-brand-black font-bold ml-1">${cost.toFixed(2)}</span></p>
+                  <button onClick={() => setSelectedPlate(plate)} className="btn btn-ghost px-3 py-2 text-[10px] group/btn flex items-center gap-1 uppercase tracking-widest">
+                    Gestionar <span className="material-icons-round text-base group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                   </button>
                 </div>
               </div>
@@ -587,93 +653,101 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
       </div>
 
       {selectedPlate && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setSelectedPlate(null)}></div>
-          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-4xl overflow-hidden animate-scaleUp flex flex-col md:flex-row h-[80vh]">
+        <div className="modal-overlay">
+          <div className="modal-content max-w-5xl p-0 flex flex-col md:flex-row h-[85vh] overflow-hidden">
 
-            {/* Left Side: Image & Key Stats */}
-            <div className="w-full md:w-1/3 bg-slate-50 border-r border-slate-100 flex flex-col">
-              <div className="h-64 relative">
+            {/* Left Column: Visual & Commercial Stats */}
+            <div className="w-full md:w-[380px] bg-slate-50 border-r border-slate-100 flex flex-col shadow-inner">
+              <div className="h-72 relative">
                 <img src={selectedPlate.image} alt={selectedPlate.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-black/90 via- brand-black/20 to-transparent flex items-end p-8">
                   <div>
-                    <span className="inline-block px-2 py-1 rounded bg-accent text-white text-[10px] font-black uppercase tracking-widest mb-1">{selectedPlate.category}</span>
-                    <h2 className="text-2xl font-black text-white leading-tight">{selectedPlate.name}</h2>
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary text-white text-[9px] font-black uppercase tracking-[0.2em] mb-3 shadow-lg">{selectedPlate.category}</span>
+                    <h2 className="text-3xl font-heading font-black text-white leading-tight tracking-tight">{selectedPlate.name}</h2>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 space-y-6 flex-1 overflow-y-auto">
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Precio de Venta</p>
-                  <p className="text-3xl font-black text-slate-900">${selectedPlate.sellingPrice.toFixed(2)}</p>
+              <div className="p-8 space-y-8 flex-1 overflow-y-auto">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Precio de Comercialización</p>
+                  <p className="text-4xl font-heading font-black text-brand-black tracking-tighter">${selectedPlate.sellingPrice.toFixed(2)}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Costo</p>
-                    <p className="text-lg font-bold text-slate-700">${calculateCost(selectedPlate.ingredients).toFixed(2)}</p>
+                <div className="grid grid-cols-2 gap-6 p-5 bg-white rounded-3xl border border-slate-200 shadow-sm">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Costo Insumos</p>
+                    <p className="text-xl font-black text-brand-black">${calculateCost(selectedPlate.ingredients).toFixed(2)}</p>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Margen</p>
-                    <p className={`text-lg font-bold ${((selectedPlate.sellingPrice - calculateCost(selectedPlate.ingredients)) / selectedPlate.sellingPrice * 100) > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  <div className="space-y-1 text-right">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Margen Bruto</p>
+                    <p className={`text-xl font-black ${((selectedPlate.sellingPrice - calculateCost(selectedPlate.ingredients)) / selectedPlate.sellingPrice * 100) > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>
                       {((selectedPlate.sellingPrice - calculateCost(selectedPlate.ingredients)) / selectedPlate.sellingPrice * 100).toFixed(0)}%
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ventas Totales</p>
-                  <div className="flex items-center gap-3">
-                    <span className="material-icons-round text-accent text-3xl">sell</span>
+                <div className="p-6 bg-brand-black rounded-3xl text-white shadow-xl relative overflow-hidden group">
+                  <div className="absolute -right-4 -top-4 w-20 h-20 bg-primary opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
+                  <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-4">Métrica de Tráfico</p>
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                      <span className="material-icons-round text-primary text-3xl">trending_up</span>
+                    </div>
                     <div>
-                      <p className="text-2xl font-black text-slate-900">
+                      <p className="text-3xl font-heading font-black">
                         {orders ? orders.reduce((acc, order) => {
                           return acc + (order.items?.filter(item => item.plateId === selectedPlate.id).reduce((sum, item) => sum + item.qty, 0) || 0);
                         }, 0) : 0}
                       </p>
-                      <p className="text-xs text-slate-500 font-bold">Unidades vendidas</p>
+                      <p className="text-[10px] text-white/50 font-black uppercase tracking-widest">Órdenes Despachadas</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Side: Ingredients & Actions */}
-            <div className="flex-1 flex flex-col">
-              <header className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h3 className="font-bold text-lg text-slate-800">Composición de Receta</h3>
-                <button onClick={() => setSelectedPlate(null)} className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-icons-round">close</span></button>
+            {/* Right Column: Technical Details & Actions */}
+            <div className="flex-1 flex flex-col bg-white">
+              <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-20">
+                <div>
+                  <h3 className="font-heading font-black text-brand-black uppercase tracking-widest text-[11px]">Desglose Técnico de Receta</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-tight">Vigencia Ficha: 2024.1</p>
+                </div>
+                <button onClick={() => setSelectedPlate(null)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+                  <span className="material-icons-round text-xl">close</span>
+                </button>
               </header>
 
-              <div className="flex-1 overflow-y-auto p-0">
+              <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0">
+                  <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
                     <tr>
-                      <th className="px-6 py-3">Ingrediente</th>
-                      <th className="px-6 py-3 text-right">Cantidad</th>
-                      <th className="px-6 py-3 text-right">Costo Est.</th>
+                      <th className="px-8 py-5">Insumo</th>
+                      <th className="px-8 py-5 text-right">Dosificación</th>
+                      <th className="px-8 py-5 text-right">Incidencia Costo</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {selectedPlate.ingredients.map((item, idx) => {
                       const ing = ingredients.find(i => i.id === item.ingredientId);
                       return (
-                        <tr key={idx} className="hover:bg-slate-50">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{ing?.icon}</span>
+                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-4">
+                              <span className="text-2xl bg-white p-2 rounded-xl shadow-sm border border-slate-100">{ing?.icon}</span>
                               <div>
-                                <p className="text-sm font-bold text-slate-800">{ing?.name}</p>
-                                <p className="text-[10px] text-slate-400">{ing?.category}</p>
+                                <p className="text-sm font-black text-brand-black tracking-tight">{ing?.name}</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{ing?.category}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right font-mono text-sm font-bold text-slate-600">
-                            {item.qty} {ing?.measureUnit}
+                          <td className="px-8 py-5 text-right">
+                            <span className="text-sm font-black text-brand-black">{item.qty}</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase ml-1">{ing?.measureUnit}</span>
                           </td>
-                          <td className="px-6 py-4 text-right font-mono text-sm font-bold text-slate-800">
-                            ${(item.qty * (ing?.unitPrice || 0)).toFixed(3)}
+                          <td className="px-8 py-5 text-right">
+                            <span className="text-sm font-black text-primary">${(item.qty * (ing?.unitPrice || 0)).toFixed(3)}</span>
                           </td>
                         </tr>
                       );
@@ -682,9 +756,13 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                 </table>
               </div>
 
-              <footer className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button className="px-6 py-2 border border-slate-300 rounded-xl font-bold text-slate-500 hover:bg-white hover:shadow-sm transition-all" onClick={() => handleEditRequest(selectedPlate)}>Editar Receta</button>
-                <button className="px-6 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary-light shadow-lg active:scale-95 transition-all" onClick={() => generatePDF(selectedPlate)}>Exportar Ficha Técnica</button>
+              <footer className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-4 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+                <button className="btn btn-outline px-8 py-3 text-sm flex items-center gap-2" onClick={() => handleEditRequest(selectedPlate)}>
+                  <span className="material-icons-round text-base">edit</span> Editar Receta
+                </button>
+                <button className="btn btn-primary px-8 py-3 text-sm flex items-center gap-2 shadow-primary/20" onClick={() => generatePDF(selectedPlate)}>
+                  <span className="material-icons-round text-base">picture_as_pdf</span> Exportar Ficha Técnica
+                </button>
               </footer>
             </div>
           </div>

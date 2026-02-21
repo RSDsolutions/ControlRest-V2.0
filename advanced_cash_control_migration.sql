@@ -150,7 +150,7 @@ BEGIN
         );
     END LOOP;
 
-    -- 5. Mark Orders as Paid
+    -- 5. Mark Orders as Paid & Update Table Status
     FOREACH v_order_id IN ARRAY p_order_ids
     LOOP
         UPDATE public.orders SET
@@ -158,6 +158,10 @@ BEGIN
             shift_id = p_cash_session_id
         WHERE id = v_order_id;
     END LOOP;
+
+    UPDATE public.tables
+    SET status = 'available'
+    WHERE id IN (SELECT DISTINCT table_id FROM public.orders WHERE id = ANY(p_order_ids));
 
     RETURN jsonb_build_object('status', 'success', 'order_ids', p_order_ids);
 END;

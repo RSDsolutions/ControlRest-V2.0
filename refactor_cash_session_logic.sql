@@ -487,7 +487,7 @@ BEGIN
         RAISE EXCEPTION 'Se requiere una sesión de caja ABIERTA para procesar pagos.';
     END IF;
 
-    -- 2. Update Orders
+    -- 2. Update Orders & Table Status
     FOREACH v_order_id IN ARRAY p_order_ids
     LOOP
         UPDATE public.orders SET
@@ -496,6 +496,10 @@ BEGIN
             shift_id = p_shift_id -- Link to session
         WHERE id = v_order_id;
     END LOOP;
+
+    UPDATE public.tables
+    SET status = 'available'
+    WHERE id IN (SELECT DISTINCT table_id FROM public.orders WHERE id = ANY(p_order_ids));
 
     -- 3. Log in Ledger (Revenue)
     INSERT INTO public.financial_ledger (

@@ -253,123 +253,176 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   };
 
   return (
-    <div className="p-8 space-y-8 animate-fadeIn">
-      {/* Header and Stats ... */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="p-8 space-y-10 animate-fade-in max-w-[1700px] mx-auto pb-24 font-sans">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Gestión de Ingredientes</h1>
-          <p className="text-slate-500 mt-1">Controla costos por gramo/ml y niveles de stock con precisión financiera.</p>
+          <h1 className="text-4xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+            Gestión de Insumos
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">Control de inventario técnico, costeo promedio ponderado y trazabilidad de lotes.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button
             onClick={() => setShowNewIngModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm shadow-sm active:scale-95"
+            className="btn btn-outline px-6 py-3 text-sm flex items-center gap-2 group"
           >
-            <span className="material-icons-round text-accent">add</span> Nuevo Ingrediente
+            <span className="material-icons-round text-primary group-hover:rotate-90 transition-transform">add</span> Nuevo Insumo
           </button>
           <button
             onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-light transition-all font-bold text-sm shadow-lg shadow-primary/20 active:scale-95"
+            className="btn btn-primary px-8 py-3 text-sm flex items-center gap-2 shadow-primary/30"
           >
             <span className="material-icons-round">shopping_cart</span> Registrar Compra
           </button>
         </div>
       </header>
 
-      {/* Grid Stats here (omitted for brevity in replace, but keeping structure if not replaced) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard label="Total Ítems" value={ingredients.length} color="text-slate-900" />
-        <StatCard label="Stock Bajo" value={ingredients.filter(i => i.currentQty <= i.minQty).length} color="text-amber-500" />
-        <StatCard label="Críticos" value={ingredients.filter(i => i.currentQty <= i.criticalQty).length} color="text-red-500" />
-        <StatCard label="Valor Est." value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * ing.unitPrice), 0).toFixed(2)}`} color="text-slate-900" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <KPIItem
+          label="Catálogo Activo"
+          value={ingredients.length}
+          sub="Items registrados"
+          icon="inventory_2"
+          color="bg-slate-500"
+        />
+        <KPIItem
+          label="Stock Bajo"
+          value={ingredients.filter(i => i.currentQty <= i.minQty).length}
+          sub="Requieren reposición"
+          icon="warning"
+          color="bg-amber-500"
+        />
+        <KPIItem
+          label="Nivel Crítico"
+          value={ingredients.filter(i => i.currentQty <= i.criticalQty).length}
+          sub="Riesgo de quiebre"
+          icon="dangerous"
+          color="bg-red-500"
+        />
+        <KPIItem
+          label="Valorización de Stock"
+          value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * ing.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+          sub="Costo total en bodega"
+          icon="account_balance_wallet"
+          color="bg-emerald-500"
+        />
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-        {/* Table Header and Search */}
-        <div className="p-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/30">
-          <div className="relative w-full md:w-80">
-            <span className="material-icons-round absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-            <input type="text" placeholder="Buscar ingrediente..." className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border-2 border-slate-100 rounded-xl focus:border-accent focus:ring-0 transition-all" />
+      <div className="card p-0 overflow-hidden flex flex-col min-h-[600px] shadow-brand border-slate-200">
+        <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-50/50">
+          <div className="relative w-full md:w-96 group">
+            <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+            <input
+              type="text"
+              placeholder="Filtrar catálogo de insumos..."
+              className="input pl-12 bg-white border-slate-200 focus:bg-white shadow-sm"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+              Mostrando {ingredients.length} items
+            </span>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left">
-            <thead className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
+            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
               <tr>
-                <th className="px-6 py-5">Ingrediente</th>
-                <th className="px-6 py-5">Categoría</th>
-                <th className="px-6 py-5 text-right">Stock</th>
-                <th className="px-6 py-5 text-right">Costo Base</th>
-                <th className="px-6 py-5 text-right">Lotes Activos</th>
-                <th className="px-6 py-5 text-right">Expirando</th>
-                <th className="px-6 py-5 text-right">Caducados</th>
-                <th className="px-6 py-5 text-center">Salud Stock</th>
-                <th className="px-6 py-5"></th>
+                <th className="px-8 py-5">Insumo / Descripción</th>
+                <th className="px-8 py-5">Categoría</th>
+                <th className="px-8 py-5 text-right">Existencias</th>
+                <th className="px-8 py-5 text-right">Costo Promedio</th>
+                <th className="px-8 py-5 text-right">Lotes</th>
+                <th className="px-8 py-5 text-center">Estado Auditoría</th>
+                <th className="px-8 py-5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {ingredients.map(ing => {
-                let status = 'Normal';
-                let statusColor = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                let status = 'Suficiente';
+                let statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
                 if (ing.currentQty <= ing.criticalQty) {
                   status = 'Crítico';
-                  statusColor = 'bg-red-100 text-red-700 border-red-200';
+                  statusColor = 'bg-red-50 text-red-600 border-red-100';
                 } else if (ing.currentQty <= ing.minQty) {
-                  status = 'Bajo';
-                  statusColor = 'bg-amber-100 text-amber-700 border-amber-200';
+                  status = 'Reorden';
+                  statusColor = 'bg-amber-50 text-amber-600 border-amber-100';
                 }
                 const unitLabel = ing.measureUnit === 'ml' ? 'ml' : 'gr';
+                const lotCount = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0).length;
+                const expiringSoon = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length;
+
                 return (
-                  <tr key={ing.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-2xl shadow-inner group-hover:bg-white group-hover:shadow-sm transition-all">{ing.icon}</div>
+                  <tr key={ing.id} className="hover:bg-slate-50/50 transition-all group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-3xl transition-transform group-hover:scale-110 duration-300">
+                          {ing.icon}
+                        </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-sm uppercase tracking-tight">{ing.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono tracking-widest line-clamp-1">{ing.description || `ID: #ING-${ing.id}`}</p>
+                          <p className="font-heading font-black text-brand-black text-sm uppercase tracking-tight leading-tight">{ing.name}</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 line-clamp-1">
+                            {ing.description || `SKU: ${ing.id.split('-')[0]}`}
+                          </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-500 font-black uppercase tracking-widest">{ing.category}</td>
-                    <td className="px-6 py-4 text-right font-black text-slate-800 font-mono text-sm">{ing.currentQty.toLocaleString()} {unitLabel}</td>
-                    <td className="px-6 py-4 text-right text-xs font-mono text-slate-400 font-bold">${ing.unitPrice.toFixed(4)} / {unitLabel}</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-slate-800">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'valid').length}</span>
+                    <td className="px-8 py-5">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100/50 px-2 py-1 rounded-md">
+                        {ing.category}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-amber-500">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length}</span>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="font-heading font-black text-brand-black text-sm">
+                          {ing.currentQty.toLocaleString()} {unitLabel}
+                        </span>
+                        <div className="w-20 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-1000 ${status === 'Crítico' ? 'bg-red-500' : status === 'Reorden' ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                            style={{ width: `${Math.min(100, (ing.currentQty / (ing.minQty * 2)) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-red-500">{batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expired').length}</span>
+                    <td className="px-8 py-5 text-right">
+                      <p className="text-xs font-black text-primary">${ing.unitPrice.toFixed(4)}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">u/{unitLabel}</p>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black border-2 tracking-widest ${statusColor}`}>{status.toUpperCase()}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => setViewBatchDetailsIngId(ing.id)}
-                          className="p-2 text-slate-300 hover:text-blue-500 hover:bg-white rounded-xl transition-all active:scale-95 shadow-none hover:shadow-sm"
-                          title="Ver Lotes"
-                        >
-                          <span className="material-icons-round text-xl">view_list</span>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-black text-brand-black">{lotCount}</span>
+                          {expiringSoon > 0 && <span className="text-[9px] text-amber-600 font-bold uppercase tracking-tighter">! {expiringSoon} x Expira</span>}
+                        </div>
+                        <button onClick={() => setViewBatchDetailsIngId(ing.id)} className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all flex items-center justify-center">
+                          <span className="material-icons-round text-lg">history</span>
                         </button>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <span className={`inline-flex px-3 py-1.5 rounded-full text-[9px] font-black border tracking-widest ${statusColor}`}>
+                        {status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
-                          className="p-2 text-slate-300 hover:text-primary hover:bg-white rounded-xl transition-all active:scale-95 shadow-none hover:shadow-sm"
+                          className="w-10 h-10 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
                           title="Registrar Compra"
                         >
-                          <span className="material-icons-round text-xl">add_shopping_cart</span>
+                          <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">add_shopping_cart</span>
                         </button>
                         <button
                           onClick={() => handleDeleteIngredient(ing.id)}
                           disabled={ing.currentQty > 0}
-                          className={`p-2 rounded-xl transition-all active:scale-95 shadow-none hover:shadow-sm ${ing.currentQty > 0
-                            ? 'text-slate-100 cursor-not-allowed'
-                            : 'text-slate-300 hover:text-red-500 hover:bg-white'
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${ing.currentQty > 0
+                            ? 'bg-slate-50 text-slate-200 cursor-not-allowed opacity-50'
+                            : 'bg-red-50 text-red-400 hover:bg-red-500 hover:text-white'
                             }`}
-                          title={ing.currentQty > 0 ? "No se puede eliminar con stock" : "Eliminar Ingrediente"}
+                          title={ing.currentQty > 0 ? "Bloqueado: Stock detectado" : "Eliminar Insumo"}
                         >
                           <span className="material-icons-round text-xl">delete_outline</span>
                         </button>
@@ -384,24 +437,28 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       </div>
 
       {showNewIngModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setShowNewIngModal(false)}></div>
-          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden animate-scaleUp flex flex-col max-h-[90vh]">
-            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
-              <h3 className="font-black text-xl text-primary">Nuevo Ingrediente / Insumo</h3>
-              <button onClick={() => setShowNewIngModal(false)} className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-icons-round">close</span></button>
+        <div className="modal-overlay">
+          <div className="modal-content max-w-3xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+            <header className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <div>
+                <h3 className="font-heading font-black text-2xl text-brand-black tracking-tight">Alta de Insumo Maestro</h3>
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Configuración técnica de almacén</p>
+              </div>
+              <button onClick={() => setShowNewIngModal(false)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+                <span className="material-icons-round">close</span>
+              </button>
             </header>
-            <div className="p-8 space-y-6 flex-1 overflow-y-auto">
 
+            <div className="p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
               {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="col-span-1 md:col-span-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Nombre del Producto</label>
-                  <input type="text" className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all font-bold text-slate-800" placeholder="Ej. Harina de Trigo" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} />
+                  <label className="label">Nombre Descriptivo</label>
+                  <input type="text" className="input font-bold" placeholder="Ej. Lomo Alto de Res (Angus)" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} />
                 </div>
                 <div className="col-span-1 md:col-span-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Categoría</label>
-                  <select className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all font-bold text-sm text-slate-800" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
+                  <label className="label">Categoría del Insumo</label>
+                  <select className="input font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
                     <option>Proteínas (Carnes y Sustitutos)</option>
                     <option>Verduras y Hortalizas</option>
                     <option>Cereales y Harinas</option>
@@ -414,30 +471,24 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     <option>Bebidas Base y Otros</option>
                   </select>
                 </div>
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Descripción</label>
-                  <textarea className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all text-sm" placeholder="Detalles adicionales, marca o proveedor..." value={newIng.description} onChange={e => setNewIng({ ...newIng, description: e.target.value })} rows={2}></textarea>
-                </div>
               </div>
 
-              <hr className="border-slate-100" />
-
-              {/* Configuration: Unit Type & Initial Stock */}
-              <div>
-                <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="material-icons-round text-accent">scale</span> Configuración de Medida
+              <div className="space-y-6">
+                <h4 className="font-heading font-black text-brand-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                  <span className="material-icons-round text-primary text-lg">straighten</span> Unidades y Costeo Inicial
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tipo de Medida</label>
-                    <div className="flex gap-2 bg-slate-50 p-1 rounded-xl">
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'kg' })} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${newIng.unitType === 'solid' ? 'bg-white shadow text-primary' : 'text-slate-400 hover:text-slate-600'}`}>Sólido (Masa)</button>
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'L' })} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${newIng.unitType === 'liquid' ? 'bg-white shadow text-primary' : 'text-slate-400 hover:text-slate-600'}`}>Líquido (Volumen)</button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-slate-50 p-8 rounded-3xl border border-slate-100 shadow-inner">
+                  <div className="space-y-3">
+                    <label className="label">Estado Físico</label>
+                    <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                      <button onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'kg' })} className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'solid' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>Sólido</button>
+                      <button onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'L' })} className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'liquid' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50'}`}>Líquido</button>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unidad de Compra</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all font-bold text-sm" value={newIng.measureUnit} onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}>
+                  <div className="space-y-3">
+                    <label className="label">Unidad de Gestión</label>
+                    <select className="input font-black" value={newIng.measureUnit} onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}>
                       {newIng.unitType === 'solid' ? (
                         <>
                           <option value="kg">Kilogramos (kg)</option>
@@ -453,67 +504,72 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                       )}
                     </select>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="label">Cantidad Apertura</label>
+                    <input type="number" className="input font-black text-lg" placeholder="0" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="label">Valor factura (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                      <input type="number" className="input pl-8 font-black text-lg text-emerald-600" placeholder="0.00" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-6 py-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-center justify-between">
+                  <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Costo Técnico x {getBaseUnit(newIng.unitType)}</span>
+                  <span className="text-sm font-black text-primary">
+                    ${newIng.initialQty > 0 ? (newIng.initialPrice / convertToBase(newIng.initialQty, newIng.measureUnit)).toFixed(5) : '0.00000'}
+                  </span>
                 </div>
               </div>
 
-              {/* Initial Stock & Price */}
-              <div className="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Cantidad Inicial</label>
-                  <input type="number" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent font-bold" placeholder="0" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="label">Stock de Seguridad ({getBaseUnit(newIng.unitType)})</label>
+                  <input type="number" className="input font-bold" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseInt(e.target.value) || 0 })} />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Precio Total (USD)</label>
-                  <input type="number" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent font-bold text-emerald-600" placeholder="0.00" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
-                </div>
-                <div className="col-span-2 text-center">
-                  <p className="text-xs text-slate-500">
-                    Costo Base Calculado: <strong className="text-primary">${newIng.initialQty > 0 ? (newIng.initialPrice / convertToBase(newIng.initialQty, newIng.measureUnit)).toFixed(5) : '0.00'}</strong> por {getBaseUnit(newIng.unitType)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Thresholds */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Alerta Stock Bajo ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseInt(e.target.value) || 0 })} />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Alerta Crítica ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent focus:border-accent focus:bg-white rounded-2xl transition-all" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseInt(e.target.value) || 0 })} />
+                <div className="space-y-2">
+                  <label className="label">Alerta Crítica ({getBaseUnit(newIng.unitType)})</label>
+                  <input type="number" className="input font-bold border-red-100 bg-red-50/20 text-red-600" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
             </div>
-            <footer className="px-8 py-6 bg-slate-50 border-t flex justify-end gap-4 shrink-0">
-              <button onClick={() => setShowNewIngModal(false)} className="px-6 py-2 font-black text-[10px] text-slate-400 uppercase tracking-widest">Cancelar</button>
-              <button onClick={handleCreateIngredient} className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all">Guardar Inventario</button>
+
+            <footer className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+              <button onClick={() => setShowNewIngModal(false)} className="btn btn-outline px-8 py-3 text-[10px] font-black uppercase tracking-widest">Cancelar</button>
+              <button onClick={handleCreateIngredient} className="btn btn-primary px-10 py-3 text-[10px] font-black uppercase tracking-widest shadow-primary/20">Registrar en Almacén</button>
             </footer>
           </div>
         </div>
       )}
 
       {showPurchaseModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setShowPurchaseModal(false)}></div>
-          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-scaleUp flex flex-col max-h-[90vh]">
-            <header className="px-8 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center"><span className="material-icons-round text-2xl">shopping_bag</span></div>
+        <div className="modal-overlay">
+          <div className="modal-content max-w-lg p-0 overflow-hidden border border-slate-100 flex flex-col max-h-[90vh] shadow-[0_40px_100px_rgba(0,0,0,0.15)]">
+            <header className="px-10 py-10 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+                  <span className="material-icons-round text-2xl">shopping_cart</span>
+                </div>
                 <div>
-                  <h3 className="font-black text-xl text-primary">Registrar Compra</h3>
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Actualización de Almacén</p>
+                  <h3 className="font-heading font-black text-2xl text-brand-black tracking-tight">Ingreso de Compra</h3>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1">Actualización de Stock Maestro</p>
                 </div>
               </div>
-              <button onClick={() => setShowPurchaseModal(false)} className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-icons-round">close</span></button>
+              <button onClick={() => setShowPurchaseModal(false)} className="w-10 h-10 rounded-full hover:bg-white flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+                <span className="material-icons-round">close</span>
+              </button>
             </header>
-            <div className="p-8 space-y-6 flex-1 overflow-y-auto">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ingrediente a Reponer</label>
-                <select className="w-full px-4 py-4 bg-slate-100 border-none rounded-2xl focus:ring-accent font-black text-sm uppercase" value={selectedIngId || ''} onChange={e => {
+
+            <div className="p-10 space-y-10 flex-1 overflow-y-auto custom-scrollbar">
+              <div className="space-y-3">
+                <label className="label">Insumo a Reponer</label>
+                <select className="input font-black text-sm uppercase tracking-tight h-14" value={selectedIngId || ''} onChange={e => {
                   const newId = e.target.value;
                   setSelectedIngId(newId);
-                  // Reset unit to default for type
                   const newIng = ingredients.find(i => i.id === newId);
                   if (newIng?.measureUnit === 'ml') setPurchaseUnit('L');
                   else setPurchaseUnit('kg');
@@ -521,14 +577,15 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                   {ingredients.map(ing => <option key={ing.id} value={ing.id}>{ing.icon} {ing.name}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Cantidad</label>
-                  <input type="number" className="w-full px-4 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-accent focus:ring-0 font-black" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
+
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="label">Cantidad Comprada</label>
+                  <input type="number" className="input font-black text-lg h-14" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
                 </div>
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Unidad Medida</label>
-                  <select className="w-full px-4 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:border-accent focus:ring-0 font-black uppercase text-xs" value={purchaseUnit} onChange={e => setPurchaseUnit(e.target.value as any)}>
+                <div className="space-y-3">
+                  <label className="label">Unidad Medida</label>
+                  <select className="input font-black text-xs uppercase h-14" value={purchaseUnit} onChange={e => setPurchaseUnit(e.target.value as any)}>
                     {isLiquidType ? (
                       <>
                         <option value="L">Litros (L)</option>
@@ -545,11 +602,12 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                   </select>
                 </div>
               </div>
-              <div className="p-5 bg-emerald-50 border-2 border-emerald-100 rounded-3xl flex items-center gap-5">
-                <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><span className="material-icons-round">autorenew</span></div>
+
+              <div className="p-6 bg-emerald-50 border-[3px] border-emerald-100 rounded-3xl flex items-center gap-6 shadow-sm">
+                <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg"><span className="material-icons-round text-2xl">scale</span></div>
                 <div>
-                  <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest">Resumen de Conversión</p>
-                  <p className="text-sm font-bold text-primary">Ingresando <span className="text-emerald-700 font-black underline">
+                  <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1 leading-none">Neto Entrante</p>
+                  <p className="text-xl font-heading font-black text-brand-black leading-tight">
                     {(() => {
                       let val = purchaseQty;
                       if (purchaseUnit === 'kg' || purchaseUnit === 'L') val *= 1000;
@@ -557,62 +615,95 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                       else if (purchaseUnit === 'gal') val *= 3785.41;
                       return val.toLocaleString(undefined, { maximumFractionDigits: 0 });
                     })()} {isLiquidType ? 'ml' : 'gr'}
-                  </span> al inventario</p>
+                  </p>
                 </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Precio de Compra Total (USD)</label>
+
+              <div className="space-y-3">
+                <label className="label">Total Inversión Bruta (USD)</label>
                 <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xl">$</span>
-                  <input type="number" className="w-full pl-12 pr-6 py-5 bg-white border-2 border-slate-100 rounded-[24px] focus:border-accent focus:ring-0 font-black text-3xl text-primary" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
+                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-2xl">$</span>
+                  <input type="number" className="input pl-12 h-20 text-4xl font-heading font-black text-primary border-slate-200" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
                 </div>
               </div>
             </div>
-            <footer className="px-8 py-8 bg-slate-50 border-t flex justify-end gap-4 shrink-0">
-              <button onClick={() => setShowPurchaseModal(false)} className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descartar</button>
-              <button onClick={handleRegisterPurchase} className="px-10 py-4 bg-primary text-white rounded-[20px] font-black text-sm uppercase shadow-xl shadow-primary/30 active:scale-95 transition-all">Confirmar y Actualizar</button>
+
+            <footer className="px-10 py-10 bg-slate-50 border-t border-slate-100 flex justify-end gap-4 shrink-0">
+              <button onClick={() => setShowPurchaseModal(false)} className="btn btn-outline px-8 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Descartar</button>
+              <button onClick={handleRegisterPurchase} className="btn btn-primary px-10 py-3 text-[10px] font-black uppercase tracking-widest shadow-primary/30">Confirmar Ingreso</button>
             </footer>
           </div>
         </div>
       )}
 
       {viewBatchDetailsIngId && (
-        <div className="fixed inset-0 z-[60] flex justify-end bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
-          <div className="w-[600px] max-w-full bg-white h-full shadow-2xl p-6 flex flex-col pt-0 animate-slideLeft">
-            <header className="flex justify-between items-center py-4 border-b border-slate-100 mb-4 sticky top-0 bg-white z-10">
+        <div className="modal-overlay">
+          <div className="absolute right-0 top-0 h-full w-full md:w-[600px] bg-white shadow-2xl animate-slide-left p-0 flex flex-col border-l border-slate-100">
+            <header className="px-10 py-10 border-b border-slate-100 bg-white sticky top-0 z-20 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-black text-slate-900">Detalles de Lotes</h2>
-                <p className="text-sm font-bold text-slate-400">
-                  {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
+                <h2 className="text-2xl font-heading font-black text-brand-black tracking-tight">Kardex de Lotes en Almacén</h2>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                  Insumo: {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
                 </p>
               </div>
-              <button onClick={() => setViewBatchDetailsIngId(null)} className="p-2 rounded-xl border-2 border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors">
-                <span className="material-icons-round">close</span>
+              <button onClick={() => setViewBatchDetailsIngId(null)} className="w-12 h-12 rounded-full border border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors flex items-center justify-center">
+                <span className="material-icons-round text-2xl">close</span>
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto space-y-3 pb-20">
+            <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scrollbar bg-slate-50/30">
               {(() => {
                 const ingBatches = batches.filter(b => b.ingredient_id === viewBatchDetailsIngId);
-                if (ingBatches.length === 0) return <p className="text-slate-400 text-sm font-bold">No hay lotes registrados.</p>;
+                if (ingBatches.length === 0) return (
+                  <div className="py-20 text-center space-y-4">
+                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto border border-slate-200">
+                      <span className="material-icons-round text-slate-300 text-4xl">inventory</span>
+                    </div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se detectan lotes vigentes para este insumo</p>
+                  </div>
+                );
 
                 return ingBatches.map(b => (
-                  <div key={b.id} className="p-4 rounded-xl border-2 border-slate-100 bg-slate-50 relative overflow-hidden">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-xs font-mono text-slate-400">ID: {b.id.split('-')[0]}</span>
-                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${b.quantity_remaining > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>
-                        {b.quantity_remaining > 0 ? 'Activo' : 'Agotado'}
-                      </span>
+                  <div key={b.id} className="card p-8 group relative hover:shadow-xl transition-all border-slate-200">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex items-center gap-3">
+                        <span className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">Lot</span>
+                        <div>
+                          <p className="text-sm font-black text-brand-black uppercase tracking-tight">#{b.id.split('-')[0]}</p>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${b.quantity_remaining > 0 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                            {b.quantity_remaining > 0 ? 'En Existencias' : 'Agotado'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Costo Unit.</p>
+                        <p className="text-lg font-black text-primary">${Number(b.unit_cost).toFixed(4)}</p>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm text-slate-700">
-                      <p><span className="font-bold">Proveedor:</span> {b.suppliers?.name || 'N/A'}</p>
-                      <p><span className="font-bold">Costo Unit.:</span> ${Number(b.unit_cost).toFixed(4)}</p>
-                      <p className="text-primary font-black"><span className="text-slate-500 font-bold">Cant. Restante:</span> {b.quantity_remaining} gr</p>
-                      {b.expiration_date && (
-                        <p className={`font-black ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-500' : 'text-emerald-500'}`}>
-                          Expira: {new Date(b.expiration_date).toLocaleDateString()}
-                        </p>
-                      )}
+
+                    <div className="grid grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Proveedor</p>
+                        <p className="text-xs font-bold text-brand-black">{b.suppliers?.name || 'Distribución Global'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha de Caducidad</p>
+                        {b.expiration_date ? (
+                          <p className={`text-xs font-black ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-600' : 'text-emerald-500'}`}>
+                            {new Date(b.expiration_date).toLocaleDateString()}
+                          </p>
+                        ) : <p className="text-xs text-slate-400">Sin vigencia</p>}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex justify-between items-center">
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Saldo Restante</p>
+                        <p className="text-2xl font-heading font-black text-brand-black">{b.quantity_remaining.toLocaleString()} gr</p>
+                      </div>
+                      <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500" style={{ width: '100%' }}></div>
+                      </div>
                     </div>
                   </div>
                 ));
@@ -625,10 +716,23 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   );
 };
 
-const StatCard = ({ label, value, color }: any) => (
-  <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
-    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{label}</p>
-    <p className={`text-4xl font-black font-mono ${color}`}>{value}</p>
+const KPIItem = ({ label, value, sub, icon, color }: any) => (
+  <div className="card p-6 flex flex-col justify-between h-36 relative overflow-hidden group">
+    <div className={`absolute -right-4 -top-4 w-24 h-24 ${color} opacity-10 rounded-full blur-2xl transition-all group-hover:scale-150`}></div>
+    <div className="relative z-10 flex justify-between items-start">
+      <div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <h3 className="text-3xl font-heading font-black text-brand-black tracking-tighter">{value}</h3>
+      </div>
+      <div className={`w-10 h-10 rounded-xl ${color} bg-opacity-10 flex items-center justify-center`}>
+        <span className={`material-icons-round text-xl ${color.replace('bg-', 'text-')}`}>{icon}</span>
+      </div>
+    </div>
+    <div className="relative z-10">
+      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> {sub}
+      </p>
+    </div>
   </div>
 );
 
