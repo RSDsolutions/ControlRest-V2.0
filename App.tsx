@@ -18,6 +18,7 @@ import InventoryView from './views/InventoryView';
 import InventoryBatchesView from './views/InventoryBatchesView';
 import SuppliersView from './views/SuppliersView';
 import PurchaseRequestView from './views/PurchaseRequestView';
+import KitchenPurchaseRequestView from './views/KitchenPurchaseRequestView';
 import PlatesView from './views/PlatesView';
 import WaiterView from './views/WaiterView';
 import CashierView from './views/CashierView';
@@ -670,6 +671,7 @@ const App: React.FC = () => {
             <Route path="/kitchen" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="active" />} />
             <Route path="/kitchen-history" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="history" />} />
             <Route path="/kitchen/recipes" element={<KitchenRecipeView plates={plates} ingredients={ingredients} />} />
+            <Route path="/kitchen/purchase-requests" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenPurchaseRequestView branchId={branchId} currentUser={user} />} />
             <Route path="/kitchen/waste" element={<KitchenWasteView ingredients={ingredients} user={user} branchId={branchId} restaurantId={restaurantId} />} />
 
             <Route path="*" element={<Navigate to={user.role === UserRole.ADMIN ? "/admin" : user.role === UserRole.WAITER ? "/waiter" : user.role === UserRole.KITCHEN ? "/kitchen" : "/cashier"} replace />} />

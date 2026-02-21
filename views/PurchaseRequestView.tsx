@@ -164,6 +164,39 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
         }
     };
 
+    const approveOrderWithChanges = async () => {
+        if (!selectedOrder) return;
+        setSubmitting(true);
+        try {
+            // 1. Update PO supplier and status
+            const { error: poError } = await supabase.from('purchase_orders')
+                .update({ supplier_id: selectedOrder.supplier_id || null, status: 'approved', updated_at: new Date().toISOString() })
+                .eq('id', selectedOrder.id);
+            if (poError) throw poError;
+
+            // 2. Update all items
+            if (selectedOrder.items) {
+                for (const item of selectedOrder.items) {
+                    const { error: itemError } = await supabase.from('purchase_order_items')
+                        .update({
+                            quantity_requested: item.quantity_requested,
+                            expected_unit_cost: item.expected_unit_cost
+                        })
+                        .eq('id', item.id);
+                    if (itemError) throw itemError;
+                }
+            }
+
+            setSelectedOrder({ ...selectedOrder, status: 'approved' });
+            fetchOrders();
+            alert('Orden aprobada con cambios correctamente.');
+        } catch (error: any) {
+            alert('Error al aprobar orden: ' + error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const receiveItem = async (itemId: string, actualQty: number, actualCost: number, expDate: string | null) => {
         try {
             const { error } = await supabase.rpc('receive_purchase_order_item', {
@@ -349,8 +382,26 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
                         <div className="flex-1 overflow-y-auto space-y-6 pb-20">
                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                                <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Proveedor:</span> {selectedOrder.supplier_name || 'Sin especificar'}</p>
+                                {selectedOrder.status === 'pending' ? (
+                                    <div className="mb-2">
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase">Asignar Proveedor:</label>
+                                        <select
+                                            value={selectedOrder.supplier_id || ''}
+                                            onChange={e => setSelectedOrder({ ...selectedOrder, supplier_id: e.target.value })}
+                                            className="w-full mt-1 p-2 text-sm font-bold border rounded bg-white"
+                                        >
+                                            <option value="">Ninguno / Proveedor Informal</option>
+                                            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Proveedor:</span> {selectedOrder.supplier_name || 'Sin especificar'}</p>
+                                )}
+
                                 <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Fecha:</span> {new Date(selectedOrder.created_at).toLocaleString()}</p>
+                                {selectedOrder.notes && (
+                                    <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Notas:</span> {selectedOrder.notes}</p>
+                                )}
                                 <div className="flex items-center gap-2 mt-2">
                                     <span className={`px-3 py-1 rounded border text-xs uppercase font-black tracking-wider ${statusColor(selectedOrder.status)}`}>
                                         Estado: {selectedOrder.status}
@@ -360,11 +411,11 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
                             {selectedOrder.status === 'pending' && (
                                 <div className="flex gap-2">
-                                    <button onClick={() => updatePOStatus(selectedOrder.id, 'approved')} className="flex-1 py-2 bg-blue-100 text-blue-700 font-bold rounded-lg border border-blue-200 hover:bg-blue-200 transition-colors">
-                                        Aprobar Orden
+                                    <button onClick={approveOrderWithChanges} disabled={submitting} className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 transition-colors disabled:opacity-50">
+                                        {submitting ? 'Guardando...' : 'Guardar y Aprobar'}
                                     </button>
-                                    <button onClick={() => updatePOStatus(selectedOrder.id, 'cancelled')} className="flex-1 py-2 bg-red-100 text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-200 transition-colors">
-                                        Cancelar
+                                    <button onClick={() => updatePOStatus(selectedOrder.id, 'cancelled')} disabled={submitting} className="flex-[0.4] py-2 bg-red-100 text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-200 transition-colors">
+                                        Cancelar Orden
                                     </button>
                                 </div>
                             )}
@@ -387,8 +438,44 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                     </span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-3">
-                                                    <p>Req: <span className="font-bold">{item.quantity_requested} {unitUI}</span></p>
-                                                    <p>Costo Esp: <span className="font-bold">${item.expected_unit_cost.toFixed(4)}/{unitUI}</span></p>
+                                                    {selectedOrder.status === 'pending' ? (
+                                                        <>
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-slate-400">Cantidad Req. ({unitUI})</label>
+                                                                <input
+                                                                    type="number"
+                                                                    step="any"
+                                                                    value={item.quantity_requested}
+                                                                    onChange={e => {
+                                                                        const newItems = [...selectedOrder.items!];
+                                                                        newItems[i].quantity_requested = parseFloat(e.target.value) || 0;
+                                                                        setSelectedOrder({ ...selectedOrder, items: newItems });
+                                                                    }}
+                                                                    className="w-full p-1 border border-blue-200 rounded bg-blue-50 text-blue-900 font-bold"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-slate-400">Costo Esperado ($ / unid)</label>
+                                                                <input
+                                                                    type="number"
+                                                                    step="any"
+                                                                    value={item.expected_unit_cost}
+                                                                    onChange={e => {
+                                                                        const newItems = [...selectedOrder.items!];
+                                                                        newItems[i].expected_unit_cost = parseFloat(e.target.value) || 0;
+                                                                        setSelectedOrder({ ...selectedOrder, items: newItems });
+                                                                    }}
+                                                                    className="w-full p-1 border border-blue-200 rounded bg-blue-50 text-blue-900 font-bold"
+                                                                />
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <p>Req: <span className="font-bold">{item.quantity_requested} {unitUI}</span></p>
+                                                            <p>Costo Esp: <span className="font-bold">${item.expected_unit_cost.toFixed(4)}/{unitUI}</span></p>
+                                                        </>
+                                                    )}
+
                                                     {item.status === 'received' && (
                                                         <>
                                                             <p className="text-emerald-700">Recibido: <span className="font-bold">{item.quantity_received} {unitUI}</span></p>
