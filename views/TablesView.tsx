@@ -152,58 +152,82 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Modal de Registro/Edición */}
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content max-w-md">
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    {/* Backdrop con blur */}
+                    <div
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
+                        onClick={closeModal}
+                    ></div>
+
+                    {/* Contenido del Modal */}
+                    <div className="relative bg-white w-full max-w-md rounded-brand border border-slate-200 shadow-modal overflow-hidden animate-fade-in">
+                        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                             <div>
-                                <h3 className="text-2xl font-heading font-black text-brand-black tracking-tight">
-                                    {editingTable ? 'Configurar Mesa' : 'Registro de Mesa'}
+                                <h3 className="text-lg font-semibold text-slate-900 leading-none">
+                                    {editingTable ? 'Editar Mesa' : 'Nueva Mesa'}
                                 </h3>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Definición de Salón</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">Configuración de salón</p>
                             </div>
-                            <button onClick={closeModal} className="w-10 h-10 rounded-full bg-white border border-slate-200 hover:border-red-200 hover:text-red-500 flex items-center justify-center text-slate-400 transition-all shadow-sm">
+                            <button
+                                onClick={closeModal}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+                            >
                                 <span className="material-icons-round text-xl">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="space-y-2">
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                            <div className="space-y-1.5">
                                 <label className="label">Identificador de Mesa</label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="Ej: Mesa VIP 1, Terraza A, Barra"
+                                    placeholder="Ej: Mesa VIP 1, Terraza A"
                                     className="input"
                                     value={formData.label}
                                     onChange={e => setFormData({ ...formData, label: e.target.value })}
+                                    autoFocus
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="label">Capacidad de Puestos</label>
-                                <input
-                                    type="number"
-                                    required
-                                    min="1"
-                                    className="input"
-                                    value={formData.seats}
-                                    onChange={e => setFormData({ ...formData, seats: parseInt(e.target.value) })}
-                                />
+
+                            <div className="space-y-1.5">
+                                <label className="label">Capacidad (Personas)</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-icons-round text-slate-400 text-lg">groups</span>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="1"
+                                        className="input pl-10"
+                                        value={formData.seats}
+                                        onChange={e => setFormData({ ...formData, seats: parseInt(e.target.value) })}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex gap-4 pt-4">
+
+                            <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="flex-1 btn btn-outline py-4 text-sm"
+                                    className="flex-1 btn btn-outline"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-[2] btn btn-primary py-4 text-sm shadow-primary/30"
+                                    className="flex-[2] btn btn-primary shadow-primary/20"
                                 >
-                                    {loading ? 'Sincronizando...' : 'Confirmar Mesa'}
+                                    {loading ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            Guardando...
+                                        </span>
+                                    ) : (
+                                        'Guardar Mesa'
+                                    )}
                                 </button>
                             </div>
                         </form>
