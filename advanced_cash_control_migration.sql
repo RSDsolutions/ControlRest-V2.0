@@ -105,7 +105,7 @@ BEGIN
     END IF;
 
     -- 2. Calculate Order Total (sum of all unique orders provided)
-    SELECT SUM(total_price) INTO v_order_total FROM public.orders WHERE id = ANY(p_order_ids);
+    SELECT SUM(total) INTO v_order_total FROM public.orders WHERE id = ANY(p_order_ids);
 
     -- 3. Validate Payments Sum
     FOR v_payment IN SELECT * FROM jsonb_to_recordset(p_payments) AS x(method text, amount numeric)
@@ -120,15 +120,17 @@ BEGIN
     -- 4. Record Payments & Update Orders
     FOR v_payment IN SELECT * FROM jsonb_to_recordset(p_payments) AS x(method text, amount numeric)
     LOOP
-        -- Insert into payments table
+        -- Insert into payments table (force lowercase for legacy constraint)
         INSERT INTO public.payments (
-            order_id, restaurant_id, branch_id, cash_session_id, payment_method, amount, paid_at, created_at, status, user_id
+            order_id, restaurant_id, branch_id, cash_session_id, method, amount, status, user_id
         ) VALUES (
-            p_order_ids[1], v_session.restaurant_id, v_session.branch_id, p_cash_session_id, v_payment.method, v_payment.amount, now(), now(), 'completed', v_session.opened_by
+            p_order_ids[1], v_session.restaurant_id, v_session.branch_id, p_cash_session_id, 
+            CASE WHEN LOWER(v_payment.method) = 'other' THEN 'transfer' ELSE LOWER(v_payment.method) END, 
+            v_payment.amount, 'completed', v_session.opened_by
         );
 
         -- Log in Cash Session Transactions IF CASH
-        IF v_payment.method = 'CASH' THEN
+        IF UPPER(v_payment.method) = 'CASH' THEN
             INSERT INTO public.cash_session_transactions (
                 cash_session_id, amount, type, reference_type, reference_id, created_by
             ) VALUES (

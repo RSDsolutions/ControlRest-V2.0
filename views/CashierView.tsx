@@ -148,7 +148,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          const orderIds = tableOrders.map(o => o.id);
          const paymentsPayload = Object.entries(splitPayments)
             .filter(([_, amount]) => parseFloat((amount as string) || '0') > 0)
-            .map(([method, amount]) => ({ method: method as any, amount: parseFloat((amount as string) || '0') }));
+            .map(([method, amount]) => ({ method: method.toLowerCase(), amount: parseFloat((amount as string) || '0') }));
 
          const result = await closeOrderSplitMutation.mutateAsync({
             p_order_ids: orderIds,

@@ -25,7 +25,7 @@ export interface CloseOrderParams {
 
 export interface CloseOrderSplitParams {
     p_order_ids: string[];
-    p_payments: Array<{ method: 'CASH' | 'CARD' | 'TRANSFER' | 'OTHER'; amount: number }>;
+    p_payments: Array<{ method: string; amount: number }>;
     p_cash_session_id: string;
 }
 
