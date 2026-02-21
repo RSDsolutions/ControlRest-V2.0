@@ -234,48 +234,50 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
     };
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
-            <header className="mb-8">
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span className="material-icons-round text-accent">settings_suggest</span> Perfil Empresarial
-                </h1>
-                <p className="text-slate-500 font-medium">Gestiona tu perfil, datos de la empresa y sucursales.</p>
+        <div className="p-6 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
+                <div>
+                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <span className="material-icons-round text-[#136dec] text-xl">settings_suggest</span> Perfil Empresarial
+                    </h1>
+                    <p className="text-xs text-slate-400 mt-0.5">Gestiona tu perfil, datos de la empresa y sucursales.</p>
+                </div>
             </header>
 
             {/* Tabs */}
-            <div className="flex space-x-1 bg-white p-1 rounded-xl shadow-sm border border-slate-200 w-fit mb-6">
-                <button onClick={() => setActiveTab('profile')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'profile' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-                    <span className="material-icons-round text-base align-middle mr-1">person</span> Mi Perfil
+            <div className="flex bg-slate-100 p-0.5 rounded-[8px] border border-slate-200 w-fit">
+                <button onClick={() => setActiveTab('profile')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'profile' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
+                    <span className="material-icons-round text-[16px]">person</span> Mi Perfil
                 </button>
-                <button onClick={() => setActiveTab('company')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'company' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-                    <span className="material-icons-round text-base align-middle mr-1">business</span> Empresa (Matriz)
+                <button onClick={() => setActiveTab('company')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'company' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
+                    <span className="material-icons-round text-[16px]">business</span> Empresa
                 </button>
-                <button onClick={() => setActiveTab('branches')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'branches' ? 'bg-slate-900 text-white shadow' : 'text-slate-500 hover:bg-slate-50'}`}>
-                    <span className="material-icons-round text-base align-middle mr-1">store</span> Sucursales
+                <button onClick={() => setActiveTab('branches')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'branches' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
+                    <span className="material-icons-round text-[16px]">store</span> Sucursales
                 </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="card p-6">
                 {/* TAB 1: PROFILE */}
                 {activeTab === 'profile' && (
                     <div className="max-w-xl space-y-8">
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
-                            <h2 className="text-xl font-black text-slate-800">Información Personal</h2>
+                            <h2 className="text-base font-semibold text-slate-800">Información Personal</h2>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre Completo</label>
-                                <input type="text" value={profileName} onChange={e => setProfileName(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" />
+                                <label className="label">Nombre Completo</label>
+                                <input type="text" value={profileName} onChange={e => setProfileName(e.target.value)} className="input" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Email</label>
-                                    <input type="text" value={currentUser?.email || ''} disabled className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-500 cursor-not-allowed" />
+                                    <label className="label">Email</label>
+                                    <input type="text" value={currentUser?.email || ''} disabled className="input opacity-60 cursor-not-allowed" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Rol</label>
-                                    <input type="text" value={currentUser?.role || ''} disabled className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-500 uppercase cursor-not-allowed" />
+                                    <label className="label">Rol</label>
+                                    <input type="text" value={currentUser?.role || ''} disabled className="input opacity-60 uppercase cursor-not-allowed" />
                                 </div>
                             </div>
-                            <button type="submit" disabled={loading} className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all">
+                            <button type="submit" disabled={loading} className="btn btn-primary">
                                 Actualizar Datos
                             </button>
                         </form>
@@ -283,16 +285,16 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                         <hr className="border-slate-100" />
 
                         <form onSubmit={handleChangePassword} className="space-y-4">
-                            <h2 className="text-xl font-black text-slate-800">Seguridad</h2>
+                            <h2 className="text-base font-semibold text-slate-800">Seguridad</h2>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nueva Contraseña</label>
-                                <input type="password" value={passwordData.new} onChange={e => setPasswordData({ ...passwordData, new: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" placeholder="Mínimo 6 caracteres" />
+                                <label className="label">Nueva Contraseña</label>
+                                <input type="password" value={passwordData.new} onChange={e => setPasswordData({ ...passwordData, new: e.target.value })} className="input" placeholder="Mínimo 6 caracteres" />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Confirmar Contraseña</label>
-                                <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" placeholder="Repite la contraseña" />
+                                <label className="label">Confirmar Contraseña</label>
+                                <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} className="input" placeholder="Repite la contraseña" />
                             </div>
-                            <button type="submit" disabled={loading || !passwordData.new} className="bg-rose-600 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all hover:bg-rose-700">
+                            <button type="submit" disabled={loading || !passwordData.new} className="btn btn-danger">
                                 Cambiar Contraseña
                             </button>
                         </form>
@@ -313,31 +315,31 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                         <form onSubmit={handleSaveCompany} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Razón Social / Nombre Empresa</label>
-                                    <input type="text" required value={companyForm.businessName} onChange={e => setCompanyForm({ ...companyForm, businessName: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" placeholder="Ej. Gastronomía S.A." />
+                                    <label className="label">Razón Social / Nombre Empresa</label>
+                                    <input type="text" required value={companyForm.businessName} onChange={e => setCompanyForm({ ...companyForm, businessName: e.target.value })} className="input" placeholder="Ej. Gastronomía S.A." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">RUC / ID Legal</label>
-                                    <input type="text" value={companyForm.ruc} onChange={e => setCompanyForm({ ...companyForm, ruc: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" placeholder="17900..." />
+                                    <label className="label">RUC / ID Legal</label>
+                                    <input type="text" value={companyForm.ruc} onChange={e => setCompanyForm({ ...companyForm, ruc: e.target.value })} className="input" placeholder="17900..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Representante Legal</label>
-                                    <input type="text" value={companyForm.legalRepresentative} onChange={e => setCompanyForm({ ...companyForm, legalRepresentative: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" />
+                                    <label className="label">Representante Legal</label>
+                                    <input type="text" value={companyForm.legalRepresentative} onChange={e => setCompanyForm({ ...companyForm, legalRepresentative: e.target.value })} className="input" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Teléfono</label>
-                                    <input type="text" value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" />
+                                    <label className="label">Teléfono</label>
+                                    <input type="text" value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="input" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Email Corporativo</label>
-                                    <input type="email" value={companyForm.email} onChange={e => setCompanyForm({ ...companyForm, email: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" />
+                                    <label className="label">Email Corporativo</label>
+                                    <input type="email" value={companyForm.email} onChange={e => setCompanyForm({ ...companyForm, email: e.target.value })} className="input" />
                                 </div>
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Dirección Matriz</label>
-                                    <input type="text" value={companyForm.mainAddress} onChange={e => setCompanyForm({ ...companyForm, mainAddress: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" />
+                                    <label className="label">Dirección Matriz</label>
+                                    <input type="text" value={companyForm.mainAddress} onChange={e => setCompanyForm({ ...companyForm, mainAddress: e.target.value })} className="input" />
                                 </div>
                             </div>
-                            <button type="submit" disabled={loading} className="w-full bg-slate-900 text-white px-6 py-4 rounded-xl font-bold hover:shadow-lg transition-all mt-6 text-lg">
+                            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-4">
                                 {loading ? 'Guardando...' : 'Guardar Información'}
                             </button>
                         </form>
@@ -348,9 +350,9 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                 {activeTab === 'branches' && (
                     <div>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-black text-slate-800">Listado de Sucursales</h2>
-                            <button onClick={() => openBranchModal()} className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg">
-                                <span className="material-icons-round">add_business</span> Nueva Sucursal
+                            <h2 className="text-base font-semibold text-slate-800">Listado de Sucursales</h2>
+                            <button onClick={() => openBranchModal()} className="btn btn-primary flex items-center gap-2">
+                                <span className="material-icons-round text-[18px]">add_business</span> Nueva Sucursal
                             </button>
                         </div>
 
@@ -398,29 +400,28 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
 
             {/* BRANCH MODAL */}
             {isBranchModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-black text-xl text-slate-800">{editingBranch ? 'Editar Sucursal' : 'Nueva Sucursal'}</h3>
-                            <button onClick={closeBranchModal} className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors">
-                                <span className="material-icons-round text-lg">close</span>
+                <div className="modal-overlay">
+                    <div className="modal-content max-w-md">
+                        <div className="modal-header">
+                            <h3 className="text-base font-semibold text-slate-900">{editingBranch ? 'Editar Sucursal' : 'Nueva Sucursal'}</h3>
+                            <button onClick={closeBranchModal} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                <span className="material-icons-round text-xl">close</span>
                             </button>
                         </div>
                         <form onSubmit={handleSaveBranch} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre Sucursal</label>
-                                <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={branchForm.name} onChange={e => setBranchForm({ ...branchForm, name: e.target.value })} />
+                                <label className="label">Nombre Sucursal</label>
+                                <input type="text" required className="input" value={branchForm.name} onChange={e => setBranchForm({ ...branchForm, name: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Dirección</label>
-                                <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={branchForm.address} onChange={e => setBranchForm({ ...branchForm, address: e.target.value })} />
+                                <label className="label">Dirección</label>
+                                <input type="text" className="input" value={branchForm.address} onChange={e => setBranchForm({ ...branchForm, address: e.target.value })} />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Teléfono</label>
-                                <input type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={branchForm.phone} onChange={e => setBranchForm({ ...branchForm, phone: e.target.value })} />
+                                <label className="label">Teléfono</label>
+                                <input type="text" className="input" value={branchForm.phone} onChange={e => setBranchForm({ ...branchForm, phone: e.target.value })} />
                             </div>
-
-                            <button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-black text-lg shadow-lg hover:shadow-xl transition-all mt-4">
+                            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-4">
                                 {loading ? 'Guardando...' : 'Guardar'}
                             </button>
                         </form>

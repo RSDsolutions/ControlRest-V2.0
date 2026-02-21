@@ -414,16 +414,17 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
   if (isCreating) {
     return (
       <div className="p-8 max-w-7xl mx-auto space-y-10 animate-fade-in font-sans pb-32">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
           <div>
-            <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+            <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <span className="material-icons-round text-[#136dec] text-xl">restaurant_menu</span>
               {isEditing ? 'Gestión de Receta Maestra' : 'Ingeniería de Producto'}
             </h1>
-            <p className="text-slate-500 font-medium mt-1">Define el ADN de tu plato: costeo técnico, rentabilidad proyectada y visualización.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Define el ADN de tu plato: costeo técnico, rentabilidad proyectada y visualización.</p>
           </div>
-          <div className="flex gap-4">
-            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="btn btn-outline px-8 py-3 text-sm">Cancelar</button>
-            <button onClick={handleSave} className="btn btn-primary px-8 py-3 text-sm shadow-primary/30">
+          <div className="flex gap-3">
+            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="btn btn-outline">Cancelar</button>
+            <button onClick={handleSave} className="btn btn-primary">
               {isEditing ? 'Guardar Cambios' : 'Publicar al Menú'}
             </button>
           </div>
@@ -583,16 +584,17 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
   }
 
   return (
-    <div className="p-8 space-y-10 animate-fade-in max-w-[1700px] mx-auto pb-24 font-sans">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-brand shadow-brand border border-slate-100">
+    <div className="p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
         <div>
-          <h1 className="text-4xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <span className="material-icons-round text-[#136dec] text-xl">menu_book</span>
             Ingeniería de Menú
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
+          <p className="text-xs text-slate-400 mt-0.5">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
         </div>
-        <button onClick={() => setIsCreating(true)} className="btn btn-primary px-8 py-4 text-sm flex items-center gap-3 shadow-primary/30 group">
-          <span className="material-icons-round text-xl group-hover:rotate-90 transition-transform">add</span> Crear Nuevo Plato
+        <button onClick={() => setIsCreating(true)} className="btn btn-primary flex items-center gap-2">
+          <span className="material-icons-round text-[18px]">add</span> Crear Nuevo Plato
         </button>
       </header>
 

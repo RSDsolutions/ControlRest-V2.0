@@ -12,159 +12,232 @@ interface SidebarProps {
   onBranchChange?: (branchId: string) => void;
 }
 
+interface NavItem {
+  label: string;
+  icon: string;
+  path: string;
+}
+
+interface NavGroup {
+  groupLabel: string;
+  items: NavItem[];
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = [], currentBranchId, onBranchChange }) => {
-  const navItems = {
-    [UserRole.ADMIN]: [
-      { label: 'Dashboard', icon: 'dashboard', path: '/admin' },
-      { label: 'Mesas', icon: 'table_restaurant', path: '/tables' },
-      { label: 'Pedidos', icon: 'receipt_long', path: '/orders-history' },
-      { label: 'Gestión de Usuarios', path: '/users', icon: 'group' },
-      { label: 'Perfil Empresarial', path: '/enterprise-profile', icon: 'settings_suggest' },
-      { label: 'Auditoría', path: '/audit', icon: 'history' },
-      { label: 'Ingredientes', icon: 'restaurant', path: '/ingredients' },
-      { label: 'Solicitudes Compra', icon: 'shopping_cart', path: '/purchase-requests' },
-      { label: 'Proveedores', icon: 'local_shipping', path: '/suppliers' },
-      { label: 'Inventario', icon: 'inventory_2', path: '/inventory' },
-      { label: 'Lotes FIFO', icon: 'playlist_add_check', path: '/inventory-batches' },
-      { label: 'Control Merma', icon: 'delete_forever', path: '/waste' },
-      { label: 'Platos', icon: 'dinner_dining', path: '/plates' },
-      {
-        label: 'Finanzas',
-        icon: 'analytics',
-        path: '/finance',
-        children: [
-          { label: 'Resumen', icon: 'bar_chart', path: '/finance' },
-          { label: 'Gastos Ops.', icon: 'payments', path: '/expenses' },
-          { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
-          { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
-          { label: 'Períodos Bloqueados', icon: 'lock_clock', path: '/period-locks' },
-          { label: 'Snapshots Diarios', icon: 'assessment', path: '/snapshots' }
-        ]
-      },
-    ],
-    [UserRole.WAITER]: [
-      { label: 'Pedidos POS', icon: 'receipt_long', path: '/waiter' },
-    ],
-    [UserRole.CASHIER]: [
-      { label: 'Caja y Cobros', icon: 'point_of_sale', path: '/cashier' },
-      { label: 'Historial', icon: 'history', path: '/cashier-history' },
-      { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
-      { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
-    ],
-    [UserRole.KITCHEN]: [
-      { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
-      { label: 'Recetario', icon: 'menu_book', path: '/kitchen/recipes' },
-      { label: 'Solicitar Insumos', icon: 'shopping_cart', path: '/kitchen/purchase-requests' },
-      { label: 'Reportar Merma', icon: 'report_problem', path: '/kitchen/waste' },
-      { label: 'Historial', icon: 'history', path: '/kitchen-history' },
-    ],
+
+  // ─── ADMIN NAV ───────────────────────────────────────────────────────────────
+  const adminNav: NavGroup[] = [
+    {
+      groupLabel: 'GENERAL',
+      items: [
+        { label: 'Dashboard', icon: 'dashboard', path: '/admin' },
+      ],
+    },
+    {
+      groupLabel: 'OPERACIÓN',
+      items: [
+        { label: 'Mesas', icon: 'table_restaurant', path: '/tables' },
+        { label: 'Pedidos', icon: 'receipt_long', path: '/orders-history' },
+        { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
+        { label: 'Caja', icon: 'point_of_sale', path: '/cashier' },
+      ],
+    },
+    {
+      groupLabel: 'INVENTARIO & PRODUCCIÓN',
+      items: [
+        { label: 'Ingredientes', icon: 'restaurant', path: '/ingredients' },
+        { label: 'Platos', icon: 'menu_book', path: '/plates' },
+        { label: 'Inventario', icon: 'inventory_2', path: '/inventory' },
+        { label: 'Lotes FIFO', icon: 'playlist_add_check', path: '/inventory-batches' },
+        { label: 'Control Merma', icon: 'delete_forever', path: '/waste' },
+      ],
+    },
+    {
+      groupLabel: 'COMPRAS & PROVEEDORES',
+      items: [
+        { label: 'Solicitudes de Compra', icon: 'shopping_cart', path: '/purchase-requests' },
+        { label: 'Proveedores', icon: 'local_shipping', path: '/suppliers' },
+        { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
+        { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
+      ],
+    },
+    {
+      groupLabel: 'FINANZAS',
+      items: [
+        { label: 'Resumen', icon: 'bar_chart', path: '/finance' },
+        { label: 'Gastos Operativos', icon: 'payments', path: '/expenses' },
+        { label: 'Snapshots Diarios', icon: 'assessment', path: '/snapshots' },
+        { label: 'Períodos Bloqueados', icon: 'lock_clock', path: '/period-locks' },
+      ],
+    },
+    {
+      groupLabel: 'ADMINISTRACIÓN',
+      items: [
+        { label: 'Gestión de Usuarios', icon: 'group', path: '/users' },
+        { label: 'Perfil Empresarial', icon: 'settings_suggest', path: '/enterprise-profile' },
+        { label: 'Config. de Mesas', icon: 'table_bar', path: '/tables-config' },
+        { label: 'Config. de Sucursales', icon: 'store', path: '/branches-config' },
+      ],
+    },
+    {
+      groupLabel: 'AUDITORÍA & CONTROL',
+      items: [
+        { label: 'Auditoría', icon: 'policy', path: '/audit' },
+      ],
+    },
+  ];
+
+  // ─── ROLE-BASED NAV ──────────────────────────────────────────────────────────
+  const waiterNav: NavGroup[] = [
+    {
+      groupLabel: 'OPERACIÓN',
+      items: [
+        { label: 'Pedidos POS', icon: 'receipt_long', path: '/waiter' },
+      ],
+    },
+  ];
+
+  const cashierNav: NavGroup[] = [
+    {
+      groupLabel: 'CAJA',
+      items: [
+        { label: 'Caja y Cobros', icon: 'point_of_sale', path: '/cashier' },
+        { label: 'Historial', icon: 'history', path: '/cashier-history' },
+      ],
+    },
+    {
+      groupLabel: 'COMPRAS',
+      items: [
+        { label: 'Facturas de Compra', icon: 'receipt', path: '/supplier-invoices' },
+        { label: 'Cuentas por Pagar', icon: 'account_balance_wallet', path: '/accounts-payable' },
+      ],
+    },
+  ];
+
+  const kitchenNav: NavGroup[] = [
+    {
+      groupLabel: 'COCINA',
+      items: [
+        { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
+        { label: 'Recetario', icon: 'menu_book', path: '/kitchen/recipes' },
+        { label: 'Solicitar Insumos', icon: 'shopping_cart', path: '/kitchen/purchase-requests' },
+        { label: 'Reportar Merma', icon: 'report_problem', path: '/kitchen/waste' },
+        { label: 'Historial', icon: 'history', path: '/kitchen-history' },
+      ],
+    },
+  ];
+
+  const roleNav: Record<UserRole, NavGroup[]> = {
+    [UserRole.ADMIN]: adminNav,
+    [UserRole.WAITER]: waiterNav,
+    [UserRole.CASHIER]: cashierNav,
+    [UserRole.KITCHEN]: kitchenNav,
   };
 
-  const activeItems = navItems[user.role];
+  const activeGroups = roleNav[user.role] ?? [];
+
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium rounded-[7px] transition-colors duration-150 ${isActive
+      ? 'bg-[#136dec] text-white'
+      : 'text-white/55 hover:bg-white/[0.07] hover:text-white/90'
+    }`;
 
   return (
-    <aside className="w-68 bg-brand-black text-white flex flex-col shrink-0 transition-all duration-300 shadow-2xl z-20">
-      <div className="h-20 flex flex-col justify-center px-6 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center font-bold text-xl shadow-lg ring-1 ring-white/20">C</div>
-          <span className="text-xl font-heading font-bold tracking-tight text-white/95">ControlRest</span>
+    <aside className="w-60 bg-[#0f172a] text-white flex flex-col shrink-0 z-20 border-r border-white/5">
+      {/* Logo */}
+      <div className="h-14 flex items-center px-4 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-[7px] bg-[#136dec] flex items-center justify-center font-bold text-sm shadow-md ring-1 ring-white/20">C</div>
+          <div>
+            <span className="text-sm font-semibold tracking-tight text-white">ControlRest</span>
+            <span className="block text-[10px] text-white/40 font-medium">V2.0 ERP</span>
+          </div>
         </div>
       </div>
 
-      {/* Branch Switcher for Admin */}
+      {/* Branch Switcher */}
       {user.role === UserRole.ADMIN && branches.length > 0 && onBranchChange && (
-        <div className="px-5 pt-6 pb-2">
-          <label className="text-[10px] text-white/40 font-bold uppercase tracking-[0.1em] mb-2 block">Sucursal Activa</label>
-          <div className="relative group">
+        <div className="px-3 pt-3 pb-1">
+          <label className="text-[10px] text-white/35 font-semibold uppercase tracking-[0.12em] mb-1 block">Sucursal</label>
+          <div className="relative">
             <select
               value={currentBranchId || ''}
               onChange={(e) => onBranchChange && onBranchChange(e.target.value)}
-              className="w-full bg-white/5 text-white/90 border border-white/10 rounded-brand px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none cursor-pointer transition-all hover:bg-white/10"
+              className="w-full bg-white/[0.06] text-white/85 border border-white/[0.08] rounded-[7px] pl-3 pr-7 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#136dec]/60 appearance-none cursor-pointer transition-all hover:bg-white/[0.10]"
             >
-              <option value="GLOBAL" className="text-slate-900 font-bold italic">🌍 MODO GLOBAL</option>
+              <option value="GLOBAL" className="text-slate-900 font-bold">🌍 Modo Global</option>
               {branches.map(b => (
                 <option key={b.id} value={b.id} className="text-slate-900">
                   {b.name} {b.isActive ? '' : '(Inactiva)'}
                 </option>
               ))}
             </select>
-            <span className="material-icons-round absolute right-3 top-[11px] text-white/30 group-hover:text-white/60 pointer-events-none text-lg transition-colors">expand_more</span>
+            <span className="material-icons-round absolute right-2 top-[6px] text-white/30 pointer-events-none text-[15px]">unfold_more</span>
           </div>
         </div>
       )}
 
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto no-scrollbar custom-scrollbar">
-        {activeItems.map((item: any) => {
-          if (item.children) {
-            return (
-              <div key={item.label} className="mt-4 first:mt-0">
-                <p className="px-4 text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] mb-2">{item.label}</p>
-                <div className="space-y-0.5">
-                  {item.children.map((child: any) => (
-                    <NavLink
-                      key={child.path}
-                      to={child.path}
-                      className={({ isActive }) => `
-                        flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-brand transition-all duration-200
-                        ${isActive
-                          ? 'bg-primary text-white shadow-brand ring-1 ring-white/10'
-                          : 'text-white/50 hover:bg-white/5 hover:text-white/90'
-                        }
-                      `}
-                    >
-                      <span className="material-icons-round text-[20px]">{child.icon}</span>
-                      {child.label}
-                    </NavLink>
-                  ))}
-                </div>
-              </div>
-            );
-          }
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `
-                  flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-brand transition-all duration-200
-                  ${isActive
-                  ? 'bg-primary text-white shadow-brand ring-1 ring-white/10'
-                  : 'text-white/60 hover:bg-white/5 hover:text-white/90'
-                }
-                `}
+      {/* Navigation Groups */}
+      <nav className="flex-1 py-2 px-2 overflow-y-auto no-scrollbar space-y-3">
+        {activeGroups.map((group) => (
+          <div key={group.groupLabel}>
+            <p className="px-3 text-[9px] font-bold text-white/25 uppercase tracking-[0.14em] mb-1">{group.groupLabel}</p>
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavLink key={item.path} to={item.path} className={linkClass}>
+                  <span className="material-icons-round text-[17px] opacity-80">{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Bloquear Sistema — aparece al final del nav para admin */}
+        {user.role === UserRole.ADMIN && onLock && (
+          <div>
+            <p className="px-3 text-[9px] font-bold text-white/25 uppercase tracking-[0.14em] mb-1"> </p>
+            <button
+              onClick={onLock}
+              className="flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium rounded-[7px] w-full text-left text-amber-400/70 hover:bg-amber-500/10 hover:text-amber-300 transition-colors duration-150"
             >
-              <span className="material-icons-round text-[22px]">{item.icon}</span>
-              {item.label}
-            </NavLink>
-          );
-        })}
+              <span className="material-icons-round text-[17px] opacity-80">lock_outline</span>
+              Bloquear Sistema
+            </button>
+          </div>
+        )}
       </nav>
 
-      <div className="p-4 bg-white/[0.02] border-t border-white/5 space-y-3">
-        {onLock && (
+      {/* User Footer */}
+      <div className="p-2.5 border-t border-white/[0.06]">
+        {user.role !== UserRole.ADMIN && onLock && (
           <button
             onClick={onLock}
-            className="flex items-center justify-center gap-2 text-white/60 hover:text-white hover:bg-white/10 w-full py-2.5 rounded-brand border border-white/10 transition-all text-sm font-semibold"
+            className="flex items-center justify-center gap-2 text-white/50 hover:text-white/90 hover:bg-white/[0.07] w-full py-1.5 rounded-[7px] border border-white/[0.08] transition-colors text-xs font-medium mb-2"
           >
-            <span className="material-icons-round text-lg">lock</span>
+            <span className="material-icons-round text-[15px]">lock_outline</span>
             Bloquear Sistema
           </button>
         )}
-        <div className="flex items-center gap-3 p-2 rounded-brand hover:bg-white/5 transition-all cursor-pointer group" onClick={onLogout}>
-          <div className="relative">
+        <div
+          className="flex items-center gap-2.5 p-2 rounded-[7px] hover:bg-white/[0.07] transition-colors cursor-pointer group"
+          onClick={onLogout}
+        >
+          <div className="relative shrink-0">
             <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0F52BA&color=fff&bold=true`}
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=136dec&color=fff&bold=true&size=64`}
               alt="Perfil"
-              className="h-10 w-10 rounded-brand object-cover ring-2 ring-white/10 group-hover:ring-primary/50 transition-all"
+              className="h-7 w-7 rounded-[7px] object-cover"
             />
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-brand-black rounded-full"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#16a34a] border-[1.5px] border-[#0f172a] rounded-full"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white/95 truncate leading-tight">{user.name}</p>
-            <p className="text-[11px] text-white/40 truncate font-medium uppercase tracking-wider">
-              {branches.find(b => b.id === currentBranchId)?.name || 'MODO GLOBAL'}
+            <p className="text-xs font-semibold text-white/90 truncate leading-tight">{user.name}</p>
+            <p className="text-[10px] text-white/35 truncate">
+              {branches.find(b => b.id === currentBranchId)?.name || 'Modo Global'}
             </p>
           </div>
-          <span className="material-icons-round text-white/20 group-hover:text-white/90 transition-colors">logout</span>
+          <span className="material-icons-round text-[15px] text-white/25 group-hover:text-white/70 transition-colors">logout</span>
         </div>
       </div>
     </aside>

@@ -180,20 +180,21 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
    return (
       <div className="p-8 space-y-8 animate-fade-in max-w-[1600px] mx-auto pb-24">
          {/* HEADER */}
-         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-brand shadow-brand border border-slate-100">
+         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
             <div>
-               <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+               <h1 className="text-lg font-semibold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span className="material-icons-round text-[#136dec] text-xl">bar_chart</span>
                   Tablero Financiero
                   {branchId === 'GLOBAL' && (
-                     <span className="bg-primary/10 text-primary text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest border border-primary/20">Consolidado Global</span>
+                     <span className="bg-blue-50 text-[#136dec] text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider border border-blue-100">Consolidado Global</span>
                   )}
                </h1>
-               <p className="text-slate-500 font-medium mt-1">Análisis profundo de rentabilidad y salud financiera.</p>
+               <p className="text-xs text-slate-400 mt-0.5">Análisis de rentabilidad y salud financiera.</p>
             </div>
-            <div className="flex items-center gap-4">
-               <div className="bg-slate-50 px-5 py-3 rounded-2xl border border-slate-200 font-bold text-slate-700 flex items-center gap-3 shadow-sm transition-all hover:border-primary/30">
-                  <span className="material-icons-round text-primary text-xl">calendar_today</span>
-                  <input type="month" className="bg-transparent border-none outline-none text-sm cursor-pointer font-black text-brand-black uppercase tracking-tight"
+            <div className="flex items-center gap-3">
+               <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-[8px] border border-slate-200 text-sm hover:border-slate-300 transition-colors">
+                  <span className="material-icons-round text-[#136dec] text-[18px]">calendar_today</span>
+                  <input type="month" className="bg-transparent border-none outline-none text-sm cursor-pointer font-semibold text-slate-700"
                      value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`}
                      onChange={e => {
                         const [y, m] = e.target.value.split('-');
@@ -278,7 +279,7 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                      {/* Segments */}
                      <DonutSegment total={currentData.sales} value={currentData.cogs} offset={0} color="#f97316" />
                      <DonutSegment total={currentData.sales} value={currentData.wasteCost} offset={currentData.cogs} color="#ef4444" />
-                     <DonutSegment total={currentData.sales} value={currentData.payroll} offset={currentData.cogs + currentData.wasteCost} color="#0F52BA" />
+                     <DonutSegment total={currentData.sales} value={currentData.payroll} offset={currentData.cogs + currentData.wasteCost} color="#136dec" />
                      <DonutSegment total={currentData.sales} value={currentData.services} offset={currentData.cogs + currentData.wasteCost + currentData.payroll} color="#8b5cf6" />
                      <DonutSegment total={currentData.sales} value={currentData.otherExpenses} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services} color="#94a3b8" />
                      <DonutSegment total={currentData.sales} value={currentData.netProfit} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services + currentData.otherExpenses} color="#10b981" />

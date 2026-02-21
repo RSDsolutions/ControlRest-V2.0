@@ -149,22 +149,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
   }, [branchId]);
 
   return (
-    <div className="p-8 space-y-8 animate-fade-in max-w-[1600px] mx-auto pb-24">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-brand shadow-brand border border-slate-100">
+    <div className="p-6 space-y-6 animate-fade-in max-w-[1400px] mx-auto">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold text-brand-black flex items-center gap-3 mb-1">
-            <span className="material-icons-round text-primary text-3xl">dashboard</span>
-            Panel de Control {branchName && <span className="text-slate-300 font-medium text-2xl ml-2">| {branchName}</span>}
+          <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-0.5">
+            <span className="material-icons-round text-[#136dec] text-xl">dashboard</span>
+            Panel de Control {branchName && <span className="text-slate-300 font-normal text-base ml-1">— {branchName}</span>}
           </h1>
-          <p className="text-sm font-semibold text-slate-400 uppercase tracking-[0.15em]">{currentTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })} • {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+          <p className="text-xs text-slate-400">{currentTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })} · {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm ${pendingOrders > 5 ? 'bg-red-50 text-status-error ring-1 ring-red-100 animate-pulse' : 'bg-emerald-50 text-status-success ring-1 ring-emerald-100'}`}>
-            <span className="material-icons-round text-[18px]">restaurant</span>
-            Estado Cocina: {pendingOrders > 0 ? `${pendingOrders} Pendientes` : 'Sin Pedidos'}
+        <div className="flex items-center gap-2">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${pendingOrders > 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+            <span className="material-icons-round text-[14px]">restaurant</span>
+            {pendingOrders > 0 ? `${pendingOrders} Pendientes` : 'Sin Pedidos'}
           </div>
-          <div className="px-4 py-2 bg-primary/5 text-primary rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-sm ring-1 ring-primary/10">
-            <span className="material-icons-round text-[18px]">table_restaurant</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#136dec] rounded-full text-xs font-semibold">
+            <span className="material-icons-round text-[14px]">table_restaurant</span>
             Mesas: {activeTables}/{tables.length}
           </div>
         </div>
@@ -454,18 +454,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
 };
 
 const KPIBox = ({ label, value, sub, icon, color }: any) => (
-  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
-    <div className="flex justify-between items-start mb-2">
-      <span className={`material-icons-round text-2xl ${color}`}>{icon}</span>
-      {/* Trend could go here */}
+  <div className="bg-white p-5 rounded-[8px] border border-slate-200 shadow-card hover:shadow-brand transition-shadow">
+    <div className="flex items-center justify-between mb-3">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+      <span className={`material-icons-round text-xl ${color} opacity-70`}>{icon}</span>
     </div>
-    <div>
-      <h4 className="text-2xl font-black text-slate-800 tracking-tight">{value}</h4>
-      <div className="flex justify-between items-end">
-        <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">{label}</p>
-        <p className="text-[9px] font-bold text-slate-400 truncate max-w-[80px]">{sub}</p>
-      </div>
-    </div>
+    <h4 className="text-2xl font-bold text-slate-900 tracking-tight">{value}</h4>
+    <p className="text-xs text-slate-400 mt-1">{sub}</p>
   </div>
 );
 

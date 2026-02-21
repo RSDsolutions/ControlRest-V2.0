@@ -232,50 +232,36 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 p-4 md:p-8 animate-fadeIn">
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 shrink-0">
+        <div className="flex flex-col h-full bg-slate-50 p-6 animate-fade-in">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 shrink-0 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-800 flex items-center gap-3">
-                        <span className="material-icons-round text-primary">policy</span> Auditoría Financiera
+                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <span className="material-icons-round text-[#136dec] text-xl">policy</span> Auditoría Financiera
                     </h1>
-                    <p className="text-slate-500 font-medium mt-1">Exportación y revisión de bitácoras del sistema ERP</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Exportación y revisión de bitácoras del sistema ERP</p>
                 </div>
                 <button
                     onClick={generateAuditReportPdf}
-                    className="bg-primary hover:bg-primary-light text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/30 transition-all active:scale-95 whitespace-nowrap"
+                    className="btn btn-primary flex items-center gap-2 whitespace-nowrap"
                 >
-                    <span className="material-icons-round">picture_as_pdf</span>
+                    <span className="material-icons-round text-[18px]">picture_as_pdf</span>
                     Exportar PDF
                 </button>
             </header>
 
             {/* Filters */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6 shrink-0 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="card p-5 mb-5 shrink-0 grid grid-cols-1 md:grid-cols-5 gap-3">
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fecha Inicio</label>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-slate-700"
-                    />
+                    <label className="label">Fecha Inicio</label>
+                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Fecha Fin</label>
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-slate-700"
-                    />
+                    <label className="label">Fecha Fin</label>
+                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="input" />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Sucursal</label>
-                    <select
-                        value={selectedBranch}
-                        onChange={(e) => setSelectedBranch(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-slate-700 appearance-none bg-white"
-                    >
+                    <label className="label">Sucursal</label>
+                    <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)} className="input">
                         <option value="all">Todas las Sucursales</option>
                         {branches.map(branch => (
                             <option key={branch.id} value={branch.id}>{branch.name}</option>
@@ -283,12 +269,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Tipo de Evento</label>
-                    <select
-                        value={selectedEventType}
-                        onChange={(e) => setSelectedEventType(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-slate-700 appearance-none bg-white"
-                    >
+                    <label className="label">Tipo de Evento</label>
+                    <select value={selectedEventType} onChange={(e) => setSelectedEventType(e.target.value)} className="input">
                         <option value="all">Todos los Eventos</option>
                         {getEventTypes().map(type => (
                             <option key={type} value={type}>{getEventName(type)}</option>
@@ -296,12 +278,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Usuario</label>
-                    <select
-                        value={selectedUser}
-                        onChange={(e) => setSelectedUser(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary font-medium text-slate-700 appearance-none bg-white"
-                    >
+                    <label className="label">Usuario</label>
+                    <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)} className="input">
                         <option value="all">Todos los Usuarios</option>
                         {users.map(user => (
                             <option key={user.id} value={user.id}>{user.name} ({user.role})</option>
@@ -381,20 +359,19 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
 
             {/* Detail Modal */}
             {selectedEvent && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedEvent(null)}></div>
-                    <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp">
-                        <header className="px-6 py-6 md:px-8 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <div className="modal-overlay">
+                    <div className="modal-content max-w-2xl">
+                        <div className="modal-header">
                             <div>
-                                <h3 className="font-black text-slate-800 text-xl flex items-center gap-2">
-                                    <span className="material-icons-round text-primary">analytics</span>
+                                <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                                    <span className="material-icons-round text-[#136dec] text-xl">analytics</span>
                                     Detalle de Evento
                                 </h3>
                             </div>
-                            <button onClick={() => setSelectedEvent(null)} className="text-slate-400 hover:text-slate-600">
-                                <span className="material-icons-round">close</span>
+                            <button onClick={() => setSelectedEvent(null)} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
+                                <span className="material-icons-round text-xl">close</span>
                             </button>
-                        </header>
+                        </div>
                         <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-6">
                             <div className="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
                                 <div>

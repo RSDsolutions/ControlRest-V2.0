@@ -88,19 +88,20 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
 
     return (
         <>
-            <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto pb-24">
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-brand shadow-brand border border-slate-100">
+            <div className="p-6 space-y-5 animate-fade-in max-w-[1400px] mx-auto">
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
                     <div>
-                        <h1 className="text-3xl font-heading font-black text-brand-black tracking-tight flex items-center gap-3">
+                        <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                            <span className="material-icons-round text-[#136dec] text-xl">table_restaurant</span>
                             Configuración de Mesas
                         </h1>
-                        <p className="text-slate-500 font-medium mt-1">Organiza la distribución física de tu restaurante y gestiona capacidades.</p>
+                        <p className="text-xs text-slate-400 mt-0.5">Organiza la distribución física de tu restaurante y gestiona capacidades.</p>
                     </div>
                     <button
                         onClick={() => openModal()}
-                        className="btn btn-primary px-6 py-3 text-sm flex items-center gap-2"
+                        className="btn btn-primary flex items-center gap-2"
                     >
-                        <span className="material-icons-round text-base">add</span> Nueva Mesa
+                        <span className="material-icons-round text-[18px]">add</span> Nueva Mesa
                     </button>
                 </header>
 

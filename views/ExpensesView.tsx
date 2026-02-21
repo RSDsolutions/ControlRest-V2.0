@@ -145,24 +145,27 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
     };
 
     return (
-        <div className="p-8 space-y-8 animate-fadeIn">
-            <header className="flex justify-between items-center">
+        <div className="p-6 space-y-5 animate-fade-in">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Gastos Operativos</h1>
-                    <p className="text-slate-500 mt-1">Control financiero y análisis de rentabilidad.</p>
+                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <span className="material-icons-round text-[#136dec] text-xl">account_balance</span>
+                        Gastos Operativos
+                    </h1>
+                    <p className="text-xs text-slate-400 mt-0.5">Control financiero y análisis de rentabilidad.</p>
                 </div>
-                <div className="flex gap-4">
-                    <div className="flex bg-white rounded-xl border border-slate-200 p-1">
-                        <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>Dashboard</button>
-                        <button onClick={() => setActiveTab('list')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'list' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>Listado</button>
+                <div className="flex flex-wrap gap-2 items-center">
+                    <div className="flex bg-white rounded-[8px] border border-slate-200 p-0.5">
+                        <button onClick={() => setActiveTab('dashboard')} className={`px-3 py-1.5 rounded-[6px] text-sm font-semibold transition-all ${activeTab === 'dashboard' ? 'bg-[#136dec] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>Dashboard</button>
+                        <button onClick={() => setActiveTab('list')} className={`px-3 py-1.5 rounded-[6px] text-sm font-semibold transition-all ${activeTab === 'list' ? 'bg-[#136dec] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}>Listado</button>
                     </div>
-                    <input type="month" className="bg-white border text-slate-700 border-slate-200 rounded-xl px-4 py-2 font-bold text-sm" value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`} onChange={e => {
+                    <input type="month" className="input text-sm w-auto" value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`} onChange={e => {
                         const [y, m] = e.target.value.split('-');
                         setCurrentDate(new Date(parseInt(y), parseInt(m) - 1, 1));
                     }} />
                     {branchId !== 'GLOBAL' && (
-                        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm shadow-lg hover:bg-primary-light active:scale-95 transition-all">
-                            <span className="material-icons-round">add</span> Registrar Gasto
+                        <button onClick={() => setShowAddModal(true)} className="btn btn-primary flex items-center gap-2">
+                            <span className="material-icons-round text-[18px]">add</span> Registrar Gasto
                         </button>
                     )}
                 </div>
@@ -174,7 +177,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                         <KPI label="Total Gastos Op." value={`$${totalOpExpenses.toFixed(2)}`} sub={`${((totalOpExpenses / totalSales || 0) * 100).toFixed(1)}% de Ventas`} color="text-red-500" />
                         <KPI label="Margen Operativo" value={`$${operatingProfit.toFixed(2)}`} sub={`${((operatingProfit / totalSales || 0) * 100).toFixed(1)}%`} color="text-emerald-500" />
                         <KPI label="Utilidad Neta Est." value={`$${netProfit.toFixed(2)}`} sub={`${((netProfit / totalSales || 0) * 100).toFixed(1)}%`} color="text-slate-800" />
-                        <KPI label="Punto de Equilibrio" value={`$${Math.abs(breakEvenPoint).toFixed(2)}`} sub="Ventas Necesarias" color="text-blue-500" />
+                        <KPI label="Punto de Equilibrio" value={`$${Math.abs(breakEvenPoint).toFixed(2)}`} sub="Ventas Necesarias" color="text-[#136dec]" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -225,35 +228,40 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
             )}
 
             {activeTab === 'list' && (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 text-[10px] uppercase font-black text-slate-400 tracking-widest">
+                <div className="table-wrapper">
+                    <table className="table">
+                        <thead>
                             <tr>
-                                <th className="px-6 py-4">Fecha</th>
-                                {branchId === 'GLOBAL' && <th className="px-6 py-4">Sucursal</th>}
-                                <th className="px-6 py-4">Categoría</th>
-                                <th className="px-6 py-4">Descripción</th>
-                                <th className="px-6 py-4">Tipo</th>
-                                <th className="px-6 py-4 text-right">Monto</th>
+                                <th>Fecha</th>
+                                {branchId === 'GLOBAL' && <th>Sucursal</th>}
+                                <th>Categoría</th>
+                                <th>Descripción</th>
+                                <th>Tipo</th>
+                                <th className="text-right">Monto</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody>
                             {filteredExpenses.map(e => (
-                                <tr key={e.id} className="hover:bg-slate-50">
-                                    <td className="px-6 py-4 text-sm font-bold text-slate-700">{e.date}</td>
+                                <tr key={e.id}>
+                                    <td className="text-sm font-semibold text-slate-700">{e.date}</td>
                                     {branchId === 'GLOBAL' && (
-                                        <td className="px-6 py-4 text-xs font-bold text-slate-500 bg-slate-50/50">
-                                            {branches?.find(b => b.id === e.branchId)?.name || 'Desconocida'}
+                                        <td>
+                                            <span className="badge badge-neutral">
+                                                {branches?.find(b => b.id === e.branchId)?.name || 'Desconocida'}
+                                            </span>
                                         </td>
                                     )}
-                                    <td className="px-6 py-4 text-sm font-bold text-slate-800">{e.category} <span className="text-xs font-normal text-slate-400 block">{e.subcategory}</span></td>
-                                    <td className="px-6 py-4 text-sm text-slate-500">{e.description || '-'}</td>
-                                    <td className="px-6 py-4"><span className="px-2 py-1 bg-slate-100 rounded text-[10px] font-black uppercase text-slate-500">{e.type}</span></td>
-                                    <td className="px-6 py-4 text-right text-sm font-black text-slate-800 font-mono">${Number(e.amount).toFixed(2)}</td>
+                                    <td>
+                                        <p className="font-semibold text-slate-800">{e.category}</p>
+                                        {e.subcategory && <p className="text-xs text-slate-400">{e.subcategory}</p>}
+                                    </td>
+                                    <td className="text-sm text-slate-500">{e.description || '-'}</td>
+                                    <td><span className="badge badge-neutral uppercase">{e.type}</span></td>
+                                    <td className="text-right font-semibold text-slate-800 font-mono">${Number(e.amount).toFixed(2)}</td>
                                 </tr>
                             ))}
                             {filteredExpenses.length === 0 && (
-                                <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-400 font-bold">No hay gastos registrados en este periodo.</td></tr>
+                                <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-400 font-semibold">No hay gastos registrados en este periodo.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -347,10 +355,10 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
 };
 
 const KPI = ({ label, value, sub, color }: any) => (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-        <p className={`text-3xl font-black ${color} tracking-tight mb-1`}>{value}</p>
-        <p className="text-xs font-bold text-slate-500">{sub}</p>
+    <div className="kpi-card">
+        <p className="kpi-label">{label}</p>
+        <p className={`kpi-value ${color}`}>{value}</p>
+        <p className="text-xs text-slate-400 mt-1">{sub}</p>
     </div>
 );
 

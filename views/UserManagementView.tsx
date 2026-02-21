@@ -196,68 +196,71 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
 
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
-            <header className="flex justify-between items-center mb-8">
+        <div className="p-6 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
+            <header className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <span className="material-icons-round text-accent">group</span> Gestión de Personal
+                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <span className="material-icons-round text-[#136dec] text-xl">group</span>
+                        Gestión de Personal
                     </h1>
-                    <p className="text-slate-500 font-medium">Administra meseros y cajeros.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Administra meseros y cajeros de la sucursal.</p>
                 </div>
                 <button
                     onClick={() => openModal()}
-                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                    className="btn btn-primary flex items-center gap-2 text-sm"
                 >
-                    <span className="material-icons-round">person_add</span> Nuevo Usuario
+                    <span className="material-icons-round text-[18px]">person_add</span> Nuevo Usuario
                 </button>
             </header>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-slate-50 border-b border-slate-100">
+            <div className="table-wrapper">
+                <table className="table">
+                    <thead>
                         <tr>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Nombre</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Rol</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Sucursal</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">PIN</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Acciones</th>
+                            <th>Nombre</th>
+                            <th>Rol</th>
+                            <th>Sucursal</th>
+                            <th>PIN</th>
+                            <th>Estado</th>
+                            <th className="text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                         {users.map(u => (
-                            <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4 font-bold text-slate-800">
-                                    {u.name}
-                                    <div className="text-[10px] text-slate-400 font-normal">{u.email}</div>
+                            <tr key={u.id}>
+                                <td>
+                                    <p className="font-semibold text-slate-800">{u.name}</p>
+                                    <p className="text-xs text-slate-400">{u.email}</p>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-black uppercase ${u.role === UserRole.WAITER ? 'bg-orange-100 text-orange-700' : u.role === UserRole.KITCHEN ? 'bg-red-100 text-red-700' : 'bg-purple-100 text-purple-700'}`}>
+                                <td>
+                                    <span className={`badge ${u.role === UserRole.WAITER ? 'badge-warning' : u.role === UserRole.KITCHEN ? 'badge-error' : 'badge-purple'}`}>
                                         {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td>
                                     {u.branchName ? (
-                                        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
-                                            {u.branchName}
-                                        </span>
+                                        <span className="badge badge-neutral">{u.branchName}</span>
                                     ) : (
                                         <span className="text-xs italic text-slate-400">Sin Asignar</span>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 font-mono text-slate-500">****</td>
-                                <td className="px-6 py-4">
-                                    <span className={`w-2 h-2 rounded-full inline-block mr-2 ${u.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                                    <span className="text-sm font-medium text-slate-600">{u.isActive ? 'Activo' : 'Inactivo'}</span>
+                                <td className="font-mono text-slate-400 tracking-widest">••••</td>
+                                <td>
+                                    <span className={`badge ${u.isActive ? 'badge-success' : 'badge-neutral'}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-green-500' : 'bg-slate-400'}`}></span>
+                                        {u.isActive ? 'Activo' : 'Inactivo'}
+                                    </span>
                                 </td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                    <button onClick={() => openModal(u)} className="text-blue-600 font-bold text-xs hover:bg-blue-50 px-2 py-1 rounded">EDITAR</button>
-                                    <button onClick={() => toggleStatus(u)} className={`${u.isActive ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'} font-bold text-xs px-2 py-1 rounded`}>
-                                        {u.isActive ? 'DESACTIVAR' : 'ACTIVAR'}
-                                    </button>
-                                    {!u.isActive && (
-                                        <button onClick={() => deleteUser(u)} className="text-red-700 font-bold text-xs hover:bg-red-100 px-2 py-1 rounded">ELIMINAR</button>
-                                    )}
+                                <td className="text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        <button onClick={() => openModal(u)} className="btn btn-outline btn-sm">Editar</button>
+                                        <button onClick={() => toggleStatus(u)} className={`btn btn-sm ${u.isActive ? 'btn-danger' : 'btn-success'}`}>
+                                            {u.isActive ? 'Desactivar' : 'Activar'}
+                                        </button>
+                                        {!u.isActive && (
+                                            <button onClick={() => deleteUser(u)} className="btn btn-danger btn-sm">Eliminar</button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -267,64 +270,62 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                            <h3 className="font-black text-xl text-slate-800">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
-                            <button onClick={closeModal} className="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors">
-                                <span className="material-icons-round text-lg">close</span>
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3 className="text-base font-semibold text-slate-900">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
+                            <button onClick={closeModal} className="btn btn-ghost btn-icon text-slate-400">
+                                <span className="material-icons-round text-[20px]">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleSave} className="p-6 space-y-4 flex-1 overflow-y-auto">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre Completo</label>
-                                <input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                        <form onSubmit={handleSave}>
+                            <div className="modal-body space-y-4">
+                                <div className="form-group">
+                                    <label className="label">Nombre Completo</label>
+                                    <input type="text" required className="input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Correo Electrónico (Login)</label>
+                                    <input type="email" required className="input" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="ej: cocina1@gmail.com" />
+                                </div>
+                                <div className="form-group opacity-50 pointer-events-none">
+                                    <label className="label">Usuario (Referencia)</label>
+                                    <input type="text" className="input" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : ''}</label>
+                                    <input type="password" required={!editingUser} className="input" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">PIN de Bloqueo (4-6 dígitos)</label>
+                                    <input type="password" required maxLength={6} className="input" value={formData.pin} onChange={e => setFormData({ ...formData, pin: e.target.value })} placeholder="Para desbloquear pantalla" />
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Sucursal</label>
+                                    <select className="input" value={formData.branchId} onChange={e => setFormData({ ...formData, branchId: e.target.value })}>
+                                        <option value="" disabled>Seleccionar Sucursal</option>
+                                        {branches.map(b => (
+                                            <option key={b.id} value={b.id}>
+                                                {b.name} {b.isActive ? '' : '(Inactiva)'} {b.isMain ? '(Matriz)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="label">Rol</label>
+                                    <select className="input" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}>
+                                        <option value={UserRole.WAITER}>Mesero</option>
+                                        <option value={UserRole.CASHIER}>Cajero</option>
+                                        <option value={UserRole.KITCHEN}>Cocina</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Correo Electrónico (Login)</label>
-                                <input type="email" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="ej: cocina1@gmail.com" />
+                            <div className="modal-footer">
+                                <button type="button" onClick={closeModal} className="btn btn-outline">Cancelar</button>
+                                <button type="submit" disabled={loading} className="btn btn-primary">
+                                    {loading ? 'Guardando...' : 'Guardar'}
+                                </button>
                             </div>
-                            <div className="opacity-50 pointer-events-none">
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Usuario (Referencia)</label>
-                                <input type="text" className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-sm" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : ''}</label>
-                                <input type="password" required={!editingUser} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder={editingUser ? '••••••••' : ''} />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">PIN de Bloqueo (4-6 dígitos)</label>
-                                <input type="password" required maxLength={6} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.pin} onChange={e => setFormData({ ...formData, pin: e.target.value })} placeholder="Para desbloquear pantalla" />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Sucursal</label>
-                                <select
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700"
-                                    value={formData.branchId}
-                                    onChange={e => setFormData({ ...formData, branchId: e.target.value })}
-                                >
-                                    <option value="" disabled>Seleccionar Sucursal</option>
-                                    {branches.map(b => (
-                                        <option key={b.id} value={b.id}>
-                                            {b.name} {b.isActive ? '' : '(Inactiva)'} {b.isMain ? '(Matriz)' : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Rol</label>
-                                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}>
-                                    <option value={UserRole.WAITER}>Mesero</option>
-                                    <option value={UserRole.CASHIER}>Cajero</option>
-                                    <option value={UserRole.KITCHEN}>Cocina</option>
-                                </select>
-                            </div>
-                            <button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-black text-lg shadow-lg hover:shadow-xl transition-all mt-4">
-                                {loading ? 'Guardando...' : 'Guardar'}
-                            </button>
                         </form>
                     </div>
                 </div>

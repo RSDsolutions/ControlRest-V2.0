@@ -210,7 +210,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
         {/* Left Side: Brand & Value Prop */}
         <div className="hidden lg:flex flex-col space-y-12 pr-16 text-white animate-slide-right">
           <div className="flex items-center space-x-5">
-            <div className="w-16 h-16 bg-primary rounded-[22px] flex items-center justify-center text-white text-4xl font-heading font-black shadow-[0_20px_50px_rgba(15,82,186,0.5)] ring-1 ring-white/20 transform hover:rotate-6 transition-transform cursor-pointer">C</div>
+            <div className="w-16 h-16 bg-[#136dec] rounded-[22px] flex items-center justify-center text-white text-4xl font-heading font-black shadow-[0_20px_50px_rgba(19,109,236,0.45)] ring-1 ring-white/20 transform hover:rotate-6 transition-transform cursor-pointer">C</div>
             <div>
               <span className="text-4xl font-heading font-black tracking-tight block">ControlRest</span>
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary-light/60">Financial Intelligence V2.0</span>
@@ -280,7 +280,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                     Acceso Operativo
                   </button>
                   <div className="text-center pt-8 border-t border-slate-50 mt-8">
-                    <button onClick={() => goTo('register')} className="text-xs text-primary font-black uppercase tracking-widest hover:text-primary-dark transition-colors flex items-center justify-center gap-2 mx-auto">
+                    <button onClick={() => goTo('register')} className="text-xs text-[#136dec] font-black uppercase tracking-widest hover:text-[#0d5cc7] transition-colors flex items-center justify-center gap-2 mx-auto">
                       ¿Nuevo Negocio? <span className="underline decoration-2 underline-offset-4">Registrarme Aqui</span>
                     </button>
                   </div>
@@ -366,7 +366,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
               )}
 
               {mode !== 'select' && (
-                <button onClick={() => goTo('select')} className="w-full text-center mt-10 text-[10px] text-slate-400 hover:text-primary font-black flex items-center justify-center gap-3 transition-colors uppercase tracking-[0.2em]">
+                <button onClick={() => goTo('select')} className="w-full text-center mt-10 text-[10px] text-slate-400 hover:text-[#136dec] font-black flex items-center justify-center gap-3 transition-colors uppercase tracking-[0.2em]">
                   <span className="material-icons-round text-base">arrow_back</span> Regresar
                 </button>
               )}

@@ -238,22 +238,22 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
     }
 
     return (
-        <div className="p-8 space-y-8 animate-fadeIn relative">
-            <header className="flex justify-between items-start">
+        <div className="p-6 space-y-5 animate-fade-in">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                        <span className="material-icons-round text-primary text-3xl">shopping_cart</span>
+                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <span className="material-icons-round text-[#136dec] text-xl">shopping_cart</span>
                         Solicitudes de Compra
                     </h1>
-                    <p className="text-slate-500 mt-1 text-sm">
+                    <p className="text-xs text-slate-400 mt-0.5">
                         Crea órdenes, apruébalas y recibe mercancía para integrarla al inventario FIFO y al Ledger.
                     </p>
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 px-5 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                    className="btn btn-primary flex items-center gap-2"
                 >
-                    <span className="material-icons-round">{showForm ? 'close' : 'add'}</span>
+                    <span className="material-icons-round text-[18px]">{showForm ? 'close' : 'add'}</span>
                     {showForm ? 'Cancelar' : 'Nueva Solicitud'}
                 </button>
             </header>
@@ -265,7 +265,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             )}
 
             {showForm && (
-                <form onSubmit={handleCreatePO} className="bg-white rounded-2xl border-2 border-primary/20 shadow-xl p-6 space-y-5 animate-fadeIn">
+                <form onSubmit={handleCreatePO} className="card p-6 space-y-5 animate-fade-in border-l-4 border-l-[#136dec]">
                     <h2 className="text-lg font-black text-slate-900">Detalles de Solicitud</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,7 +338,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                     </div>
 
                     <div className="flex justify-end pt-4">
-                        <button type="submit" disabled={submitting} className="px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-md disabled:opacity-50">
+                        <button type="submit" disabled={submitting} className="btn btn-primary disabled:opacity-50">
                             {submitting ? 'Creando...' : 'Guardar Solicitud'}
                         </button>
                     </div>
@@ -383,8 +383,8 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
             {/* PO Details Drawer */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/20 backdrop-blur-sm animate-fadeIn">
-                    <div className="w-[500px] max-w-full bg-white h-full shadow-2xl p-6 flex flex-col pt-0 animate-slideLeft">
+                <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/20 backdrop-blur-sm animate-fade-in">
+                    <div className="w-[500px] max-w-full bg-white h-full shadow-2xl p-6 flex flex-col pt-0 animate-slide-left">
                         <header className="flex justify-between items-center py-4 border-b border-slate-100 mb-4 sticky top-0 bg-white z-10">
                             <h2 className="text-xl font-black text-slate-900">Orden de Compra</h2>
                             <button onClick={() => { setSelectedOrder(null); fetchOrders(); }} className="p-2 rounded-xl border-2 border-slate-100 hover:bg-slate-50 text-slate-400 transition-colors">
