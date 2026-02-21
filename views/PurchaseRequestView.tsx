@@ -46,7 +46,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                 .select(`
           *,
           suppliers(name),
-          users:created_by(raw_user_meta_data)
+          users:created_by(full_name)
         `)
                 .eq('branch_id', branchId)
                 .order('created_at', { ascending: false });
@@ -55,7 +55,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             setOrders((poData || []).map((p: any) => ({
                 ...p,
                 supplier_name: p.suppliers?.name,
-                creator_name: p.users?.raw_user_meta_data?.name || 'Usuario'
+                creator_name: p.users?.full_name || 'Usuario'
             })));
         } catch (err: any) {
             console.error('Error fetching POs', err);
