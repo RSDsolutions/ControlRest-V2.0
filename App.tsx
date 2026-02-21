@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import GlobalModeWarning from './components/GlobalModeWarning';
-import { UserRole, Ingredient, Plate, Order, Table, Expense, User, WasteRecord } from './types';
+import { UserRole, Ingredient, Plate, Order, Table, Expense, User, WasteRecord, Branch } from './types';
 import { INITIAL_INGREDIENTS, INITIAL_PLATES, INITIAL_TABLES } from './constants';
 import { supabase } from './supabaseClient';
 import { useSyncEngine } from './hooks/useSyncEngine';
@@ -479,7 +479,12 @@ const App: React.FC = () => {
           restaurant_id,
           branches:branch_id (
             id,
-            name
+            name,
+            address,
+            phone,
+            is_active,
+            is_main,
+            restaurant_id
           )
         `)
         .abortSignal(controller.signal);
@@ -516,20 +521,39 @@ const App: React.FC = () => {
             .from('branches')
             .select('*')
             .eq('restaurant_id', data.restaurant_id)
-            .eq('is_active', true)
             .abortSignal(controller.signal)
             .order('name');
 
           if (branchesData) {
-            setBranches(branchesData);
-            // Admins see everything if Global, or specific branch
+            const mappedBranches: Branch[] = branchesData.map(b => ({
+              id: b.id,
+              restaurantId: b.restaurant_id,
+              name: b.name,
+              address: b.address,
+              phone: b.phone,
+              isActive: b.is_active,
+              isMain: b.is_main
+            }));
+            setBranches(mappedBranches);
             setBranchId('GLOBAL');
           }
         } else {
           // For staff, populate branches with just their assigned branch
           if (data.branches) {
-            setBranches([data.branches]);
-            setBranchId(data.branch_id);
+            // branches join might return a single object or potentially an array depending on schema
+            const b = Array.isArray(data.branches) ? data.branches[0] : data.branches;
+            if (b) {
+              setBranches([{
+                id: b.id,
+                restaurantId: b.restaurant_id,
+                name: b.name,
+                address: b.address,
+                phone: b.phone,
+                isActive: b.is_active,
+                isMain: b.is_main
+              }]);
+              setBranchId(data.branch_id);
+            }
           }
         }
         // Fetch global data (plates)
