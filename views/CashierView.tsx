@@ -183,12 +183,12 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    if (!currentShift && !closingSummary) {
       return (
          <div className="flex flex-col items-center justify-center h-full min-h-[500px] animate-fadeIn p-4">
-            <div className="bg-white p-6 md:p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center border border-slate-100 max-h-[90vh] overflow-y-auto">
-               <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="material-icons-round text-5xl">lock_open</span>
+            <div className="bg-white p-6 md:p-8 rounded-[40px] shadow-2xl w-full max-w-md text-center border border-slate-100 max-h-[90vh] overflow-y-auto">
+               <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="material-icons-round text-3xl md:text-4xl">lock_open</span>
                </div>
-               <h2 className="text-3xl font-black text-slate-800 mb-2">Apertura de Caja</h2>
-               <p className="text-slate-500 mb-8">Inicia tu turno ingresando el monto base en efectivo.</p>
+               <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2">Apertura de Caja</h2>
+               <p className="text-slate-500 mb-6 text-sm">Inicia tu turno ingresando el monto base en efectivo.</p>
 
                <form onSubmit={handleOpenShift} className="text-left space-y-6">
                   <div>
@@ -420,12 +420,12 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowClosure(false)}></div>
                <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
-                  <header className="p-6 md:p-10 text-center bg-slate-50/50 shrink-0">
-                     <div className="w-16 h-16 md:w-24 md:h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-5xl">fact_check</span></div>
-                     <h3 className="text-2xl md:text-3xl font-black text-primary">Cierre de Caja</h3>
-                     <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase mt-2 md:mt-3 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
+                  <header className="px-6 py-6 md:px-8 md:py-6 text-center bg-slate-50/50 shrink-0 border-b border-slate-100">
+                     <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-inner"><span className="material-icons-round text-2xl md:text-3xl">fact_check</span></div>
+                     <h3 className="text-xl md:text-2xl font-black text-primary">Cierre de Caja</h3>
+                     <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase mt-1 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
                   </header>
-                  <div className="px-6 md:px-10 py-6 md:py-8 space-y-6 overflow-y-auto flex-1">
+                  <div className="px-6 md:px-8 py-4 md:py-6 space-y-4 overflow-y-auto flex-1">
                      <div className="grid grid-cols-2 gap-4">
                         <div>
                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_efectivo</label>
@@ -477,7 +477,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         />
                      </div>
                   </div>
-                  <footer className="p-6 md:p-10 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
+                  <footer className="px-6 py-4 md:px-8 md:py-6 bg-slate-50/80 border-t flex flex-col gap-3 shrink-0">
                      <button
                         onClick={handleCloseShiftCalculation}
                         className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-lg hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
@@ -495,12 +495,12 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowSplitPayment(false)}></div>
                <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
-                  <header className="p-6 md:p-10 text-center bg-accent/90 text-white shrink-0">
-                     <div className="w-16 h-16 md:w-24 md:h-24 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-5xl">payments</span></div>
-                     <h3 className="text-2xl md:text-3xl font-black">Pago Dividido</h3>
-                     <p className="text-white/70 font-bold text-[10px] md:text-xs uppercase mt-2 md:mt-3 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
+                  <header className="px-6 py-6 md:px-8 md:py-6 text-center bg-accent/90 text-white shrink-0 border-b border-white/10">
+                     <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-inner"><span className="material-icons-round text-2xl md:text-3xl">payments</span></div>
+                     <h3 className="text-xl md:text-2xl font-black">Pago Dividido</h3>
+                     <p className="text-white/70 font-bold text-[10px] md:text-xs uppercase mt-1 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
                   </header>
-                  <div className="px-6 md:px-10 py-6 md:py-8 space-y-4 md:space-y-6 overflow-y-auto flex-1">
+                  <div className="px-6 md:px-8 py-4 md:py-6 space-y-3 md:space-y-4 overflow-y-auto flex-1">
                      {Object.entries(splitPayments).map(([method, amount]) => (
                         <div key={method}>
                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
@@ -527,7 +527,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         </span>
                      </div>
                   </div>
-                  <footer className="p-6 md:p-10 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
+                  <footer className="px-6 py-4 md:px-8 md:py-6 bg-slate-50/80 border-t flex flex-col gap-3 shrink-0">
                      <button
                         onClick={confirmPayment}
                         disabled={Math.abs((Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) - aggregateTotal) > 0.01}
