@@ -386,12 +386,12 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       {showNewIngModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setShowNewIngModal(false)}></div>
-          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden animate-scaleUp overflow-y-auto max-h-[90vh]">
-            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden animate-scaleUp flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
               <h3 className="font-black text-xl text-primary">Nuevo Ingrediente / Insumo</h3>
               <button onClick={() => setShowNewIngModal(false)} className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-icons-round">close</span></button>
             </header>
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 flex-1 overflow-y-auto">
 
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -485,7 +485,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 </div>
               </div>
             </div>
-            <footer className="px-8 py-6 bg-slate-50 border-t flex justify-end gap-4">
+            <footer className="px-8 py-6 bg-slate-50 border-t flex justify-end gap-4 shrink-0">
               <button onClick={() => setShowNewIngModal(false)} className="px-6 py-2 font-black text-[10px] text-slate-400 uppercase tracking-widest">Cancelar</button>
               <button onClick={handleCreateIngredient} className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-primary/20 active:scale-95 transition-all">Guardar Inventario</button>
             </footer>
@@ -496,8 +496,8 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       {showPurchaseModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-primary/60 backdrop-blur-sm" onClick={() => setShowPurchaseModal(false)}></div>
-          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-scaleUp">
-            <header className="px-8 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="relative bg-white rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 animate-scaleUp flex flex-col max-h-[90vh]">
+            <header className="px-8 py-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 shrink-0">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-primary/10 rounded-2xl text-primary flex items-center justify-center"><span className="material-icons-round text-2xl">shopping_bag</span></div>
                 <div>
@@ -507,7 +507,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
               </div>
               <button onClick={() => setShowPurchaseModal(false)} className="text-slate-400 hover:text-red-500 transition-colors"><span className="material-icons-round">close</span></button>
             </header>
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 flex-1 overflow-y-auto">
               <div>
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ingrediente a Reponer</label>
                 <select className="w-full px-4 py-4 bg-slate-100 border-none rounded-2xl focus:ring-accent font-black text-sm uppercase" value={selectedIngId || ''} onChange={e => {
@@ -568,7 +568,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 </div>
               </div>
             </div>
-            <footer className="px-8 py-8 bg-slate-50 border-t flex justify-end gap-4">
+            <footer className="px-8 py-8 bg-slate-50 border-t flex justify-end gap-4 shrink-0">
               <button onClick={() => setShowPurchaseModal(false)} className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Descartar</button>
               <button onClick={handleRegisterPurchase} className="px-10 py-4 bg-primary text-white rounded-[20px] font-black text-sm uppercase shadow-xl shadow-primary/30 active:scale-95 transition-all">Confirmar y Actualizar</button>
             </footer>

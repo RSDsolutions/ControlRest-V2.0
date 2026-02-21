@@ -165,8 +165,8 @@ const AccountsPayableView: React.FC<AccountsPayableViewProps> = ({ currentUser, 
             {/* Payment Modal */}
             {isModalOpen && selectedPayable && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20">
-                        <div className="p-6 bg-amber-50 border-b border-amber-100 flex justify-between items-center">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-white/20 max-h-[90vh] flex flex-col">
+                        <div className="p-6 bg-amber-50 border-b border-amber-100 flex justify-between items-center shrink-0">
                             <h2 className="text-xl font-black text-amber-800 flex items-center gap-2">
                                 <span className="material-icons-round">payments</span> Liquidar Deuda
                             </h2>
@@ -174,7 +174,7 @@ const AccountsPayableView: React.FC<AccountsPayableViewProps> = ({ currentUser, 
                                 <span className="material-icons-round">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handlePayDebt} className="p-8 space-y-6">
+                        <form onSubmit={handlePayDebt} className="p-8 space-y-6 overflow-y-auto flex-1">
                             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 italic text-sm text-slate-600">
                                 Estás liquidando un monto de <strong className="text-slate-900">${selectedPayable.amount.toLocaleString()}</strong> correspondiente a la factura <strong>#{selectedPayable.invoice_number}</strong> de <strong>{selectedPayable.supplier_name}</strong>.
                             </div>

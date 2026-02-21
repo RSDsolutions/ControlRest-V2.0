@@ -231,8 +231,8 @@ const SupplierInvoicesView: React.FC<SupplierInvoicesViewProps> = ({ currentUser
             {/* Reset Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
-                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-white/20 max-h-[90vh] flex flex-col">
+                        <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
                             <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
                                 <span className="material-icons-round text-indigo-600">post_add</span> Nueva Factura Fiscal
                             </h2>
@@ -240,7 +240,7 @@ const SupplierInvoicesView: React.FC<SupplierInvoicesViewProps> = ({ currentUser
                                 <span className="material-icons-round">close</span>
                             </button>
                         </div>
-                        <form onSubmit={handleRegisterInvoice} className="p-8 space-y-4">
+                        <form onSubmit={handleRegisterInvoice} className="p-8 space-y-4 overflow-y-auto flex-1">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Orden de Compra Relacionada</label>

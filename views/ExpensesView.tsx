@@ -263,12 +263,12 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
             {showAddModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
-                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp">
-                        <header className="p-6 border-b border-slate-100 flex justify-between items-center">
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp flex flex-col max-h-[90vh]">
+                        <header className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
                             <h3 className="font-bold text-lg text-slate-900">Registrar Gasto</h3>
                             <button onClick={() => setShowAddModal(false)}><span className="material-icons-round text-slate-400">close</span></button>
                         </header>
-                        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div className="p-6 space-y-4 flex-1 overflow-y-auto">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fecha</label>
@@ -335,7 +335,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                                 <textarea className="w-full bg-slate-50 border-none rounded-xl px-4 py-2 font-bold text-sm h-20" value={newExpense.description || ''} onChange={e => setNewExpense({ ...newExpense, description: e.target.value })}></textarea>
                             </div>
                         </div>
-                        <footer className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                        <footer className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 shrink-0">
                             <button onClick={() => setShowAddModal(false)} className="px-6 py-2 rounded-xl font-bold text-slate-500 hover:bg-white hover:shadow transition-all">Cancelar</button>
                             <button onClick={handleCreateExpense} className="px-6 py-2 bg-primary text-white rounded-xl font-bold shadow-lg hover:bg-primary-light active:scale-95 transition-all">Guardar Gasto</button>
                         </footer>

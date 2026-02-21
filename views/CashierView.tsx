@@ -182,8 +182,8 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    // BLOCKING MODAL: Open Shift
    if (!currentShift && !closingSummary) {
       return (
-         <div className="flex flex-col items-center justify-center h-full min-h-[500px] animate-fadeIn">
-            <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center border border-slate-100">
+         <div className="flex flex-col items-center justify-center h-full min-h-[500px] animate-fadeIn p-4">
+            <div className="bg-white p-6 md:p-10 rounded-[40px] shadow-2xl w-full max-w-md text-center border border-slate-100 max-h-[90vh] overflow-y-auto">
                <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="material-icons-round text-5xl">lock_open</span>
                </div>
@@ -419,13 +419,13 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          {showClosure && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowClosure(false)}></div>
-               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp">
-                  <header className="p-10 text-center bg-slate-50/50">
-                     <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"><span className="material-icons-round text-5xl">fact_check</span></div>
-                     <h3 className="text-3xl font-black text-primary">Cierre de Caja</h3>
-                     <p className="text-slate-400 font-bold text-xs uppercase mt-3 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
+               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
+                  <header className="p-6 md:p-10 text-center bg-slate-50/50 shrink-0">
+                     <div className="w-16 h-16 md:w-24 md:h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-5xl">fact_check</span></div>
+                     <h3 className="text-2xl md:text-3xl font-black text-primary">Cierre de Caja</h3>
+                     <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase mt-2 md:mt-3 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
                   </header>
-                  <div className="px-10 py-8 space-y-6 max-h-[400px] overflow-y-auto">
+                  <div className="px-6 md:px-10 py-6 md:py-8 space-y-6 overflow-y-auto flex-1">
                      <div className="grid grid-cols-2 gap-4">
                         <div>
                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_efectivo</label>
@@ -477,7 +477,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         />
                      </div>
                   </div>
-                  <footer className="p-10 bg-slate-50/80 border-t flex flex-col gap-4">
+                  <footer className="p-6 md:p-10 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
                      <button
                         onClick={handleCloseShiftCalculation}
                         className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-lg hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
@@ -494,13 +494,13 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          {showSplitPayment && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowSplitPayment(false)}></div>
-               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp">
-                  <header className="p-10 text-center bg-accent/90 text-white">
-                     <div className="w-24 h-24 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner"><span className="material-icons-round text-5xl">payments</span></div>
-                     <h3 className="text-3xl font-black">Pago Dividido</h3>
-                     <p className="text-white/70 font-bold text-xs uppercase mt-3 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
+               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
+                  <header className="p-6 md:p-10 text-center bg-accent/90 text-white shrink-0">
+                     <div className="w-16 h-16 md:w-24 md:h-24 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-5xl">payments</span></div>
+                     <h3 className="text-2xl md:text-3xl font-black">Pago Dividido</h3>
+                     <p className="text-white/70 font-bold text-[10px] md:text-xs uppercase mt-2 md:mt-3 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
                   </header>
-                  <div className="px-10 py-8 space-y-6">
+                  <div className="px-6 md:px-10 py-6 md:py-8 space-y-4 md:space-y-6 overflow-y-auto flex-1">
                      {Object.entries(splitPayments).map(([method, amount]) => (
                         <div key={method}>
                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
@@ -527,7 +527,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         </span>
                      </div>
                   </div>
-                  <footer className="p-10 bg-slate-50/80 border-t flex flex-col gap-4">
+                  <footer className="p-6 md:p-10 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
                      <button
                         onClick={confirmPayment}
                         disabled={Math.abs((Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) - aggregateTotal) > 0.01}
