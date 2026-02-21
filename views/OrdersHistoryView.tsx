@@ -31,9 +31,9 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
             if (!currentUser?.restaurantId) return;
             let query = supabase
                 .from('users')
-                .select('id, full_name')
+                .select('id, full_name, role')
                 .eq('restaurant_id', currentUser.restaurantId)
-                .is('deleted_at', null)
+                .in('role', ['waiter', 'cashier'])
                 .order('full_name');
 
             if (branchId && branchId !== 'GLOBAL') {
@@ -166,7 +166,9 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                         >
                             <option value="all">Todos los Usuarios</option>
                             {users.map(u => (
-                                <option key={u.id} value={u.id}>{u.full_name || 'Sin Nombre'}</option>
+                                <option key={u.id} value={u.id}>
+                                    {u.full_name || 'Sin Nombre'} ({u.role === 'waiter' ? 'Mesero' : 'Cajero'})
+                                </option>
                             ))}
                         </select>
                     )}
@@ -266,7 +268,7 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-xs text-slate-500 font-medium">{order.waiterName || 'test3'}</span>
+                                        <span className="text-xs text-slate-500 font-medium">{order.waiterName || 'S/A'}</span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="font-bold text-slate-900 text-[13px]">{formatMoney(order.total)}</span>
