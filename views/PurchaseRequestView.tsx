@@ -253,7 +253,9 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                             const ingId = e.target.value;
                                             newItems[idx] = { ...newItems[idx], ingredient_id: ingId };
                                             const ing = ingredients.find(i => i.id === ingId);
-                                            if (ing) newItems[idx].cost = ing.unitPrice.toString();
+                                            // Handle dynamically mapped properties or undefined cases safely
+                                            const defaultCost = (ing as any)?.unitPrice ?? (ing as any)?.unit_cost_gr ?? 0;
+                                            if (ing) newItems[idx].cost = defaultCost.toString();
                                             setForm({ ...form, items: newItems });
                                         }}
                                         className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
