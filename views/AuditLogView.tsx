@@ -10,6 +10,29 @@ interface AuditLogViewProps {
     branches: Branch[];
 }
 
+const EVENT_TYPE_LABELS: Record<string, string> = {
+    'CASH_OPENING_FLOAT': 'Apertura de Caja',
+    'CASH_SESSION_CLOSED': 'Cierre de Caja',
+    'CASH_SESSION_OPENED': 'Inicio de Sesión de Caja',
+    'DAILY_FINANCIAL_SNAPSHOT': 'Corte de Caja Diario',
+    'EXPENSE_RECORDED': 'Gasto Registrado',
+    'INVENTORY_MOVEMENT_PURCHASE': 'Entrada de Inventario (Compra)',
+    'INVENTORY_MOVEMENT_SALE': 'Salida de Inventario (Venta)',
+    'ORDER_PAYMENT_CASH': 'Pago de Orden (Efectivo)',
+    'ORDER_PAYMENT_CARD': 'Pago de Orden (Tarjeta)',
+    'ORDER_PAYMENT_TRANSFER': 'Pago de Orden (Transferencia)',
+    'ORDER_PAYMENT_OTHER': 'Pago de Orden (Otro)',
+    'SYSTEM_ACTIVITY_CREATE_USER': 'Creación de Usuario',
+    'SYSTEM_ACTIVITY_EDIT_USER': 'Edición de Usuario',
+    'SUPPLIER_PAYMENT': 'Pago a Proveedor',
+    'SUPPLIER_INVOICE_REGISTERED': 'Factura de Proveedor',
+    'WASTE_RECORDED': 'Merma Registrada',
+    'CASH_DISCREPANCY': 'Discrepancia de Caja',
+    'INTERNAL_TRANSFER': 'Transferencia Interna',
+    'MANUAL_INCOME': 'Ingreso Manual',
+    'expense': 'Gasto Operativo'
+};
+
 export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
     const [events, setEvents] = useState<AuditEvent[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -73,9 +96,9 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         setLoading(false);
     };
 
-    const getEventTypes = () => {
+    const getEventTypes = (): string[] => {
         const types = new Set(events.map(e => e.event_type));
-        return Array.from(types).sort();
+        return Array.from(types) as string[];
     };
 
     const formatCurrency = (amount: number) => {
@@ -86,6 +109,10 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         if (!userId) return 'Sistema';
         const user = users.find(u => u.id === userId);
         return user ? user.name : 'Usuario Desconocido';
+    };
+
+    const getEventName = (eventType: string) => {
+        return EVENT_TYPE_LABELS[eventType] || eventType;
     };
 
     const getBranchName = (branchId?: string) => {
@@ -226,7 +253,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                     >
                         <option value="all">Todos los Eventos</option>
                         {getEventTypes().map(type => (
-                            <option key={type} value={type}>{type}</option>
+                            <option key={type} value={type}>{getEventName(type)}</option>
                         ))}
                     </select>
                 </div>
@@ -335,7 +362,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
                             <div className="grid grid-cols-2 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-100">
                                 <div>
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tipo de Evento</span>
-                                    <span className="font-bold text-slate-800">{selectedEvent.event_type}</span>
+                                    <span className="font-bold text-slate-800">{getEventName(selectedEvent.event_type)}</span>
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Fecha y Hora</span>
