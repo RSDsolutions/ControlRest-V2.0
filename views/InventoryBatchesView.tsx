@@ -20,6 +20,12 @@ interface Batch {
     expiration_date: string | null;
     expiration_status: 'valid' | 'expiring' | 'expired';
     status: 'active' | 'exhausted' | 'voided';
+    supplier_name?: string;
+}
+
+interface SupplierOption {
+    id: string;
+    name: string;
 }
 
 interface IngredientOption {
@@ -49,6 +55,7 @@ const expBadge = (s: Batch['expiration_status']) => {
 const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
     const [batches, setBatches] = useState<Batch[]>([]);
     const [ingredients, setIngredients] = useState<IngredientOption[]>([]);
+    const [suppliers, setSuppliers] = useState<SupplierOption[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [filter, setFilter] = useState<'all' | 'active' | 'exhausted'>('active');
@@ -60,6 +67,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
         unit_cost: '',
         purchase_reference: '',
         expiration_date: '',
+        supplier_id: '',
     });
     const [saving, setSaving] = useState(false);
     const [msg, setMsg] = useState<string | null>(null);
@@ -73,7 +81,8 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                 .select(`
           id, ingredient_id, quantity_received, quantity_remaining,
           unit_cost, purchase_reference, received_at, status, expiration_date, expiration_status,
-          ingredients(name, icon)
+          ingredients(name, icon),
+          suppliers(name)
         `)
                 .eq('branch_id', branchId)
                 .order('received_at', { ascending: false });
@@ -96,6 +105,7 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                 expiration_date: b.expiration_date,
                 expiration_status: b.expiration_status ?? 'valid',
                 status: b.status,
+                supplier_name: b.suppliers?.name,
             })));
         } catch (err) {
             console.error('[Batches] fetch error', err);
@@ -104,16 +114,26 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
         }
     }, [branchId, filter]);
 
-    const fetchIngredients = useCallback(async () => {
-        const { data } = await supabase
+    const fetchIngredientsAndSuppliers = useCallback(async () => {
+        const { data: ingData } = await supabase
             .from('ingredients')
             .select('id, name, icon')
             .order('name');
-        if (data) setIngredients(data.map((d: any) => ({ id: d.id, name: d.name, icon: d.icon ?? '📦' })));
-    }, []);
+        if (ingData) setIngredients(ingData.map((d: any) => ({ id: d.id, name: d.name, icon: d.icon ?? '📦' })));
+
+        if (currentUser?.restaurantId) {
+            const { data: supData } = await supabase
+                .from('suppliers')
+                .select('id, name')
+                .eq('restaurant_id', currentUser.restaurantId)
+                .eq('status', 'active')
+                .order('name');
+            if (supData) setSuppliers(supData);
+        }
+    }, [currentUser?.restaurantId]);
 
     useEffect(() => { fetchBatches(); }, [fetchBatches]);
-    useEffect(() => { fetchIngredients(); }, [fetchIngredients]);
+    useEffect(() => { fetchIngredientsAndSuppliers(); }, [fetchIngredientsAndSuppliers]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,11 +146,12 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                 p_quantity: parseFloat(form.quantity),
                 p_unit_cost: parseFloat(form.unit_cost),
                 p_purchase_ref: form.purchase_reference || null,
-                p_expiration_date: form.expiration_date || null
+                p_expiration_date: form.expiration_date || null,
+                p_supplier_id: form.supplier_id || null
             });
             if (error) throw error;
             setMsg('✅ Lote registrado exitosamente');
-            setForm({ ingredient_id: '', quantity: '', unit_cost: '', purchase_reference: '', expiration_date: '' });
+            setForm({ ingredient_id: '', quantity: '', unit_cost: '', purchase_reference: '', expiration_date: '', supplier_id: '' });
             setShowForm(false);
             fetchBatches();
         } catch (err: any) {
@@ -231,6 +252,19 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                             </select>
                         </div>
                         <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Proveedor (Opcional)</label>
+                            <select
+                                value={form.supplier_id}
+                                onChange={e => setForm(f => ({ ...f, supplier_id: e.target.value }))}
+                                className="w-full px-3 py-2.5 border-2 border-slate-200 rounded-xl focus:border-primary font-bold text-slate-800"
+                            >
+                                <option value="">Sin proveedor...</option>
+                                {suppliers.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cantidad (gr) *</label>
                             <input
                                 required type="number" min="0.0001" step="any"
@@ -321,6 +355,12 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                                         </p>
                                         {b.purchase_reference && (
                                             <p className="text-[10px] text-slate-500 font-bold mt-0.5">📄 {b.purchase_reference}</p>
+                                        )}
+                                        {b.supplier_name && (
+                                            <p className="text-[10px] text-slate-500 font-bold mt-0.5 flex items-center gap-1">
+                                                <span className="material-icons-round text-[12px]">local_shipping</span>
+                                                {b.supplier_name}
+                                            </p>
                                         )}
                                         {b.expiration_date && (
                                             <p className={`text-[10px] font-black mt-1 px-1.5 py-0.5 rounded inline-block uppercase ${expBadge(b.expiration_status)}`}>

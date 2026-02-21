@@ -22,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
       { label: 'Perfil Empresarial', path: '/enterprise-profile', icon: 'settings_suggest' },
       { label: 'Auditoría', path: '/audit', icon: 'history' },
       { label: 'Ingredientes', icon: 'restaurant', path: '/ingredients' },
+      { label: 'Proveedores', icon: 'local_shipping', path: '/suppliers' },
       { label: 'Inventario', icon: 'inventory_2', path: '/inventory' },
       { label: 'Lotes FIFO', icon: 'playlist_add_check', path: '/inventory-batches' },
       { label: 'Control Merma', icon: 'delete_forever', path: '/waste' },

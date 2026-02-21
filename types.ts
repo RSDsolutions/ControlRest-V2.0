@@ -164,6 +164,17 @@ export interface CompanyProfile {
   createdAt?: string;
 }
 
+export interface Supplier {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  contact_name?: string;
+  phone?: string;
+  email?: string;
+  notes?: string;
+  status: 'active' | 'inactive';
+}
+
 export interface CashSession {
   id: string;
   restaurantId: string;

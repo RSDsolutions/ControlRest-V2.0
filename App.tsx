@@ -16,6 +16,7 @@ import AdminDashboard from './views/AdminDashboard';
 import IngredientsView from './views/IngredientsView';
 import InventoryView from './views/InventoryView';
 import InventoryBatchesView from './views/InventoryBatchesView';
+import SuppliersView from './views/SuppliersView';
 import PlatesView from './views/PlatesView';
 import WaiterView from './views/WaiterView';
 import CashierView from './views/CashierView';
@@ -642,6 +643,7 @@ const App: React.FC = () => {
             <Route path="/admin" element={<AdminDashboard ingredients={ingredients} plates={plates} orders={orders} tables={tables} branchName={branches.find(b => b.id === branchId)?.name} branchId={branchId} />} />
             <Route path="/waste" element={<WasteView ingredients={ingredients} currentUser={user} restaurantId={restaurantId || ''} branchId={branchId || ''} branches={branches} />} />
             <Route path="/ingredients" element={<IngredientsView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} restaurantId={restaurantId} />} />
+            <Route path="/suppliers" element={<SuppliersView currentUser={user} restaurantId={restaurantId} />} />
             <Route path="/inventory" element={<InventoryView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} />} />
             <Route path="/inventory-batches" element={<InventoryBatchesView branchId={branchId} currentUser={user} />} />
             <Route path="/tables" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <TablesView tables={tables} setTables={setTables} branchId={branchId} />} />
