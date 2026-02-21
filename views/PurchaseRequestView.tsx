@@ -174,9 +174,15 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
         setSubmitting(true);
         try {
-            // 1. Update PO supplier and status
+            // 1. Update PO supplier, status, payment method
             const { error: poError } = await supabase.from('purchase_orders')
-                .update({ supplier_id: selectedOrder.supplier_id || null, status: 'approved', updated_at: new Date().toISOString() })
+                .update({
+                    supplier_id: selectedOrder.supplier_id || null,
+                    status: 'approved',
+                    updated_at: new Date().toISOString(),
+                    payment_method: selectedOrder.payment_method || null,
+                    credit_months: selectedOrder.credit_months || 0
+                })
                 .eq('id', selectedOrder.id);
             if (poError) throw poError;
 
@@ -404,6 +410,42 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                     <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Proveedor:</span> {selectedOrder.supplier_name || 'Sin especificar'}</p>
                                 )}
 
+                                {selectedOrder.status === 'pending' && (
+                                    <div className="grid grid-cols-2 gap-2 mb-2">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase">Método Pago:</label>
+                                            <select
+                                                value={selectedOrder.payment_method || ''}
+                                                onChange={e => setSelectedOrder({ ...selectedOrder, payment_method: e.target.value as any })}
+                                                className="w-full mt-1 p-2 text-sm font-bold border rounded bg-white"
+                                            >
+                                                <option value="">Seleccionar...</option>
+                                                <option value="cash">Efectivo</option>
+                                                <option value="card">Tarjeta</option>
+                                                <option value="credit">Crédito</option>
+                                            </select>
+                                        </div>
+                                        {selectedOrder.payment_method === 'credit' && (
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-400 uppercase">Meses Crédito:</label>
+                                                <input
+                                                    type="number"
+                                                    value={selectedOrder.credit_months || ''}
+                                                    onChange={e => setSelectedOrder({ ...selectedOrder, credit_months: parseInt(e.target.value) || 0 })}
+                                                    className="w-full mt-1 p-2 text-sm font-bold border rounded bg-white"
+                                                    placeholder="Ej: 3"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {selectedOrder.status !== 'pending' && selectedOrder.payment_method && (
+                                    <p className="text-sm font-bold text-slate-700">
+                                        <span className="text-slate-400">Pago:</span> {selectedOrder.payment_method === 'credit' ? `Crédito (${selectedOrder.credit_months} meses)` : selectedOrder.payment_method === 'cash' ? 'Efectivo' : 'Tarjeta'}
+                                    </p>
+                                )}
+
                                 <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Fecha:</span> {new Date(selectedOrder.created_at).toLocaleString()}</p>
                                 {selectedOrder.notes && (
                                     <p className="text-sm font-bold text-slate-700"><span className="text-slate-400">Notas:</span> {selectedOrder.notes}</p>
@@ -461,14 +503,15 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <label className="text-[10px] font-bold text-slate-400">Costo Esperado ($ / unid)</label>
+                                                                <label className="text-[10px] font-bold text-slate-400">Costo TOTAL Solicitud ($)</label>
                                                                 <input
                                                                     type="number"
                                                                     step="any"
-                                                                    value={item.expected_unit_cost}
+                                                                    value={(item.expected_unit_cost * item.quantity_requested).toFixed(2)}
                                                                     onChange={e => {
+                                                                        const total = parseFloat(e.target.value) || 0;
                                                                         const newItems = [...selectedOrder.items!];
-                                                                        newItems[i].expected_unit_cost = parseFloat(e.target.value) || 0;
+                                                                        newItems[i].expected_unit_cost = item.quantity_requested > 0 ? (total / item.quantity_requested) : 0;
                                                                         setSelectedOrder({ ...selectedOrder, items: newItems });
                                                                     }}
                                                                     className="w-full p-1 border border-blue-200 rounded bg-blue-50 text-blue-900 font-bold"
@@ -477,15 +520,15 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <p>Req: <span className="font-bold">{item.quantity_requested} {unitUI}</span></p>
-                                                            <p>Costo Esp: <span className="font-bold">${item.expected_unit_cost.toFixed(4)}/{unitUI}</span></p>
+                                                            <p>Cant: <span className="font-bold">{item.quantity_requested} {unitUI}</span></p>
+                                                            <p>Total Est: <span className="font-bold">${(item.expected_unit_cost * item.quantity_requested).toFixed(2)}</span></p>
                                                         </>
                                                     )}
 
                                                     {item.status === 'received' && (
                                                         <>
                                                             <p className="text-emerald-700">Recibido: <span className="font-bold">{item.quantity_received} {unitUI}</span></p>
-                                                            <p className="text-emerald-700">Costo Real: <span className="font-bold">${item.actual_unit_cost?.toFixed(4)}/{unitUI}</span></p>
+                                                            <p className="text-emerald-700">Total Real: <span className="font-bold">${((item.actual_unit_cost || 0) * item.quantity_received).toFixed(2)}</span></p>
                                                         </>
                                                     )}
                                                 </div>
@@ -504,18 +547,19 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                                             <form className="mt-2 space-y-2 border-t border-slate-100 pt-2" onSubmit={(e: any) => {
                                                                 e.preventDefault();
                                                                 const aq = parseFloat(e.target.aq.value);
-                                                                const ac = parseFloat(e.target.ac.value);
+                                                                const total = parseFloat(e.target.totalCost.value);
+                                                                const ac = aq > 0 ? (total / aq) : 0;
                                                                 const ed = e.target.ed.value;
                                                                 receiveItem(item.id, aq, ac, ed);
                                                             }}>
                                                                 <div className="grid grid-cols-2 gap-2">
                                                                     <div>
                                                                         <label className="text-[10px] font-bold text-slate-400">Cant. Recibida ({unitUI})</label>
-                                                                        <input required name="aq" type="number" step="any" defaultValue={item.quantity_requested} className="w-full p-1 border rounded text-sm" />
+                                                                        <input required id={`aq-${item.id}`} name="aq" type="number" step="any" defaultValue={item.quantity_requested} className="w-full p-1 border rounded text-sm" />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-[10px] font-bold text-slate-400">Costo Real ($ / unid.)</label>
-                                                                        <input required name="ac" type="number" step="any" defaultValue={item.expected_unit_cost} className="w-full p-1 border rounded text-sm" />
+                                                                        <label className="text-[10px] font-bold text-slate-400">Costo TOTAL Factura ($)</label>
+                                                                        <input required id={`totalCost-${item.id}`} name="totalCost" type="number" step="any" defaultValue={(item.expected_unit_cost * item.quantity_requested).toFixed(2)} className="w-full p-1 border rounded text-sm" />
                                                                     </div>
                                                                 </div>
                                                                 <div>

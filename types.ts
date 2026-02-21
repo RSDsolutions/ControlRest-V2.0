@@ -233,6 +233,8 @@ export interface PurchaseOrder {
   creator_name?: string;
   status: 'pending' | 'approved' | 'received' | 'cancelled';
   notes: string | null;
+  payment_method?: 'cash' | 'card' | 'credit' | null;
+  credit_months?: number;
   created_at: string;
   updated_at: string;
   items?: PurchaseOrderItem[];
