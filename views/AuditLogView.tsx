@@ -18,19 +18,29 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
     'EXPENSE_RECORDED': 'Gasto Registrado',
     'INVENTORY_MOVEMENT_PURCHASE': 'Entrada de Inventario (Compra)',
     'INVENTORY_MOVEMENT_SALE': 'Salida de Inventario (Venta)',
+    'INVENTORY_MOVEMENT_WASTE': 'Salida de Inventario (Merma)',
+    'INVENTORY_MOVEMENT_ADJUSTMENT': 'Ajuste de Inventario',
     'ORDER_PAYMENT_CASH': 'Pago de Orden (Efectivo)',
     'ORDER_PAYMENT_CARD': 'Pago de Orden (Tarjeta)',
     'ORDER_PAYMENT_TRANSFER': 'Pago de Orden (Transferencia)',
     'ORDER_PAYMENT_OTHER': 'Pago de Orden (Otro)',
+    'ORDER_PAYMENT_CREDIT': 'Pago de Orden (Crédito)',
     'SYSTEM_ACTIVITY_CREATE_USER': 'Creación de Usuario',
     'SYSTEM_ACTIVITY_EDIT_USER': 'Edición de Usuario',
+    'SYSTEM_ACTIVITY_DELETE_USER': 'Eliminación de Usuario',
+    'SYSTEM_ACTIVITY_LOGIN': 'Inicio de Sesión',
+    'ACCOUNTS_PAYABLE_PAYMENT': 'Abono a Cuenta CXP',
     'SUPPLIER_PAYMENT': 'Pago a Proveedor',
     'SUPPLIER_INVOICE_REGISTERED': 'Factura de Proveedor',
     'WASTE_RECORDED': 'Merma Registrada',
     'CASH_DISCREPANCY': 'Discrepancia de Caja',
     'INTERNAL_TRANSFER': 'Transferencia Interna',
     'MANUAL_INCOME': 'Ingreso Manual',
-    'expense': 'Gasto Operativo'
+    'expense': 'Gasto Operativo',
+    'revenue': 'Ingreso Financiero',
+    'SALE_REVENUE': 'Ingreso por Venta',
+    'inventory_purchase': 'Compra de Inventario',
+    'waste_loss': 'Pérdida por Merma'
 };
 
 export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
@@ -147,7 +157,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         // Filter events for table
         const tableData = events.map(event => [
             format(new Date(event.timestamp), 'dd/MM/yy HH:mm'),
-            event.event_type,
+            getEventName(event.event_type),
             event.reference_id?.substring(0, 8) || 'N/A',
             formatCurrency(event.amount),
             getUserName(event.user_id)
