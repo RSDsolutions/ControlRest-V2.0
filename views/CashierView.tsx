@@ -30,12 +30,12 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    const [showClosure, setShowClosure] = useState(false);
    const [showSplitPayment, setShowSplitPayment] = useState(false);
 
-   // Payment split state
+   // Payment split state (Using strings to allow easy manual entry of decimals)
    const [splitPayments, setSplitPayments] = useState({
-      CASH: 0,
-      CARD: 0,
-      TRANSFER: 0,
-      OTHER: 0
+      CASH: '',
+      CARD: '',
+      TRANSFER: '',
+      OTHER: ''
    });
 
    // Form states
@@ -121,6 +121,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
    const handleStartPayment = (t: Table) => {
       setProcessingTableId(t.id || t.label);
+      setSplitPayments({ CASH: '', CARD: '', TRANSFER: '', OTHER: '' });
    };
 
    const selectedTable = tables.find(t => (t.id || t.label) === processingTableId);
@@ -137,7 +138,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          return;
       }
 
-      const totalPaid = (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0);
+      const totalPaid = (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0);
       if (Math.abs(totalPaid - aggregateTotal) > 0.01) {
          alert(`El monto total ($${totalPaid.toFixed(2)}) no coincide con el total de la orden ($${aggregateTotal.toFixed(2)})`);
          return;
@@ -146,8 +147,8 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       try {
          const orderIds = tableOrders.map(o => o.id);
          const paymentsPayload = Object.entries(splitPayments)
-            .filter(([_, amount]) => (amount as number) > 0)
-            .map(([method, amount]) => ({ method: method as any, amount: amount as number }));
+            .filter(([_, amount]) => parseFloat((amount as string) || '0') > 0)
+            .map(([method, amount]) => ({ method: method as any, amount: parseFloat((amount as string) || '0') }));
 
          const result = await closeOrderSplitMutation.mutateAsync({
             p_order_ids: orderIds,
@@ -157,7 +158,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
          setProcessingTableId(null);
          setShowSplitPayment(false);
-         setSplitPayments({ CASH: 0, CARD: 0, TRANSFER: 0, OTHER: 0 });
+         setSplitPayments({ CASH: '', CARD: '', TRANSFER: '', OTHER: '' });
 
          if (result?.isOffline) {
             alert('📴 Sin conexión — el pago se guardó localmente y se procesará automáticamente al reconectar.');
@@ -512,8 +513,8 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                                  step="0.01"
                                  className="w-full pl-10 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-xl text-slate-800 focus:ring-4 focus:ring-accent/20 focus:border-accent outline-none transition-all"
                                  placeholder="0.00"
-                                 value={amount === 0 ? '' : (amount as number).toFixed(2)}
-                                 onChange={e => setSplitPayments(prev => ({ ...prev, [method]: parseFloat(e.target.value || '0') }))}
+                                 value={amount}
+                                 onChange={e => setSplitPayments(prev => ({ ...prev, [method]: e.target.value }))}
                               />
                               <span className="absolute left-4 top-4.5 text-slate-400 text-lg">$</span>
                            </div>
@@ -521,15 +522,15 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                      ))}
                      <div className="flex justify-between items-center pt-4 border-t border-slate-100">
                         <span className="font-black text-slate-900 text-lg">Monto Pendiente</span>
-                        <span className={`text-3xl font-black font-mono ${aggregateTotal - (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0) > 0.01 ? 'text-red-500' : 'text-emerald-500'}`}>
-                           ${(aggregateTotal - (Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0)).toFixed(2)}
+                        <span className={`text-3xl font-black font-mono ${aggregateTotal - (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) > 0.01 ? 'text-red-500' : 'text-emerald-500'}`}>
+                           ${(aggregateTotal - (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0)).toFixed(2)}
                         </span>
                      </div>
                   </div>
                   <footer className="p-10 bg-slate-50/80 border-t flex flex-col gap-4">
                      <button
                         onClick={confirmPayment}
-                        disabled={Math.abs((Object.values(splitPayments) as number[]).reduce((a, b) => a + b, 0) - aggregateTotal) > 0.01}
+                        disabled={Math.abs((Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) - aggregateTotal) > 0.01}
                         className="w-full py-5 bg-accent text-white rounded-[24px] font-black text-lg hover:bg-accent-hover transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                         <span className="material-icons-round">check_circle</span> Confirmar Pago
