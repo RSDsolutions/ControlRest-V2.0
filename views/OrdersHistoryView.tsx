@@ -23,21 +23,33 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
     const [selectedUserId, setSelectedUserId] = useState<string>('all');
     const [users, setUsers] = useState<{ id: string, full_name: string }[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
 
     useEffect(() => {
         const fetchUsers = async () => {
             if (!currentUser?.restaurantId) return;
-            const { data, error } = await supabase
+            let query = supabase
                 .from('users')
                 .select('id, full_name')
                 .eq('restaurant_id', currentUser.restaurantId)
                 .is('deleted_at', null)
                 .order('full_name');
 
+            if (branchId && branchId !== 'GLOBAL') {
+                query = query.eq('branch_id', branchId);
+            }
+
+            const { data, error } = await query;
             if (!error && data) setUsers(data);
         };
         fetchUsers();
-    }, [currentUser]);
+    }, [currentUser, branchId]);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [currentDate, filterStatus, showAllDates, selectedUserId]);
 
     const filteredOrders = useMemo(() => {
         return orders.filter(o => {
@@ -64,6 +76,13 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
             return matchesDate && matchesStatus && matchesUser;
         });
     }, [orders, currentDate, filterStatus, showAllDates, selectedUserId]);
+
+    const paginatedOrders = useMemo(() => {
+        const start = (currentPage - 1) * pageSize;
+        return filteredOrders.slice(start, start + pageSize);
+    }, [filteredOrders, currentPage]);
+
+    const totalPages = Math.ceil(filteredOrders.length / pageSize);
 
     // Stats
     const totalSales = filteredOrders.reduce((sum, o) => sum + (o.status === 'paid' ? o.total : 0), 0);
@@ -218,10 +237,10 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredOrders.length === 0 ? (
+                        {paginatedOrders.length === 0 ? (
                             <tr><td colSpan={branchId === 'GLOBAL' ? 7 : 6} className="px-6 py-12 text-center text-slate-400 font-semibold">No se encontraron pedidos.</td></tr>
                         ) : (
-                            filteredOrders.map(order => (
+                            paginatedOrders.map(order => (
                                 <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
@@ -269,13 +288,25 @@ const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({ plates, tables, b
             {/* Pagination / Table Footer */}
             <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 bg-white/50 backdrop-blur-sm rounded-xl border border-slate-100 gap-4">
                 <p className="text-[11px] text-slate-400 font-medium">
-                    Mostrando <span className="text-slate-900 font-bold">1</span> a <span className="text-slate-900 font-bold">{Math.min(10, filteredOrders.length)}</span> de <span className="text-slate-900 font-bold">{filteredOrders.length}</span> resultados
+                    Mostrando <span className="text-slate-900 font-bold">{filteredOrders.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> a <span className="text-slate-900 font-bold">{Math.min(currentPage * pageSize, filteredOrders.length)}</span> de <span className="text-slate-900 font-bold">{filteredOrders.length}</span> resultados
                 </p>
                 <div className="flex items-center gap-2">
-                    <button className="px-4 py-2 bg-slate-50 text-slate-400 text-[11px] font-bold rounded-lg border border-slate-100 cursor-not-allowed">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={`px-4 py-2 text-[11px] font-bold rounded-lg border transition-all ${currentPage === 1 ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-600 border-slate-200 hover:border-[#136dec] hover:text-[#136dec]'}`}
+                    >
                         Anterior
                     </button>
-                    <button className="px-4 py-2 bg-white text-slate-600 text-[11px] font-bold rounded-lg border border-slate-200 hover:border-[#136dec] hover:text-[#136dec] transition-all">
+                    <div className="flex items-center gap-1 px-2">
+                        <span className="text-[11px] font-bold text-slate-700">{currentPage}</span>
+                        <span className="text-[11px] font-medium text-slate-400">/ {Math.max(1, totalPages)}</span>
+                    </div>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage >= totalPages}
+                        className={`px-4 py-2 text-[11px] font-bold rounded-lg border transition-all ${currentPage >= totalPages ? 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-600 border-slate-200 hover:border-[#136dec] hover:text-[#136dec]'}`}
+                    >
                         Siguiente
                     </button>
                 </div>
