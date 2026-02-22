@@ -251,7 +251,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="btn btn-primary flex items-center gap-2"
+                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
                 >
                     <span className="material-icons-round text-[18px]">{showForm ? 'close' : 'add'}</span>
                     {showForm ? 'Cancelar' : 'Nueva Solicitud'}
@@ -338,7 +338,11 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                     </div>
 
                     <div className="flex justify-end pt-4">
-                        <button type="submit" disabled={submitting} className="btn btn-primary disabled:opacity-50">
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
+                        >
                             {submitting ? 'Creando...' : 'Guardar Solicitud'}
                         </button>
                     </div>
@@ -459,10 +463,18 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
 
                             {selectedOrder.status === 'pending' && (
                                 <div className="flex gap-2">
-                                    <button onClick={approveOrderWithChanges} disabled={submitting} className="flex-1 py-2 bg-blue-600 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 transition-colors disabled:opacity-50">
+                                    <button
+                                        onClick={approveOrderWithChanges}
+                                        disabled={submitting}
+                                        className="btn flex-1 bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
+                                    >
                                         {submitting ? 'Guardando...' : 'Guardar y Aprobar'}
                                     </button>
-                                    <button onClick={() => updatePOStatus(selectedOrder.id, 'cancelled')} disabled={submitting} className="flex-[0.4] py-2 bg-red-100 text-red-700 font-bold rounded-lg border border-red-200 hover:bg-red-200 transition-colors">
+                                    <button
+                                        onClick={() => updatePOStatus(selectedOrder.id, 'cancelled')}
+                                        disabled={submitting}
+                                        className="btn flex-[0.4] bg-red-50 text-red-600 hover:bg-red-100 transition-all py-3 rounded-full shadow-lg shadow-red-100 font-bold border border-red-100"
+                                    >
                                         Cancelar Orden
                                     </button>
                                 </div>

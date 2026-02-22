@@ -10,7 +10,7 @@ interface EnterpriseProfileViewProps {
 }
 
 const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUser, branches, setBranches }) => {
-    const [activeTab, setActiveTab] = useState<'profile' | 'company' | 'branches'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'company'>('profile');
     const [loading, setLoading] = useState(false);
 
     // Profile State
@@ -27,11 +27,6 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
         email: '',
         mainAddress: ''
     });
-
-    // Branch State
-    const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
-    const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
-    const [branchForm, setBranchForm] = useState({ name: '', address: '', phone: '', status: 'active' });
 
     useEffect(() => {
         if (currentUser) {
@@ -95,7 +90,7 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
         try {
             const { error } = await supabase.auth.updateUser({ password: passwordData.new });
             if (error) throw error;
-            alert('Contraseña actualizada. Por favor inicie sesión nuevamente.');
+            alert('Contraseña actualizada correctamente.');
             setPasswordData({ current: '', new: '', confirm: '' });
         } catch (err: any) {
             alert('Error: ' + err.message);
@@ -125,25 +120,8 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                 const { error } = await supabase.from('company_profile').update(payload).eq('id', companyProfile.id);
                 if (error) throw error;
             } else {
-                const { data, error } = await supabase.from('company_profile').insert(payload).select().single();
+                const { error } = await supabase.from('company_profile').insert(payload);
                 if (error) throw error;
-
-                // Auto-create Matriz if applicable
-                const hasMainBranch = branches.some(b => b.isMain);
-                if (!hasMainBranch) {
-                    // We can verify via API if we want, but local state is a good proxy for UI feedback
-                    // Create Matriz Branch
-                    const { error: branchError } = await supabase.from('branches').insert({
-                        restaurant_id: currentUser.restaurantId,
-                        name: 'Matriz',
-                        address: companyForm.mainAddress,
-                        is_main: true,
-                        is_active: true
-                    });
-                    if (branchError) console.error('Error creating Matriz:', branchError);
-                    else alert('Se ha creado automáticamente la sucursal "Matriz".');
-                    // Reload branches logic needs to be hoisted or re-fetched
-                }
             }
 
             await fetchCompanyProfile();
@@ -155,280 +133,175 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
         }
     };
 
-    // --- Branch Handlers ---
-    const handleSaveBranch = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!currentUser?.restaurantId) return;
-
-        // Validation: Only 1 main branch (Handled mostly by UI blocking toggle, but let's be safe)
-
-        try {
-            setLoading(true);
-            const payload = {
-                name: branchForm.name,
-                address: branchForm.address,
-                phone: branchForm.phone,
-                is_active: branchForm.status === 'active',
-                restaurant_id: currentUser.restaurantId
-            };
-
-            if (editingBranch) {
-                const { error } = await supabase.from('branches').update(payload).eq('id', editingBranch.id);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.from('branches').insert(payload);
-                if (error) throw error;
-            }
-
-            // Refresh branches (Ideally passed from parent or re-fetched here)
-            // For now, simple manual update or prompt reload if parent doesn't auto-update
-            // But parent App.tsx passes branches, we need to call fetchBranches in parent or similar.
-            // Since specific fetch prop isn't passed, we'll rely on realtime or callback.
-            // Wait we passed `setBranches` but that's local state in App.tsx. 
-            // We should ideally call fetchBranches. 
-            // Workaround: We'll modify App.tsx to pass a refresh callback, OR just assume App.tsx realtime works?
-            // App.tsx has realtime for 'orders', not branches presumably. 
-            // Let's rely on standard fetch triggered by effect if we changed something? No.
-            // Let's ask user to refresh or we can try to re-fetch if we had the function.
-            // I'll add a simple reload hint or just optimistic update.
-            alert('Sucursal guardada. (Actualice para ver cambios si no aparecen)');
-            closeBranchModal();
-        } catch (err: any) {
-            alert('Error: ' + err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleBranchStatus = async (branch: Branch) => {
-        if (branch.isMain) return alert('No se puede desactivar la Matriz.');
-        try {
-            const newStatus = !branch.isActive;
-            const { error } = await supabase.from('branches').update({ is_active: newStatus }).eq('id', branch.id);
-            if (error) throw error;
-            setBranches(prev => prev.map(b => b.id === branch.id ? { ...b, isActive: newStatus } : b));
-        } catch (err: any) {
-            alert('Error: ' + err.message);
-        }
-    };
-
-    const openBranchModal = (branch?: Branch) => {
-        if (branch) {
-            setEditingBranch(branch);
-            setBranchForm({
-                name: branch.name,
-                address: branch.address || '',
-                phone: branch.phone || '',
-                status: branch.isActive ? 'active' : 'inactive'
-            });
-        } else {
-            setEditingBranch(null);
-            setBranchForm({ name: '', address: '', phone: '', status: 'active' });
-        }
-        setIsBranchModalOpen(true);
-    };
-
-    const closeBranchModal = () => {
-        setIsBranchModalOpen(false);
-        setEditingBranch(null);
-    };
-
     return (
-        <div className="p-6 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
-                <div>
-                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                        <span className="material-icons-round text-[#136dec] text-xl">settings_suggest</span> Perfil Empresarial
-                    </h1>
-                    <p className="text-xs text-slate-400 mt-0.5">Gestiona tu perfil, datos de la empresa y sucursales.</p>
+        <div className="flex flex-col h-full bg-slate-50 p-8 animate-fade-in max-w-[1400px] mx-auto space-y-8 font-sans">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <span className="material-icons-round text-primary text-2xl">settings</span>
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Perfil Empresarial</h1>
+                        <p className="text-xs text-slate-400 mt-0.5 font-medium">Gestiona tu perfil y datos de la empresa en RESTOGESTIÓN V2.0.</p>
+                    </div>
                 </div>
             </header>
 
-            {/* Tabs */}
-            <div className="flex bg-slate-100 p-0.5 rounded-[8px] border border-slate-200 w-fit">
-                <button onClick={() => setActiveTab('profile')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'profile' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
-                    <span className="material-icons-round text-[16px]">person</span> Mi Perfil
+            {/* Nav Tabs */}
+            <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200 w-fit">
+                <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2.5 ${activeTab === 'profile' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
+                >
+                    <span className="material-icons-round text-[18px]">person</span> Mi Perfil
                 </button>
-                <button onClick={() => setActiveTab('company')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'company' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
-                    <span className="material-icons-round text-[16px]">business</span> Empresa
-                </button>
-                <button onClick={() => setActiveTab('branches')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${activeTab === 'branches' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>
-                    <span className="material-icons-round text-[16px]">store</span> Sucursales
+                <button
+                    onClick={() => setActiveTab('company')}
+                    className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2.5 ${activeTab === 'company' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
+                >
+                    <span className="material-icons-round text-[18px]">business</span> Empresa
                 </button>
             </div>
 
-            <div className="card p-6">
-                {/* TAB 1: PROFILE */}
-                {activeTab === 'profile' && (
-                    <div className="max-w-xl space-y-8">
-                        <form onSubmit={handleUpdateProfile} className="space-y-4">
-                            <h2 className="text-base font-semibold text-slate-800">Información Personal</h2>
-                            <div>
-                                <label className="label">Nombre Completo</label>
-                                <input type="text" value={profileName} onChange={e => setProfileName(e.target.value)} className="input" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="label">Email</label>
-                                    <input type="text" value={currentUser?.email || ''} disabled className="input opacity-60 cursor-not-allowed" />
-                                </div>
-                                <div>
-                                    <label className="label">Rol</label>
-                                    <input type="text" value={currentUser?.role || ''} disabled className="input opacity-60 uppercase cursor-not-allowed" />
-                                </div>
-                            </div>
-                            <button type="submit" disabled={loading} className="btn btn-primary">
-                                Actualizar Datos
-                            </button>
-                        </form>
+            <main className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
+                {/* Main Form Content */}
+                <div className="space-y-8">
+                    {activeTab === 'profile' ? (
+                        <>
+                            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                                <h2 className="text-lg font-bold text-slate-800 tracking-tight">Información Personal</h2>
+                                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Nombre Completo</label>
+                                            <input type="text" value={profileName} onChange={e => setProfileName(e.target.value)} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300 shadow-sm" placeholder="Ej. Admin Robinson" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Email</label>
+                                            <input type="text" value={currentUser?.email || ''} disabled className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-400 cursor-not-allowed italic" />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3 rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center gap-2 text-sm"
+                                    >
+                                        <span className="material-icons-round text-[20px]">check_circle</span> Actualizar Datos
+                                    </button>
+                                </form>
+                            </section>
 
-                        <hr className="border-slate-100" />
-
-                        <form onSubmit={handleChangePassword} className="space-y-4">
-                            <h2 className="text-base font-semibold text-slate-800">Seguridad</h2>
-                            <div>
-                                <label className="label">Nueva Contraseña</label>
-                                <input type="password" value={passwordData.new} onChange={e => setPasswordData({ ...passwordData, new: e.target.value })} className="input" placeholder="Mínimo 6 caracteres" />
-                            </div>
-                            <div>
-                                <label className="label">Confirmar Contraseña</label>
-                                <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} className="input" placeholder="Repite la contraseña" />
-                            </div>
-                            <button type="submit" disabled={loading || !passwordData.new} className="btn btn-danger">
-                                Cambiar Contraseña
-                            </button>
-                        </form>
-                    </div>
-                )}
-
-                {/* TAB 2: COMPANY */}
-                {activeTab === 'company' && (
-                    <div className="max-w-2xl">
-                        <div className="mb-6 bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
-                            <span className="material-icons-round text-blue-600">info</span>
-                            <div>
-                                <p className="text-sm text-blue-800 font-bold">Matriz del Restaurante</p>
-                                <p className="text-xs text-blue-600">Al guardar esta información, se configurará automáticamente la sucursal principal (Matriz) si aún no existe. Esta información aparecerá en facturas y reportes oficiales.</p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleSaveCompany} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="label">Razón Social / Nombre Empresa</label>
-                                    <input type="text" required value={companyForm.businessName} onChange={e => setCompanyForm({ ...companyForm, businessName: e.target.value })} className="input" placeholder="Ej. Gastronomía S.A." />
+                            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                                <h2 className="text-lg font-bold text-slate-800 tracking-tight">Seguridad y Acceso</h2>
+                                <form onSubmit={handleChangePassword} className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Nueva Contraseña</label>
+                                            <input type="password" value={passwordData.new} onChange={e => setPasswordData({ ...passwordData, new: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-400 shadow-sm" placeholder="Mínimo 8 caracteres" />
+                                            <p className="text-[10px] text-slate-400 font-medium pl-1">Usa una combinación de letras, números y símbolos.</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Confirmar Contraseña</label>
+                                            <input type="password" value={passwordData.confirm} onChange={e => setPasswordData({ ...passwordData, confirm: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-400 shadow-sm" placeholder="Repite la contraseña" />
+                                        </div>
+                                    </div>
+                                    <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                                        <button
+                                            type="submit"
+                                            disabled={loading || !passwordData.new}
+                                            className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all px-8 py-3 rounded-2xl shadow-sm font-bold flex items-center gap-2 text-sm"
+                                        >
+                                            Cambiar Contraseña
+                                        </button>
+                                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest italic">Último cambio: Hace 3 meses</p>
+                                    </div>
+                                </form>
+                            </section>
+                        </>
+                    ) : (
+                        <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Datos Corporativos</h2>
+                            <form onSubmit={handleSaveCompany} className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="col-span-2 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Razón Social / Nombre Empresa</label>
+                                        <input type="text" required value={companyForm.businessName} onChange={e => setCompanyForm({ ...companyForm, businessName: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" placeholder="Ej. Gastronomía S.A." />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">RUC / ID Legal</label>
+                                        <input type="text" value={companyForm.ruc} onChange={e => setCompanyForm({ ...companyForm, ruc: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" placeholder="17900..." />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Representante Legal</label>
+                                        <input type="text" value={companyForm.legalRepresentative} onChange={e => setCompanyForm({ ...companyForm, legalRepresentative: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Teléfono</label>
+                                        <input type="text" value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Email Corporativo</label>
+                                        <input type="email" value={companyForm.email} onChange={e => setCompanyForm({ ...companyForm, email: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
+                                    </div>
+                                    <div className="col-span-2 space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Dirección Matriz</label>
+                                        <input type="text" value={companyForm.mainAddress} onChange={e => setCompanyForm({ ...companyForm, mainAddress: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="label">RUC / ID Legal</label>
-                                    <input type="text" value={companyForm.ruc} onChange={e => setCompanyForm({ ...companyForm, ruc: e.target.value })} className="input" placeholder="17900..." />
-                                </div>
-                                <div>
-                                    <label className="label">Representante Legal</label>
-                                    <input type="text" value={companyForm.legalRepresentative} onChange={e => setCompanyForm({ ...companyForm, legalRepresentative: e.target.value })} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Teléfono</label>
-                                    <input type="text" value={companyForm.phone} onChange={e => setCompanyForm({ ...companyForm, phone: e.target.value })} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Email Corporativo</label>
-                                    <input type="email" value={companyForm.email} onChange={e => setCompanyForm({ ...companyForm, email: e.target.value })} className="input" />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="label">Dirección Matriz</label>
-                                    <input type="text" value={companyForm.mainAddress} onChange={e => setCompanyForm({ ...companyForm, mainAddress: e.target.value })} className="input" />
-                                </div>
-                            </div>
-                            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-4">
-                                {loading ? 'Guardando...' : 'Guardar Información'}
-                            </button>
-                        </form>
-                    </div>
-                )}
-
-                {/* TAB 3: BRANCHES */}
-                {activeTab === 'branches' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-base font-semibold text-slate-800">Listado de Sucursales</h2>
-                            <button onClick={() => openBranchModal()} className="btn btn-primary flex items-center gap-2">
-                                <span className="material-icons-round text-[18px]">add_business</span> Nueva Sucursal
-                            </button>
-                        </div>
-
-                        <div className="overflow-hidden rounded-xl border border-slate-200">
-                            <table className="w-full">
-                                <thead className="bg-slate-50 border-b border-slate-100">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Nombre</th>
-                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Dirección</th>
-                                        <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-wider">Estado</th>
-                                        <th className="px-6 py-4 text-right text-xs font-black text-slate-400 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {branches.map(branch => (
-                                        <tr key={branch.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-800 flex items-center gap-2">
-                                                    {branch.name}
-                                                    {branch.isMain && <span className="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-black uppercase border border-amber-200">Matriz</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-600">{branch.address || '-'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded text-xs font-black uppercase ${branch.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                                                    {branch.isActive ? 'Activa' : 'Inactiva'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right space-x-2">
-                                                <button onClick={() => openBranchModal(branch)} className="text-blue-600 font-bold text-xs hover:bg-blue-50 px-2 py-1 rounded">EDITAR</button>
-                                                {!branch.isMain && (
-                                                    <button onClick={() => toggleBranchStatus(branch)} className={`${branch.isActive ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'} font-bold text-xs px-2 py-1 rounded`}>
-                                                        {branch.isActive ? 'DESACTIVAR' : 'ACTIVAR'}
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* BRANCH MODAL */}
-            {isBranchModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content max-w-md">
-                        <div className="modal-header">
-                            <h3 className="text-base font-semibold text-slate-900">{editingBranch ? 'Editar Sucursal' : 'Nueva Sucursal'}</h3>
-                            <button onClick={closeBranchModal} className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 transition-colors">
-                                <span className="material-icons-round text-xl">close</span>
-                            </button>
-                        </div>
-                        <form onSubmit={handleSaveBranch} className="p-6 space-y-4">
-                            <div>
-                                <label className="label">Nombre Sucursal</label>
-                                <input type="text" required className="input" value={branchForm.name} onChange={e => setBranchForm({ ...branchForm, name: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="label">Dirección</label>
-                                <input type="text" className="input" value={branchForm.address} onChange={e => setBranchForm({ ...branchForm, address: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="label">Teléfono</label>
-                                <input type="text" className="input" value={branchForm.phone} onChange={e => setBranchForm({ ...branchForm, phone: e.target.value })} />
-                            </div>
-                            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-4">
-                                {loading ? 'Guardando...' : 'Guardar'}
-                            </button>
-                        </form>
-                    </div>
+                                <button type="submit" disabled={loading} className="btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3 rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center gap-2 text-sm">
+                                    <span className="material-icons-round text-[20px]">save</span> {loading ? 'Guardando...' : 'Guardar Información'}
+                                </button>
+                            </form>
+                        </section>
+                    )}
                 </div>
-            )}
 
+                {/* Sidebar Info Content */}
+                <aside className="space-y-6">
+                    {/* Role Status Card */}
+                    <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center space-y-4">
+                        <div className="w-16 h-16 bg-slate-50/80 rounded-full flex items-center justify-center border border-slate-100 shadow-inner">
+                            <span className="material-icons-round text-slate-400 text-3xl">account_circle</span>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rol de Usuario</p>
+                            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary text-[11px] font-black uppercase tracking-wider rounded-full border border-primary/20 shadow-sm">
+                                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                {currentUser?.role || 'Guest'}
+                            </span>
+                        </div>
+                        <div className="pt-4 border-t border-slate-50 w-full">
+                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-2">Permisos Totales</h4>
+                            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                                Tienes acceso completo a configuraciones financieras, gestión de personal y reportes corporativos.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Help Card */}
+                    <div className="bg-primary p-8 rounded-3xl shadow-2xl shadow-primary/20 text-white relative overflow-hidden group">
+                        <span className="material-icons-round absolute -right-4 -bottom-4 text-[120px] opacity-10 group-hover:scale-110 transition-transform duration-700">help_outline</span>
+                        <div className="relative space-y-6">
+                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <span className="material-icons-round text-white">help_outline</span>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-lg font-bold tracking-tight">¿Necesitas ayuda?</h3>
+                                <p className="text-xs text-primary-100 leading-relaxed font-medium">
+                                    Consulta nuestra base de conocimientos para aprender a configurar tu entorno empresarial.
+                                </p>
+                            </div>
+                            <button className="w-full py-3 bg-white text-primary rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xl shadow-black/10">
+                                Ver Documentación <span className="material-icons-round text-lg">open_in_new</span>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+            </main>
+
+            <footer className="pt-12 pb-4 text-center">
+                <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest">RESTOGESTIÓN V2.0 © 2024 - Sistema de Gestión Gastronómica Profesional</p>
+            </footer>
         </div>
     );
 };

@@ -18,7 +18,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
         email: '',
         username: '',
         password: '',
-        pin: '',
         role: UserRole.WAITER,
         branchId: ''
     });
@@ -62,7 +61,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                 email: u.email,
                 username: u.username,
                 role: u.role as UserRole,
-                pin: u.pin,
                 isActive: u.is_active,
                 branchId: u.branch_id,
                 branchName: u.branches?.name // Map branch name
@@ -93,7 +91,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                 full_name: formData.name,
                 email: formData.email,
                 username: formData.username,
-                pin: formData.pin,
                 role: formData.role,
                 branch_id: targetBranchId,
                 restaurant_id: currentUser?.restaurantId,
@@ -116,7 +113,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                     p_name: formData.name,
                     p_username: formData.username,
                     p_password: formData.password,
-                    p_pin: formData.pin || null,
+                    p_pin: null,
                     p_role: formData.role,
                     p_branch_id: targetBranchId,
                     p_restaurant_id: currentUser?.restaurantId || null
@@ -170,7 +167,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                 email: user.email || '',
                 username: user.username || '',
                 password: '',
-                pin: user.pin || '',
                 role: user.role,
                 branchId: user.branchId || currentUser?.branchId || ''
             });
@@ -181,7 +177,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                 email: '',
                 username: '',
                 password: '',
-                pin: '',
                 role: UserRole.WAITER,
                 branchId: currentUser?.branchId || ''
             });
@@ -195,142 +190,364 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
     };
 
 
+    // Filtering & Pagination State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [branchFilter, setBranchFilter] = useState('ALL');
+    const [roleFilter, setRoleFilter] = useState('ALL');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6; // Matching the small list feel of the image
+
+    const getInitials = (name: string) => {
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
+
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.role.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesBranch = branchFilter === 'ALL' || user.branchId === branchFilter;
+        const matchesRole = roleFilter === 'ALL' || user.role === roleFilter;
+        return matchesSearch && matchesBranch && matchesRole;
+    });
+
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
     return (
-        <div className="p-6 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
-            <header className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                        <span className="material-icons-round text-[#136dec] text-xl">group</span>
-                        Gestión de Personal
-                    </h1>
-                    <p className="text-xs text-slate-400 mt-0.5">Administra meseros y cajeros de la sucursal.</p>
+        <>
+            <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans">
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                            <span className="material-icons-round text-primary text-2xl">group</span>
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Gestión de Personal</h1>
+                            <p className="text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 • Administra meseros, cajeros y permisos de acceso por sucursal.</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => openModal()}
+                        className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2 text-sm"
+                    >
+                        <span className="material-icons-round text-[20px]">person_add</span> Nuevo Usuario
+                    </button>
+                </header>
+
+                {/* Filter Bar */}
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
+                    <div className="relative flex-1 min-w-[300px]">
+                        <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nombre, email o rol..."
+                            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-600 font-medium"
+                            value={searchQuery}
+                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <select
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            value={branchFilter}
+                            onChange={(e) => { setBranchFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="ALL">Todas las Sucursales</option>
+                            {branches.map(b => (
+                                <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                        </select>
+
+                        <select
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            value={roleFilter}
+                            onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="ALL">Todos los Roles</option>
+                            <option value={UserRole.WAITER}>Mesero</option>
+                            <option value={UserRole.CASHIER}>Cajero</option>
+                            <option value={UserRole.KITCHEN}>Cocina</option>
+                        </select>
+
+                        <button className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                            <span className="material-icons-round text-lg">tune</span>
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => openModal()}
-                    className="btn btn-primary flex items-center gap-2 text-sm"
-                >
-                    <span className="material-icons-round text-[18px]">person_add</span> Nuevo Usuario
-                </button>
-            </header>
 
-            <div className="table-wrapper">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Rol</th>
-                            <th>Sucursal</th>
-                            <th>PIN</th>
-                            <th>Estado</th>
-                            <th className="text-right">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(u => (
-                            <tr key={u.id}>
-                                <td>
-                                    <p className="font-semibold text-slate-800">{u.name}</p>
-                                    <p className="text-xs text-slate-400">{u.email}</p>
-                                </td>
-                                <td>
-                                    <span className={`badge ${u.role === UserRole.WAITER ? 'badge-warning' : u.role === UserRole.KITCHEN ? 'badge-error' : 'badge-purple'}`}>
-                                        {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
-                                    </span>
-                                </td>
-                                <td>
-                                    {u.branchName ? (
-                                        <span className="badge badge-neutral">{u.branchName}</span>
-                                    ) : (
-                                        <span className="text-xs italic text-slate-400">Sin Asignar</span>
-                                    )}
-                                </td>
-                                <td className="font-mono text-slate-400 tracking-widest">••••</td>
-                                <td>
-                                    <span className={`badge ${u.isActive ? 'badge-success' : 'badge-neutral'}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-green-500' : 'bg-slate-400'}`}></span>
-                                        {u.isActive ? 'Activo' : 'Inactivo'}
-                                    </span>
-                                </td>
-                                <td className="text-right">
-                                    <div className="flex items-center justify-end gap-1.5">
-                                        <button onClick={() => openModal(u)} className="btn btn-outline btn-sm">Editar</button>
-                                        <button onClick={() => toggleStatus(u)} className={`btn btn-sm ${u.isActive ? 'btn-danger' : 'btn-success'}`}>
-                                            {u.isActive ? 'Desactivar' : 'Activar'}
-                                        </button>
-                                        {!u.isActive && (
-                                            <button onClick={() => deleteUser(u)} className="btn btn-danger btn-sm">Eliminar</button>
-                                        )}
-                                    </div>
-                                </td>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personal</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rol</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sucursal</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {paginatedUsers.map(u => (
+                                <tr key={u.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-primary font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+                                                {getInitials(u.name)}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-slate-800 tracking-tight">{u.name}</p>
+                                                <p className="text-[11px] text-slate-400 font-medium">{u.email}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${u.role === UserRole.WAITER ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                            u.role === UserRole.KITCHEN ? 'bg-slate-50 text-slate-600 border border-slate-200' :
+                                                'bg-blue-50 text-blue-600 border border-blue-100'
+                                            }`}>
+                                            {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs font-semibold text-slate-500">{u.branchName || 'Sin Asignar'}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`}></span>
+                                            <span className={`text-xs font-bold ${u.isActive ? 'text-slate-600' : 'text-slate-400 line-through decoration-slate-300'}`}>
+                                                {u.isActive ? 'Activo' : 'Inactivo'}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => openModal(u)} className="p-2 text-slate-400 hover:text-primary transition-colors hover:bg-slate-100 rounded-lg">
+                                                <span className="material-icons-round text-lg">edit</span>
+                                            </button>
+                                            <button onClick={() => toggleStatus(u)} className={`p-2 transition-colors rounded-lg ${u.isActive ? 'text-slate-400 hover:text-red-500 hover:bg-red-50' : 'text-emerald-400 hover:text-emerald-500 hover:bg-emerald-50'}`}>
+                                                <span className="material-icons-round text-lg">{u.isActive ? 'block' : 'check_circle'}</span>
+                                            </button>
+                                            {!u.isActive && (
+                                                <button onClick={() => deleteUser(u)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                                                    <span className="material-icons-round text-lg">delete_forever</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {paginatedUsers.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-20 text-center">
+                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                            <span className="material-icons-round text-slate-300 text-3xl">person_off</span>
+                                        </div>
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se encontraron empleados</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h3 className="text-base font-semibold text-slate-900">{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
-                            <button onClick={closeModal} className="btn btn-ghost btn-icon text-slate-400">
-                                <span className="material-icons-round text-[20px]">close</span>
+                    {/* Pagination Footer */}
+                    <div className="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-tight">
+                            Mostrando <span className="text-slate-900">{startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredUsers.length)}</span> de <span className="text-slate-900">{filteredUsers.length}</span> empleados
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => p - 1)}
+                                className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
+                            >
+                                Anterior
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                onClick={() => setCurrentPage(p => p + 1)}
+                                className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
+                            >
+                                Siguiente
                             </button>
                         </div>
-                        <form onSubmit={handleSave}>
-                            <div className="modal-body space-y-4">
-                                <div className="form-group">
-                                    <label className="label">Nombre Completo</label>
-                                    <input type="text" required className="input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Premium Modal Redesign */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
+                    <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl animate-fade-in flex flex-col max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                                    {editingUser ? 'Detalles del Usuario' : 'Nuevo Usuario'}
+                                </h3>
+                                <p className="text-xs text-slate-400 mt-1 font-medium">
+                                    Gestión de acceso para RESTOGESTIÓN V2.0
+                                </p>
+                            </div>
+                            <button onClick={closeModal} className="p-2 hover:bg-slate-200/50 rounded-full text-slate-400 transition-colors">
+                                <span className="material-icons-round text-xl">close</span>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                                {/* Single column for full name */}
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                        Nombre Completo
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium text-slate-700 placeholder:text-slate-300"
+                                        placeholder="Ej. Juan Pérez"
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                    />
                                 </div>
-                                <div className="form-group">
-                                    <label className="label">Correo Electrónico (Login)</label>
-                                    <input type="email" required className="input" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="ej: cocina1@gmail.com" />
+
+                                {/* Two columns for email and username */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                            Correo Electrónico (Login)
+                                        </label>
+                                        <input
+                                            type="email"
+                                            required
+                                            readOnly={!!editingUser}
+                                            className={`w-full px-5 py-3.5 border rounded-2xl text-sm transition-all outline-none font-medium placeholder:text-slate-300 ${editingUser
+                                                ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
+                                                : 'bg-slate-50/50 border-slate-100 text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary'
+                                                }`}
+                                            placeholder="ej: cocina1@gmail.com"
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                            Usuario (Referencia)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            readOnly={!!editingUser}
+                                            placeholder="jperez_rest"
+                                            className={`w-full px-5 py-3.5 border rounded-2xl text-sm transition-all outline-none font-medium placeholder:text-slate-300 ${editingUser
+                                                ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed'
+                                                : 'bg-slate-50/50 border-slate-100 text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary'
+                                                }`}
+                                            value={formData.username}
+                                            onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group opacity-50 pointer-events-none">
-                                    <label className="label">Usuario (Referencia)</label>
-                                    <input type="text" className="input" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} />
+
+                                {/* Two columns for password and PIN */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                            Contraseña {editingUser && '(Opcional)'}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            required={!editingUser}
+                                            className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-medium text-slate-700"
+                                            placeholder="••••••••"
+                                            value={formData.password}
+                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="label">Contraseña {editingUser ? '(dejar vacío para no cambiar)' : ''}</label>
-                                    <input type="password" required={!editingUser} className="input" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">PIN de Bloqueo (4-6 dígitos)</label>
-                                    <input type="password" required maxLength={6} className="input" value={formData.pin} onChange={e => setFormData({ ...formData, pin: e.target.value })} placeholder="Para desbloquear pantalla" />
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">Sucursal</label>
-                                    <select className="input" value={formData.branchId} onChange={e => setFormData({ ...formData, branchId: e.target.value })}>
-                                        <option value="" disabled>Seleccionar Sucursal</option>
-                                        {branches.map(b => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name} {b.isActive ? '' : '(Inactiva)'} {b.isMain ? '(Matriz)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label className="label">Rol</label>
-                                    <select className="input" value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}>
-                                        <option value={UserRole.WAITER}>Mesero</option>
-                                        <option value={UserRole.CASHIER}>Cajero</option>
-                                        <option value={UserRole.KITCHEN}>Cocina</option>
-                                    </select>
+
+                                {/* Two columns for branch and role */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                            Sucursal
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                required
+                                                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-semibold text-slate-700 appearance-none cursor-pointer"
+                                                value={formData.branchId}
+                                                onChange={e => setFormData({ ...formData, branchId: e.target.value })}
+                                            >
+                                                <option value="" disabled>Seleccionar Sucursal</option>
+                                                {branches.map(b => (
+                                                    <option key={b.id} value={b.id}>
+                                                        {b.name} {b.isActive ? '' : '(Inactiva)'}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span className="material-icons-round absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                                            Rol de Usuario
+                                        </label>
+                                        <div className="relative">
+                                            <select
+                                                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-semibold text-slate-700 appearance-none cursor-pointer"
+                                                value={formData.role}
+                                                onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
+                                            >
+                                                <option value={UserRole.WAITER}>Mesero</option>
+                                                <option value={UserRole.CASHIER}>Cajero</option>
+                                                <option value={UserRole.KITCHEN}>Cocina</option>
+                                            </select>
+                                            <span className="material-icons-round absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xl">expand_more</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="modal-footer">
-                                <button type="button" onClick={closeModal} className="btn btn-outline">Cancelar</button>
-                                <button type="submit" disabled={loading} className="btn btn-primary">
-                                    {loading ? 'Guardando...' : 'Guardar'}
+
+                            <div className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center gap-4">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="px-8 py-3.5 text-sm font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-2xl transition-all"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-12 py-3.5 rounded-2xl shadow-xl shadow-blue-200/50 font-bold text-sm disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            Guardando...
+                                        </>
+                                    ) : (
+                                        'Guardar Usuario'
+                                    )}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 

@@ -27,7 +27,7 @@ class OfflineQueueDB extends Dexie {
     pending_operations!: EntityTable<PendingOperation, 'id'>;
 
     constructor() {
-        super('ControlRestOfflineQueue');
+        super('RESTOGESTIÓNOfflineQueue');
         this.version(1).stores({
             pending_operations: '++id, operation_type, sync_status, created_at',
         });

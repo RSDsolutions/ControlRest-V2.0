@@ -135,7 +135,7 @@ const SuppliersView: React.FC<Props> = ({ currentUser, restaurantId }) => {
                         setEditingId(null);
                         setShowForm(f => !f);
                     }}
-                    className="flex items-center gap-2 px-5 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all"
+                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
                 >
                     <span className="material-icons-round">{showForm ? 'close' : 'add'}</span>
                     {showForm ? 'Cerrar Formulario' : 'Nuevo Proveedor'}
@@ -184,9 +184,19 @@ const SuppliersView: React.FC<Props> = ({ currentUser, restaurantId }) => {
                             <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} className="w-full px-3 py-2 border-2 border-slate-200 rounded-xl focus:border-primary font-bold text-slate-800" rows={2}></textarea>
                         </div>
                     </div>
-                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-                        <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2 text-slate-500 font-bold">Cancelar</button>
-                        <button type="submit" disabled={submitting} className="px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-md disabled:opacity-50">
+                    <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+                        <button
+                            type="button"
+                            onClick={() => setShowForm(false)}
+                            className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
+                        >
                             {submitting ? 'Guardando...' : 'Guardar Proveedor'}
                         </button>
                     </div>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Order, Ingredient, Plate, Table } from '../types';
 import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 import { supabase } from '../supabaseClient';
@@ -14,6 +15,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, tables, branchName, branchId }) => {
+  const navigate = useNavigate();
   // Use the hook to get fresh orders + auto-refresh
   // Shadowing the 'orders' prop intentionally to force usage of realtime data
   const { orders } = useRealtimeOrders(branchId || null);
@@ -282,7 +284,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
                 </div>
               )}
             </div>
-            <button className="btn btn-ghost w-full mt-6 text-xs font-bold text-primary">VER TODO EL INVENTARIO</button>
+            <button
+              onClick={() => navigate('/inventory')}
+              className="btn btn-ghost w-full mt-6 text-xs font-bold text-primary"
+            >
+              VER TODO EL INVENTARIO
+            </button>
           </div>
 
           <div className="bg-brand-black rounded-brand shadow-2xl p-8 text-white relative overflow-hidden group">

@@ -423,8 +423,16 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
             <p className="text-xs text-slate-400 mt-0.5">Define el ADN de tu plato: costeo técnico, rentabilidad proyectada y visualización.</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }} className="btn btn-outline">Cancelar</button>
-            <button onClick={handleSave} className="btn btn-primary">
+            <button
+              onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }}
+              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
+            >
               {isEditing ? 'Guardar Cambios' : 'Publicar al Menú'}
             </button>
           </div>
@@ -584,79 +592,84 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
   }
 
   return (
-    <div className="p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <span className="material-icons-round text-[#136dec] text-xl">menu_book</span>
-            Ingeniería de Menú
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
-        </div>
-        <button onClick={() => setIsCreating(true)} className="btn btn-primary flex items-center gap-2">
-          <span className="material-icons-round text-[18px]">add</span> Crear Nuevo Plato
-        </button>
-      </header>
+    <>
+      <div className="p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
+          <div>
+            <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <span className="material-icons-round text-[#136dec] text-xl">menu_book</span>
+              Ingeniería de Menú
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
+          </div>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
+          >
+            <span className="material-icons-round text-[18px]">add</span> Crear Nuevo Plato
+          </button>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {plates.map(plate => {
-          const cost = calculateCost(plate.ingredients);
-          const margin = ((plate.sellingPrice - cost) / plate.sellingPrice) * 100;
-          const currentStock = getStock(plate.ingredients);
-          const isAvailable = currentStock > 0;
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {plates.map(plate => {
+            const cost = calculateCost(plate.ingredients);
+            const margin = ((plate.sellingPrice - cost) / plate.sellingPrice) * 100;
+            const currentStock = getStock(plate.ingredients);
+            const isAvailable = currentStock > 0;
 
-          return (
-            <div key={plate.id} className={`card p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border-slate-100 ${!isAvailable ? 'opacity-80' : ''}`}>
-              <div className="h-48 relative overflow-hidden">
-                <img src={plate.image} alt={plate.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                {!isAvailable && (
-                  <div className="absolute inset-0 bg-brand-black/60 backdrop-blur-[2px] flex items-center justify-center">
-                    <span className="px-4 py-2 bg-red-600 text-white font-black text-[10px] uppercase rounded-full tracking-widest shadow-xl ring-4 ring-red-600/20">Insumos Agotados</span>
+            return (
+              <div key={plate.id} className={`card p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border-slate-100 ${!isAvailable ? 'opacity-80' : ''}`}>
+                <div className="h-48 relative overflow-hidden">
+                  <img src={plate.image} alt={plate.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  {!isAvailable && (
+                    <div className="absolute inset-0 bg-brand-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                      <span className="px-4 py-2 bg-red-600 text-white font-black text-[10px] uppercase rounded-full tracking-widest shadow-xl ring-4 ring-red-600/20">Insumos Agotados</span>
+                    </div>
+                  )}
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-white/95 backdrop-blur text-brand-black font-black text-[9px] uppercase rounded-lg shadow-sm border border-slate-100 tracking-widest">
+                      {plate.category}
+                    </span>
                   </div>
-                )}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-white/95 backdrop-blur text-brand-black font-black text-[9px] uppercase rounded-lg shadow-sm border border-slate-100 tracking-widest">
-                    {plate.category}
-                  </span>
+                  {isAvailable && (
+                    <div className="absolute bottom-4 right-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                      <div className="px-3 py-1 bg-emerald-500 text-white font-black text-[9px] uppercase rounded-lg shadow-lg flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"></span>
+                        Disponibilidad: {currentStock}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {isAvailable && (
-                  <div className="absolute bottom-4 right-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <div className="px-3 py-1 bg-emerald-500 text-white font-black text-[9px] uppercase rounded-lg shadow-lg flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-pulse"></span>
-                      Disponibilidad: {currentStock}
+                <div className="p-6 space-y-6">
+                  <h3 className="font-heading font-black text-brand-black text-xl tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{plate.name}</h3>
+
+                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div className="space-y-1">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rentabilidad</p>
+                      <p className={`text-2xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Precio Carta</p>
+                      <p className="text-2xl font-black text-brand-black">${plate.sellingPrice.toLocaleString('en-US', { minimumFractionDigits: 0 })}</p>
                     </div>
                   </div>
-                )}
-              </div>
-              <div className="p-6 space-y-6">
-                <h3 className="font-heading font-black text-brand-black text-xl tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{plate.name}</h3>
 
-                <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="space-y-1">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rentabilidad</p>
-                    <p className={`text-2xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Precio Carta</p>
-                    <p className="text-2xl font-black text-brand-black">${plate.sellingPrice.toLocaleString('en-US', { minimumFractionDigits: 0 })}</p>
+                  <div className="flex justify-between items-center border-t border-slate-50 pt-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo Técnico: <span className="text-brand-black font-bold ml-1">${cost.toFixed(2)}</span></p>
+                    <button onClick={() => setSelectedPlate(plate)} className="btn btn-ghost px-3 py-2 text-[10px] group/btn flex items-center gap-1 uppercase tracking-widest">
+                      Gestionar <span className="material-icons-round text-base group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex justify-between items-center border-t border-slate-50 pt-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo Técnico: <span className="text-brand-black font-bold ml-1">${cost.toFixed(2)}</span></p>
-                  <button onClick={() => setSelectedPlate(plate)} className="btn btn-ghost px-3 py-2 text-[10px] group/btn flex items-center gap-1 uppercase tracking-widest">
-                    Gestionar <span className="material-icons-round text-base group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                  </button>
-                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {selectedPlate && (
-        <div className="modal-overlay">
-          <div className="modal-content max-w-5xl p-0 flex flex-col md:flex-row h-[85vh] overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
+          <div className="relative bg-white w-full max-w-5xl p-0 flex flex-col md:flex-row h-[85vh] overflow-hidden rounded-2xl border border-slate-200 shadow-2xl animate-fade-in">
 
             {/* Left Column: Visual & Commercial Stats */}
             <div className="w-full md:w-[380px] bg-slate-50 border-r border-slate-100 flex flex-col shadow-inner">
@@ -699,7 +712,8 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                     <div>
                       <p className="text-3xl font-heading font-black">
                         {orders ? orders.reduce((acc, order) => {
-                          return acc + (order.items?.filter(item => item.plateId === selectedPlate.id).reduce((sum, item) => sum + item.qty, 0) || 0);
+                          const items = order.items || [];
+                          return acc + items.filter(item => item.plateId === selectedPlate.id).reduce((sum, item) => sum + item.qty, 0);
                         }, 0) : 0}
                       </p>
                       <p className="text-[10px] text-white/50 font-black uppercase tracking-widest">Órdenes Despachadas</p>
@@ -758,11 +772,17 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                 </table>
               </div>
 
-              <footer className="p-8 border-t border-slate-100 bg-slate-50 flex justify-end gap-4 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-                <button className="btn btn-outline px-8 py-3 text-sm flex items-center gap-2" onClick={() => handleEditRequest(selectedPlate)}>
+              <footer className="p-8 border-t border-slate-100 bg-slate-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+                <button
+                  className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold flex items-center gap-2"
+                  onClick={() => handleEditRequest(selectedPlate)}
+                >
                   <span className="material-icons-round text-base">edit</span> Editar Receta
                 </button>
-                <button className="btn btn-primary px-8 py-3 text-sm flex items-center gap-2 shadow-primary/20" onClick={() => generatePDF(selectedPlate)}>
+                <button
+                  className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
+                  onClick={() => generatePDF(selectedPlate)}
+                >
                   <span className="material-icons-round text-base">picture_as_pdf</span> Exportar Ficha Técnica
                 </button>
               </footer>
@@ -770,7 +790,7 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

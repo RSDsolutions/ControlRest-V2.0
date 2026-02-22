@@ -99,7 +99,7 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
                     </div>
                     <button
                         onClick={() => openModal()}
-                        className="btn btn-primary flex items-center gap-2"
+                        className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
                     >
                         <span className="material-icons-round text-[18px]">add</span> Nueva Mesa
                     </button>
@@ -223,14 +223,14 @@ const TablesView: React.FC<TablesViewProps> = ({ tables, setTables, branchId }) 
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
+                                    className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-50"
+                                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
                                 >
                                     {loading ? 'Guardando...' : 'Guardar Mesa'}
                                 </button>

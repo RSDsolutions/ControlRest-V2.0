@@ -186,7 +186,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   );
 
   const titles: Record<LoginMode, string> = {
-    select: 'Bienvenido a ControlRest',
+    select: 'Bienvenido a RESTOGESTIÓN',
     admin: '👑 Acceso Administrador',
     employee: '👨‍🍳 Acceso Empleado',
     register: '🚀 Crear Restaurante',
@@ -210,9 +210,8 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
         {/* Left Side: Brand & Value Prop */}
         <div className="hidden lg:flex flex-col space-y-12 pr-16 text-white animate-slide-right">
           <div className="flex items-center space-x-5">
-            <div className="w-16 h-16 bg-[#136dec] rounded-[22px] flex items-center justify-center text-white text-4xl font-heading font-black shadow-[0_20px_50px_rgba(19,109,236,0.45)] ring-1 ring-white/20 transform hover:rotate-6 transition-transform cursor-pointer">C</div>
             <div>
-              <span className="text-4xl font-heading font-black tracking-tight block">ControlRest</span>
+              <span className="text-4xl font-heading font-black tracking-tight block">RESTOGESTIÓN</span>
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary-light/60">Financial Intelligence V2.0</span>
             </div>
           </div>
@@ -239,12 +238,6 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
           </div>
 
           <div className="flex items-center gap-6 border-t border-white/10 pt-10">
-            <div className="flex -space-x-4">
-              {[1, 5, 8, 12].map(i => (
-                <img key={i} className="w-12 h-12 rounded-full border-[3px] border-brand-black bg-slate-800 shadow-xl" src={`https://i.pravatar.cc/150?u=${i}`} alt="User" />
-              ))}
-            </div>
-            <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.2em]">Avalado por líderes del sector</p>
           </div>
         </div>
 
@@ -281,7 +274,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                   </button>
                   <div className="text-center pt-8 border-t border-slate-50 mt-8">
                     <button onClick={() => goTo('register')} className="text-xs text-[#136dec] font-black uppercase tracking-widest hover:text-[#0d5cc7] transition-colors flex items-center justify-center gap-2 mx-auto">
-                      ¿Nuevo Negocio? <span className="underline decoration-2 underline-offset-4">Registrarme Aqui</span>
+                      ¿Nuevo Negocio? <span className="underline decoration-2 underline-offset-4">Solicitar DEMO</span>
                     </button>
                   </div>
                 </div>
@@ -314,19 +307,19 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
               {mode === 'employee' && (
                 <form onSubmit={handleStaffLogin} className="space-y-6">
                   <div className="space-y-3">
-                    <label className="label">Ficha de Usuario</label>
+                    <label className="label">Correo electrónico</label>
                     <div className="relative">
-                      <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">fingerprint</span>
+                      <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">alternate_email</span>
                       <input type="text" required value={staffIdentifier} onChange={e => setStaffIdentifier(e.target.value)}
-                        className="input pl-12 h-14 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold" placeholder="Usuario o alias" />
+                        className="input pl-12 h-14 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold" placeholder="correo@ejemplo.com" />
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <label className="label">PIN de Acceso</label>
+                    <label className="label">Contraseña</label>
                     <div className="relative">
-                      <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">pin</span>
+                      <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">lock_open</span>
                       <input type="password" required value={staffPassword} onChange={e => setStaffPassword(e.target.value)}
-                        className="input pl-12 h-14 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold" placeholder="••••" />
+                        className="input pl-12 h-14 bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold" placeholder="••••••••" />
                     </div>
                   </div>
                   <button type="submit" disabled={isLoading} className="w-full h-16 bg-primary text-white font-heading font-black rounded-[22px] text-lg mt-4 shadow-xl shadow-primary/30 active:scale-95 transition-all">
@@ -374,7 +367,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
           </div>
 
           <div className="mt-8 text-center text-white/20 text-[9px] font-black uppercase tracking-[0.4em]">
-            Powered by RSA Solutions Digital &copy; 2026
+            DESARROLLADO POR RSD SOLUTIONS &copy; 2026
           </div>
         </div>
       </div>

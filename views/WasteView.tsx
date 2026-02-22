@@ -184,7 +184,11 @@ const WasteView: React.FC<WasteViewProps> = ({ ingredients, currentUser, restaur
                                 {WASTE_REASONS.map(r => <option key={r} value={r}>{getReasonLabel(r)}</option>)}
                             </select>
                             <textarea className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 min-h-[100px]" placeholder="Notas..." value={notes} onChange={e => setNotes(e.target.value)} />
-                            <button type="submit" disabled={isSubmitting || quantity <= 0} className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50">
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || quantity <= 0}
+                                className="w-full py-4 bg-[#136dec] text-white font-bold rounded-full shadow-lg shadow-blue-100 transition-all hover:bg-[#0d5cc7] active:scale-95 disabled:opacity-50"
+                            >
                                 {isSubmitting ? 'Registrando...' : 'Registrar Merma'}
                             </button>
                         </form>

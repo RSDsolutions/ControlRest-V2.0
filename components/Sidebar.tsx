@@ -6,7 +6,6 @@ import { UserRole, Branch } from '../types';
 interface SidebarProps {
   user: { name: string; role: UserRole };
   onLogout: () => void;
-  onLock?: () => void;
   branches?: Branch[];
   currentBranchId?: string | null;
   onBranchChange?: (branchId: string) => void;
@@ -23,7 +22,7 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = [], currentBranchId, onBranchChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], currentBranchId, onBranchChange }) => {
 
   // ─── ADMIN NAV ───────────────────────────────────────────────────────────────
   const adminNav: NavGroup[] = [
@@ -75,7 +74,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
       items: [
         { label: 'Gestión de Usuarios', icon: 'group', path: '/users' },
         { label: 'Perfil Empresarial', icon: 'settings_suggest', path: '/enterprise-profile' },
-        { label: 'Config. de Mesas', icon: 'table_bar', path: '/tables-config' },
         { label: 'Config. de Sucursales', icon: 'store', path: '/branches-config' },
       ],
     },
@@ -83,6 +81,12 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
       groupLabel: 'AUDITORÍA & CONTROL',
       items: [
         { label: 'Auditoría', icon: 'policy', path: '/audit' },
+      ],
+    },
+    {
+      groupLabel: 'IA & INSIGHTS',
+      items: [
+        { label: 'Inteligencia Operativa', icon: 'psychology', path: '/intelligence' },
       ],
     },
   ];
@@ -149,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-[7px] bg-[#136dec] flex items-center justify-center font-bold text-sm shadow-md ring-1 ring-white/20">C</div>
           <div>
-            <span className="text-sm font-semibold tracking-tight text-white">ControlRest</span>
+            <span className="text-sm font-semibold tracking-tight text-white">RESTOGESTIÓN</span>
             <span className="block text-[10px] text-white/40 font-medium">V2.0 ERP</span>
           </div>
         </div>
@@ -193,32 +197,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, onLock, branches = []
           </div>
         ))}
 
-        {/* Bloquear Sistema — aparece al final del nav para admin */}
-        {user.role === UserRole.ADMIN && onLock && (
-          <div>
-            <p className="px-3 text-[9px] font-bold text-white/25 uppercase tracking-[0.14em] mb-1"> </p>
-            <button
-              onClick={onLock}
-              className="flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium rounded-[7px] w-full text-left text-amber-400/70 hover:bg-amber-500/10 hover:text-amber-300 transition-colors duration-150"
-            >
-              <span className="material-icons-round text-[17px] opacity-80">lock_outline</span>
-              Bloquear Sistema
-            </button>
-          </div>
-        )}
       </nav>
 
       {/* User Footer */}
       <div className="p-2.5 border-t border-white/[0.06]">
-        {user.role !== UserRole.ADMIN && onLock && (
-          <button
-            onClick={onLock}
-            className="flex items-center justify-center gap-2 text-white/50 hover:text-white/90 hover:bg-white/[0.07] w-full py-1.5 rounded-[7px] border border-white/[0.08] transition-colors text-xs font-medium mb-2"
-          >
-            <span className="material-icons-round text-[15px]">lock_outline</span>
-            Bloquear Sistema
-          </button>
-        )}
         <div
           className="flex items-center gap-2.5 p-2 rounded-[7px] hover:bg-white/[0.07] transition-colors cursor-pointer group"
           onClick={onLogout}

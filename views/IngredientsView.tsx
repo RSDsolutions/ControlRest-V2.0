@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Ingredient } from '../types';
 import { supabase } from '../supabaseClient';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface IngredientsViewProps {
   ingredients: Ingredient[];
@@ -9,6 +11,14 @@ interface IngredientsViewProps {
   branchId: string | null;
   restaurantId: string | null;
 }
+const INGREDIENT_ICONS = [
+  '🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑',
+  '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🫘', '🍄', '🥜', '🌰', '🍞', '🥐', '🥖', '🫓',
+  '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🫔', '🥙', '🧆', '🥚',
+  '🍳', '🥘', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫', '🥛', '🍼', '☕', '🫖', '🍵', '🍶', '🧃', '🥤', '🧋', '🧉', '🍺',
+  '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🏺', '🍨', '🍧', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍩', '🍪',
+  '🥠', '🥮', '🧊', '🧂', '🥢', '🍽️', '🍴', '🥄', '🔪', '🫙', '🏺', '📦', '🥡', '🧴', '🧼', '🧻', '🧺', '🕯️', '🧯', '🧹'
+];
 
 const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngredients, branchId, restaurantId }) => {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -21,6 +31,71 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   // Batches
   const [batches, setBatches] = useState<any[]>([]);
   const [viewBatchDetailsIngId, setViewBatchDetailsIngId] = useState<string | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+
+  const generateIngredientPDF = (ing: Ingredient) => {
+    const doc = new jsPDF();
+    const ingBatches = batches.filter(b => b.ingredient_id === ing.id);
+
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`Ficha Técnica de Insumo`, 14, 25);
+
+    doc.setFontSize(18);
+    doc.text(ing.name, 14, 45);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Categoría: ${ing.category}`, 14, 55);
+    doc.text(`ID Insumo: ${ing.id.split('-')[0]}`, 14, 60);
+    doc.text(`Fecha de Reporte: ${new Date().toLocaleString()}`, 14, 65);
+
+    // Summary Box
+    doc.setDrawColor(230, 230, 230);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(14, 75, 182, 30, 2, 2, 'FD');
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text('EXISTENCIAS TOTALES', 20, 85);
+    doc.text('COSTO PROMEDIO', 80, 85);
+    doc.text('TIPO DE UNIDAD', 140, 85);
+
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text(`${ing.currentQty.toLocaleString()} ${ing.measureUnit === 'ml' ? 'ml' : 'gr'}`, 20, 95);
+    doc.text(`$${ing.unitPrice.toFixed(4)}`, 80, 95);
+    doc.text(ing.measureUnit === 'ml' ? 'Líquido' : 'Sólido', 140, 95);
+
+    // Batches Table
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Trazabilidad de Lotes en Almacén', 14, 120);
+
+    const tableData = ingBatches.map(b => [
+      `#${b.id.split('-')[0]}`,
+      `${b.quantity_remaining.toLocaleString()} gr`,
+      `$${Number(b.unit_cost).toFixed(4)}`,
+      b.suppliers?.name || 'Distribución Global',
+      b.expiration_date ? new Date(b.expiration_date).toLocaleDateString() : 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: 125,
+      head: [['Lote ID', 'Saldo Restante', 'Costo Unit.', 'Proveedor', 'Vencimiento']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [19, 109, 236], textColor: 255, fontSize: 10 },
+      bodyStyles: { fontSize: 9 },
+      columnStyles: {
+        0: { fontStyle: 'bold' },
+        2: { textColor: [19, 109, 236], fontStyle: 'bold' }
+      }
+    });
+
+    doc.save(`${ing.name.replace(/\s+/g, '_')}_Ficha_Tecnica.pdf`);
+  };
 
   React.useEffect(() => {
     if (branchId && branchId !== 'GLOBAL') {
@@ -266,13 +341,13 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
           <div className="flex gap-4">
             <button
               onClick={() => setShowNewIngModal(true)}
-              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all flex items-center gap-2 px-6 shadow-lg shadow-slate-100 font-bold"
+              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all flex items-center gap-2 px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
             >
               <span className="material-icons-round text-[18px]">add</span> Nuevo Insumo
             </button>
             <button
               onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
-              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center gap-2 px-6 shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
+              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center gap-2 px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
             >
               <span className="material-icons-round text-[18px]">shopping_cart</span> Registrar Compra
             </button>
@@ -411,6 +486,13 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                       <td className="px-8 py-5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => generateIngredientPDF(ing)}
+                            className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
+                            title="Exportar Ficha Técnica"
+                          >
+                            <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">picture_as_pdf</span>
+                          </button>
+                          <button
                             onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
                             className="w-10 h-10 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
                             title="Registrar Compra"
@@ -460,10 +542,57 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
             <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-1 md:col-span-2">
-                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Nombre Descriptivo</label>
-                  <input type="text" className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold" placeholder="Ej. Lomo Alto de Res (Angus)" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} />
+                <div className="col-span-1 md:col-span-2 flex gap-4">
+                  <div className="shrink-0 space-y-2">
+                    <label className="text-[13px] font-bold text-slate-700 block">Icono</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowIconPicker(!showIconPicker)}
+                      className="w-[52px] h-[52px] rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl hover:bg-white hover:border-primary transition-all shadow-sm group relative"
+                    >
+                      {newIng.icon}
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary text-white rounded-full flex items-center justify-center">
+                        <span className="material-icons-round text-[10px]">edit</span>
+                      </div>
+                    </button>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[13px] font-bold text-slate-700 block text-left">Nombre Descriptivo</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 h-[52px] text-sm rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold"
+                      placeholder="Ej. Lomo Alto de Res (Angus)"
+                      value={newIng.name}
+                      onChange={e => setNewIng({ ...newIng, name: e.target.value })}
+                    />
+                  </div>
                 </div>
+
+                {showIconPicker && (
+                  <div className="col-span-1 md:col-span-2 animate-fade-in">
+                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-hidden">
+                      <div className="flex justify-between items-center mb-3 px-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seleccionar Icono</span>
+                        <button onClick={() => setShowIconPicker(false)} className="text-[10px] font-bold text-primary hover:underline">Cerrar</button>
+                      </div>
+                      <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar p-1">
+                        {INGREDIENT_ICONS.map(emoji => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setNewIng({ ...newIng, icon: emoji });
+                              setShowIconPicker(false);
+                            }}
+                            className={`w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-white hover:shadow-sm transition-all border ${newIng.icon === emoji ? 'bg-white border-primary shadow-sm' : 'border-transparent'}`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="col-span-1 md:col-span-2">
                   <label className="text-[13px] font-bold text-slate-700 block mb-2">Categoría del Insumo</label>
                   <select className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
@@ -549,13 +678,13 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
             <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
               <button
                 onClick={() => setShowNewIngModal(false)}
-                className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
+                className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreateIngredient}
-                className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200"
+                className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
               >
                 Registrar en Almacén
               </button>
@@ -654,13 +783,13 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
             <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
               <button
                 onClick={() => setShowPurchaseModal(false)}
-                className="text-slate-500 hover:text-slate-700 font-bold text-sm transition-colors"
+                className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleRegisterPurchase}
-                className="px-8 py-3.5 bg-[#2c3e50] text-white text-sm font-bold rounded-lg hover:bg-[#1a252f] transition-all transform active:scale-[0.98] shadow-lg shadow-slate-200"
+                className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
               >
                 Confirmar Ingreso
               </button>
@@ -758,7 +887,16 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                 ));
               })()}
             </div>
-            <footer className="px-8 py-4 border-t border-slate-100 bg-white shrink-0 flex justify-end">
+            <footer className="px-8 py-4 border-t border-slate-100 bg-white shrink-0 flex justify-between items-center">
+              <button
+                onClick={() => {
+                  const ing = ingredients.find(i => i.id === viewBatchDetailsIngId);
+                  if (ing) generateIngredientPDF(ing);
+                }}
+                className="px-6 py-2 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-2"
+              >
+                <span className="material-icons-round text-sm">picture_as_pdf</span> Exportar Ficha
+              </button>
               <button onClick={() => setViewBatchDetailsIngId(null)} className="px-6 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-200 transition-all">Cerrar Detalle</button>
             </footer>
           </div>

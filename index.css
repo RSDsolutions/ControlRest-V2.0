@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* =========================================================
-   DESIGN TOKENS — ControlRest ERP
+   DESIGN TOKENS — RESTOGESTIÓN ERP
    Source: Stitch "ERP Main Application Shell" (ID: 6988364841382496145)
    ========================================================= */
 :root {
@@ -128,7 +128,11 @@
     @apply p-5;
   }
 
-  /* ----- MODALES ----- */
+  /* ----- MODALES ----- 
+     Tailwind Play CDN limitation: @apply does not work in external CSS.
+     Use inline Tailwind utility classes in JSX instead of these classes.
+  */
+  /*
   .modal-overlay {
     @apply fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-[2px] flex items-center justify-center p-4;
   }
@@ -136,6 +140,7 @@
   .modal-content {
     @apply bg-bg-card rounded-lg shadow-modal w-full max-w-lg animate-fade-in;
   }
+  */
 
   .modal-header {
     @apply px-6 py-4 border-b border-slate-100 flex items-center justify-between;

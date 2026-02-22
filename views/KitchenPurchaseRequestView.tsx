@@ -166,9 +166,9 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 px-5 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
                 >
-                    <span className="material-icons-round">{showForm ? 'close' : 'add'}</span>
+                    <span className="material-icons-round text-[18px]">{showForm ? 'close' : 'add'}</span>
                     {showForm ? 'Cancelar' : 'Nueva Solicitud'}
                 </button>
             </header>
@@ -231,7 +231,11 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
                     </div>
 
                     <div className="flex justify-end pt-4">
-                        <button type="submit" disabled={submitting} className="px-6 py-2 bg-primary text-white font-bold rounded-xl shadow-md disabled:opacity-50 hover:bg-primary/90">
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
+                        >
                             {submitting ? 'Enviando...' : 'Enviar Solicitud'}
                         </button>
                     </div>

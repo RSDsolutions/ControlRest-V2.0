@@ -178,23 +178,24 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
    // if (currentData.netMargin < 10) ... handled by traffic light, specific alert maybe?
 
    return (
-      <div className="p-8 space-y-8 animate-fade-in max-w-[1600px] mx-auto pb-24">
+      <div className="p-8 space-y-10 animate-fade-in max-w-[1600px] mx-auto pb-24 font-sans bg-slate-50/30">
          {/* HEADER */}
-         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
-            <div>
-               <h1 className="text-lg font-semibold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span className="material-icons-round text-[#136dec] text-xl">bar_chart</span>
-                  Tablero Financiero
-                  {branchId === 'GLOBAL' && (
-                     <span className="bg-blue-50 text-[#136dec] text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider border border-blue-100">Consolidado Global</span>
-                  )}
-               </h1>
-               <p className="text-xs text-slate-400 mt-0.5">Análisis de rentabilidad y salud financiera.</p>
+         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div className="flex items-center gap-4">
+               <div className="w-12 h-12 bg-[#136dec] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <span className="material-icons-round text-white text-2xl">bar_chart</span>
+               </div>
+               <div>
+                  <h1 className="text-2xl font-black text-slate-900 tracking-tight">Tablero Financiero</h1>
+                  <p className="text-sm font-medium text-slate-400">Análisis de rentabilidad y salud financiera del periodo.</p>
+               </div>
             </div>
-            <div className="flex items-center gap-3">
-               <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-[8px] border border-slate-200 text-sm hover:border-slate-300 transition-colors">
-                  <span className="material-icons-round text-[#136dec] text-[18px]">calendar_today</span>
-                  <input type="month" className="bg-transparent border-none outline-none text-sm cursor-pointer font-semibold text-slate-700"
+            <div className="flex items-center gap-4">
+               <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+                  <span className="material-icons-round text-slate-400">calendar_today</span>
+                  <input
+                     type="month"
+                     className="bg-transparent border-none outline-none text-sm font-bold text-slate-700 cursor-pointer"
                      value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`}
                      onChange={e => {
                         const [y, m] = e.target.value.split('-');
@@ -202,6 +203,9 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                      }}
                   />
                </div>
+               <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-600 hover:text-blue-600 transition-colors">
+                  <span className="material-icons-round">dark_mode</span>
+               </button>
             </div>
          </header>
 
@@ -209,106 +213,126 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
          {alerts.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                {alerts.map((alert, i) => (
-                  <div key={i} className={`p-5 rounded-brand border-l-4 flex items-center gap-4 shadow-brand animate-fade-in ${alert.type === 'danger' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-amber-50 border-amber-500 text-amber-700'
+                  <div key={i} className={`p-6 rounded-[28px] border flex items-center gap-5 animate-fade-in transition-all hover:scale-[1.01] ${alert.type === 'danger'
+                     ? 'bg-red-50/50 border-red-100 text-red-700'
+                     : 'bg-amber-50/50 border-amber-100 text-amber-700'
                      }`}>
-                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${alert.type === 'danger' ? 'bg-red-100' : 'bg-amber-100'
+                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${alert.type === 'danger' ? 'bg-red-500 text-white' : 'bg-amber-400 text-white'
                         }`}>
-                        <span className="material-icons-round">{alert.type === 'danger' ? 'error' : 'warning'}</span>
+                        <span className="material-icons-round text-2xl">
+                           {alert.type === 'danger' ? 'error' : 'warning'}
+                        </span>
                      </div>
-                     <span className="font-bold text-sm tracking-tight">{alert.msg}</span>
+                     <span className="font-bold text-base tracking-tight">{alert.msg}</span>
                   </div>
                ))}
             </div>
          )}
 
          {/* MAIN KPIs */}
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <KPICard label="Ingresos Totales" value={currentData.sales} prev={prevData.sales} color="text-brand-black" icon="receipt_long" />
-            <KPICard label="Costos Mercancía (COGS)" value={currentData.cogs} prev={prevData.cogs} inverse color="text-orange-600" icon="inventory" />
-            <KPICard label="Gastos Operativos" value={currentData.opExpenses} prev={prevData.opExpenses} inverse color="text-red-500" icon="account_balance" />
-            <KPICard label="Margen Bruto" value={currentData.grossProfit} prev={prevData.grossProfit} color="text-primary" icon="trending_up" />
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <KPICard label="Ingresos Totales" value={currentData.sales} prev={prevData.sales} color="text-slate-900" icon="trending_up" iconBg="bg-slate-900 text-white" />
+            <KPICard label="Costos Mercancía (COGS)" value={currentData.cogs} prev={prevData.cogs} inverse color="text-[#f59e0b]" icon="shopping_basket" iconBg="bg-[#fef3c7] text-[#f59e0b]" />
+            <KPICard label="Gastos Operativos" value={currentData.opExpenses} prev={prevData.opExpenses} inverse color="text-[#f43f5e]" icon="account_balance" iconBg="bg-[#fff1f2] text-[#f43f5e]" />
+            <KPICard label="Margen Bruto" value={currentData.grossProfit} prev={prevData.grossProfit} color="text-[#2563eb]" icon="donut_large" iconBg="bg-[#dbeafe] text-[#2563eb]" />
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <KPICard label="EBITDA Proyectado" value={currentData.operatingProfit} prev={prevData.operatingProfit} color="text-indigo-600" icon="analytics" />
-            <KPICard label="Utilidad Neta del Periodo" value={currentData.netProfit} prev={prevData.netProfit} color="text-emerald-600" bg="bg-brand-black" isDark icon="stars" />
-
-            <div className="card col-span-1 md:col-span-2 flex flex-col justify-between p-8">
-               <div className="flex justify-between items-start">
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            <div className="lg:col-span-4">
+               <KPICard label="EBITDA Proyectado" value={currentData.operatingProfit} prev={prevData.operatingProfit} color="text-[#6366f1]" icon="bar_chart" iconBg="bg-[#eef2ff] text-[#6366f1]" isBig />
+            </div>
+            <div className="lg:col-span-4">
+               <KPICard label="Utilidad Neta del Periodo" value={currentData.netProfit} prev={prevData.netProfit} color="text-white" bg="bg-[#0f172a]" isDark icon="stars" isBig />
+            </div>
+            <div className="lg:col-span-4 bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col justify-between h-full">
+               <div className="flex justify-between items-start mb-6">
                   <div>
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Punto de Equilibrio</p>
-                     <h3 className="text-4xl font-heading font-black text-brand-black tracking-tighter">{formatMoney(currentData.breakEvenPoint)}</h3>
-                     <p className="text-xs font-bold text-slate-400 mt-2">Monto necesario para cubrir todos los costos fijos.</p>
+                     <h3 className="text-4xl font-heading font-black text-slate-900 tracking-tighter">{formatMoney(currentData.breakEvenPoint)}</h3>
+                     <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-[180px]">Monto necesario para cubrir costos fijos.</p>
                   </div>
                   <div className="text-right">
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Retorno de Punto</p>
-                     <div className="flex items-center justify-end gap-2">
-                        <h3 className="text-4xl font-heading font-black text-primary tracking-tighter">{currentData.breakEvenDays.toFixed(1)}</h3>
-                        <span className="text-xs font-black text-slate-400 uppercase">Días</span>
+                     <div className="flex items-center justify-end gap-1.5">
+                        <h3 className="text-4xl font-heading font-black text-blue-500 tracking-tighter">{currentData.breakEvenDays.toFixed(1)}</h3>
+                        <span className="text-[10px] font-black text-slate-400 uppercase pt-2">Días</span>
                      </div>
                   </div>
                </div>
-               <div className="mt-8">
+               <div className="mt-auto pt-6 border-t border-slate-50">
                   <div className="flex justify-between text-[11px] font-black uppercase tracking-widest mb-3">
                      <span className="text-slate-400">Progreso Operativo</span>
-                     <span className={`${currentData.sales >= currentData.breakEvenPoint ? 'text-emerald-500' : 'text-primary'}`}>
-                        {currentData.breakEvenPoint > 0 ? ((currentData.sales / currentData.breakEvenPoint) * 100).toFixed(0) : 0}% COMPLETADO
-                     </span>
+                     <span className="text-emerald-500">{currentData.breakEvenPoint > 0 ? ((currentData.sales / currentData.breakEvenPoint) * 100).toFixed(0) : 0}% COMPLETADO</span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                     <div className={`h-full transition-all duration-1000 ${currentData.sales >= currentData.breakEvenPoint ? 'bg-emerald-500' : 'bg-primary'}`}
-                        style={{ width: `${Math.min((currentData.sales / currentData.breakEvenPoint) * 100, 100)}%` }}></div>
+                     <div
+                        className={`h-full transition-all duration-1000 ${currentData.sales >= currentData.breakEvenPoint ? 'bg-emerald-500' : 'bg-[#2563eb]'}`}
+                        style={{ width: `${Math.min((currentData.sales / currentData.breakEvenPoint) * 100, 100)}%` }}
+                     ></div>
                   </div>
                </div>
             </div>
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* DISTRIBUTION */}
-            <div className="card p-8 flex flex-col items-center relative overflow-hidden">
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            {/* DISTRIBUTION: Estructura de Costos */}
+            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col items-center">
                <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-brand-black tracking-tight">Estructura de Costos</h3>
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                     <span className="material-icons-round">pie_chart</span>
-                  </div>
+                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+                     <span className="material-icons-round text-slate-300">donut_large</span> Estructura de Costos
+                  </h3>
                </div>
 
-               <div className="relative w-72 h-72">
-                  <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" strokeWidth="15" />
-                     {/* Segments */}
-                     <DonutSegment total={currentData.sales} value={currentData.cogs} offset={0} color="#f97316" />
-                     <DonutSegment total={currentData.sales} value={currentData.wasteCost} offset={currentData.cogs} color="#ef4444" />
-                     <DonutSegment total={currentData.sales} value={currentData.payroll} offset={currentData.cogs + currentData.wasteCost} color="#136dec" />
-                     <DonutSegment total={currentData.sales} value={currentData.services} offset={currentData.cogs + currentData.wasteCost + currentData.payroll} color="#8b5cf6" />
-                     <DonutSegment total={currentData.sales} value={currentData.otherExpenses} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services} color="#94a3b8" />
-                     <DonutSegment total={currentData.sales} value={currentData.netProfit} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services + currentData.otherExpenses} color="#10b981" />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Facturación</span>
-                     <span className="text-3xl font-heading font-black text-brand-black mt-1">{formatMoney(currentData.sales)}</span>
-                  </div>
-               </div>
+               {(() => {
+                  const totalExpenditure = currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services + (currentData.otherExpenses || 0);
+                  const donutBasis = Math.max(currentData.sales, totalExpenditure) || 1;
+                  return (
+                     <>
+                        <div className="relative w-64 h-64 mb-10">
+                           <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                              <circle cx="50" cy="50" r="42" fill="transparent" stroke="#f8fafc" strokeWidth="11" />
+                              {/* Segments - Sequential offsets for stacked donut */}
+                              <DonutSegment total={donutBasis} value={currentData.cogs} offset={0} color="#f97316" />
+                              <DonutSegment total={donutBasis} value={currentData.wasteCost} offset={currentData.cogs} color="#f43f5e" />
+                              <DonutSegment total={donutBasis} value={currentData.payroll} offset={currentData.cogs + currentData.wasteCost} color="#3b82f6" />
+                              <DonutSegment total={donutBasis} value={currentData.services} offset={currentData.cogs + currentData.wasteCost + currentData.payroll} color="#8b5cf6" />
+                              <DonutSegment total={donutBasis} value={currentData.otherExpenses} offset={currentData.cogs + currentData.wasteCost + currentData.payroll + currentData.services} color="#94a3b8" />
+                              {currentData.netProfit > 0 && (
+                                 <DonutSegment total={donutBasis} value={currentData.netProfit} offset={totalExpenditure} color="#10b981" />
+                              )}
+                           </svg>
+                           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Facturación</span>
+                              <span className="text-2xl font-heading font-black text-slate-900 mt-1">
+                                 ${currentData.sales.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}
+                              </span>
+                           </div>
+                        </div>
 
-               <div className="grid grid-cols-1 gap-4 w-full mt-10">
-                  <LegendItem color="bg-orange-500" label="Costo de Ventas (COGS)" value={currentData.cogs} total={currentData.sales} />
-                  <LegendItem color="bg-red-500" label="Pérdidas y Mermas" value={currentData.wasteCost} total={currentData.sales} />
-                  <LegendItem color="bg-primary" label="Gastos de Personal" value={currentData.payroll} total={currentData.sales} />
-                  <LegendItem color="bg-purple-500" label="Servicios Generales" value={currentData.services} total={currentData.sales} />
-                  <LegendItem color="bg-emerald-500" label="Margen Neto Final" value={currentData.netProfit} total={currentData.sales} />
-               </div>
+                        <div className="grid grid-cols-1 gap-2 w-full">
+                           <LegendItem2 color="bg-[#f97316]" label="Costo de Ventas (COGS)" value={currentData.cogs} total={currentData.sales} />
+                           <LegendItem2 color="bg-[#f43f5e]" label="Pérdidas y Mermas" value={currentData.wasteCost} total={currentData.sales} />
+                           <LegendItem2 color="bg-[#3b82f6]" label="Gastos de Personal" value={currentData.payroll} total={currentData.sales} />
+                           <LegendItem2 color="bg-[#8b5cf6]" label="Servicios Generales" value={currentData.services} total={currentData.sales} />
+                           <LegendItem2 color="bg-[#94a3b8]" label="Otros Gastos Operativos" value={currentData.otherExpenses} total={currentData.sales} />
+                           {currentData.netProfit > 0 && (
+                              <LegendItem2 color="bg-[#10b981]" label="Utilidad Neta del Periodo" value={currentData.netProfit} total={currentData.sales} />
+                           )}
+                        </div>
+                     </>
+                  );
+               })()}
             </div>
 
-            {/* FINANCIAL HEALTH */}
-            <div className="card p-8 flex flex-col">
+            {/* FINANCIAL HEALTH: Indicadores de Salud */}
+            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
                <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-brand-black tracking-tight">Indicadores de Salud</h3>
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                     <span className="material-icons-round">health_and_safety</span>
-                  </div>
+                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+                     <span className="material-icons-round text-slate-300">security</span> Indicadores de Salud
+                  </h3>
                </div>
 
-               <div className="space-y-8 flex-1">
+               <div className="space-y-10 flex-1">
                   <HealthIndicator
                      label="Margen de Utilidad Neta"
                      value={currentData.netMargin}
@@ -334,58 +358,60 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                   />
                </div>
 
-               <div className="mt-10 p-6 bg-slate-50 rounded-2xl border border-slate-100 relative group overflow-hidden">
-                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-                     <span className="material-icons-round text-4xl text-primary">psychology</span>
+               <div className="mt-10 p-8 bg-[#f0f7ff] rounded-3xl border border-blue-100 relative group transition-all hover:bg-blue-100/50">
+                  <div className="absolute top-6 right-6 text-blue-500/10">
+                     <span className="material-icons-round text-5xl">psychology</span>
                   </div>
-                  <h4 className="font-heading font-black text-sm text-brand-black mb-3">Análisis Inteligente</h4>
-                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  <h4 className="font-black text-[11px] text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                     <span className="material-icons-round text-base">info</span> ANÁLISIS INTELIGENTE
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed font-bold">
                      {currentData.netMargin > 20
                         ? 'Tu estructura financiera es excepcionalmente eficiente. El control de gastos y el costo de platos están en niveles óptimos.'
                         : currentData.netMargin > 10
-                           ? 'Tu negocio es autosuficiente, pero existen oportunidades para optimizar la eficiencia operativa y reducir costos variables.'
+                           ? 'Tu negocio es autosuficiente, pero existen oportunidades para optimizar la eficiencia operativa.'
                            : 'Estructura financiera en riesgo. Requiere revisión inmediata de ingeniería de menú y reducción agresiva de gastos fijos.'}
                   </p>
                </div>
             </div>
 
-            {/* TRENDS */}
-            <div className="card p-8 flex flex-col">
+            {/* TRENDS: Desempeño Histórico */}
+            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
                <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-brand-black tracking-tight">Desempeño Histórico</h3>
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                     <span className="material-icons-round">timeline</span>
-                  </div>
+                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+                     <span className="material-icons-round text-slate-300">insights</span> Desempeño Histórico
+                  </h3>
                </div>
 
-               <div className="flex-1 flex items-end gap-3 relative min-h-[250px] px-2">
+               <div className="flex-1 flex items-end gap-3 min-h-[300px] px-2 relative mb-12">
                   {historyData.map((d, i) => {
-                     const max = Math.max(...historyData.map(h => Math.max(h.sales, h.expenses))) || 1;
+                     const maxVal = Math.max(...historyData.map(h => Math.max(h.sales, h.expenses))) || 1;
                      return (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-4 h-full justify-end group">
-                           <div className="w-full flex items-end gap-[2px] h-full justify-center">
-                              {/* Sales Bar */}
-                              <div className="w-3 bg-brand-black rounded-t-sm transition-all hover:opacity-80 relative group" style={{ height: `${(d.sales / max) * 75}%` }}>
-                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-brand-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">V: {formatMoney(d.sales)}</div>
-                              </div>
-                              {/* Expenses Bar */}
-                              <div className="w-3 bg-red-400 rounded-t-sm transition-all hover:bg-red-500 relative group" style={{ height: `${(d.expenses / max) * 75}%` }}>
-                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">G: {formatMoney(d.expenses)}</div>
-                              </div>
-                              {/* Net Bar (Positive only for height viz) */}
-                              <div className="w-3 bg-emerald-400 rounded-t-sm transition-all hover:bg-emerald-500 relative group" style={{ height: `${Math.max((d.net / max) * 75, 4)}%` }}>
-                                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">U: {formatMoney(d.net)}</div>
-                              </div>
+                        <div key={i} className="flex-1 flex flex-col items-center group h-full justify-end">
+                           <div className="flex items-end gap-1.5 h-full w-full justify-center">
+                              <div
+                                 className="w-2.5 bg-[#0f172a] rounded-full transition-all hover:scale-x-110"
+                                 style={{ height: `${(d.sales / maxVal) * 85}%` }}
+                              />
+                              <div
+                                 className="w-2.5 bg-[#f43f5e] rounded-full transition-all hover:scale-x-110"
+                                 style={{ height: `${(d.expenses / maxVal) * 85}%` }}
+                              />
+                              <div
+                                 className="w-2.5 bg-[#10b981] rounded-full transition-all hover:scale-x-110"
+                                 style={{ height: `${Math.max((Math.abs(d.net) / maxVal) * 85, 4)}%` }}
+                              />
                            </div>
-                           <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">{d.label}</span>
+                           <span className="text-[10px] font-black uppercase text-slate-400 mt-6 tracking-tighter">{d.label}</span>
                         </div>
-                     )
+                     );
                   })}
                </div>
-               <div className="mt-10 flex flex-wrap gap-6 text-[10px] font-black uppercase text-slate-400 justify-center tracking-widest border-t border-slate-50 pt-6">
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-brand-black rounded-full"></div> Ingresos</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-red-400 rounded-full"></div> Egresos</div>
-                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-emerald-400 rounded-full"></div> Utilidad</div>
+
+               <div className="flex flex-wrap gap-5 text-[10px] font-black uppercase text-slate-400 justify-center tracking-widest pt-8 border-t border-slate-50">
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-[#000] rounded-full"></div> INGRESOS</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-[#f43f5e] rounded-full"></div> EGRESOS</div>
+                  <div className="flex items-center gap-2"><div className="w-2 h-2 bg-[#10b981] rounded-full"></div> UTILIDAD</div>
                </div>
             </div>
          </div>
@@ -395,26 +421,30 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
 
 // --- SUBCOMPONENTS ---
 
-const KPICard = ({ label, value, prev, color, inverse, bg = "bg-white", isDark, icon }: any) => {
+const KPICard = ({ label, value, prev, color, inverse, bg = "bg-white", isDark, icon, iconBg, isBig }: any) => {
    const formatMoney = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
    return (
-      <div className={`card group p-6 ${isDark ? 'bg-brand-black border-brand-black shadow-2xl scale-[1.02]' : 'bg-white'}`}>
-         <div className="flex justify-between items-start mb-6">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300 ${isDark ? 'bg-white/10 text-white' : `${color.replace('text-', 'bg-').replace('600', '100').replace('500', '100')} ${color}`
-               }`}>
+      <div className={`p-10 rounded-[40px] border shadow-xl transition-all duration-300 hover:-translate-y-1 ${isDark ? 'bg-[#0f172a] border-slate-800 shadow-slate-900/40' : 'bg-white border-slate-100 shadow-slate-200/40'
+         } ${isBig ? 'h-full flex flex-col justify-center' : ''}`}>
+         <div className="flex justify-between items-start mb-8">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${iconBg || (isDark ? 'bg-white/10 text-white' : 'bg-slate-100')}`}>
                <span className="material-icons-round text-2xl">{icon}</span>
             </div>
             {prev !== undefined && (
                <TrendIndicatorWrapper curr={value} prev={prev} inverse={inverse} isDark={isDark} />
             )}
          </div>
-         <div className="space-y-1">
-            <p className={`text-[10px] uppercase font-black tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{label}</p>
-            <h3 className={`text-3xl font-heading font-black tracking-tight ${isDark ? 'text-white' : color}`}>{formatMoney(value)}</h3>
+         <div className="space-y-2">
+            <p className={`text-[11px] uppercase font-black tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{label}</p>
+            <h3 className={`text-4xl font-heading font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>
+               {value < 0 ? '-' : ''}${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </h3>
             {prev !== undefined && (
-               <div className={`flex items-center gap-2 pt-2 border-t mt-3 ${isDark ? 'border-white/10' : 'border-slate-50'}`}>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-white/30' : 'text-slate-400'}`}>Previo: {formatMoney(prev)}</span>
+               <div className={`pt-4 border-t mt-4 flex items-center gap-2 ${isDark ? 'border-white/5' : 'border-slate-50'}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-white/20' : 'text-slate-400'}`}>
+                     PREVIO: {formatMoney(prev)}
+                  </span>
                </div>
             )}
          </div>
@@ -459,43 +489,43 @@ const DonutSegment = ({ total, value, offset, color }: any) => {
    );
 };
 
-const LegendItem = ({ color, label, value, total }: any) => (
-   <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
-      <div className="flex items-center gap-3">
-         <div className={`w-3 h-3 rounded-full ${color} shadow-sm`}></div>
-         <span className="text-xs font-bold text-slate-700">{label}</span>
+const LegendItem2 = ({ color, label, value, total }: any) => (
+   <div className="flex items-center justify-between p-4 group">
+      <div className="flex items-center gap-4">
+         <div className={`w-3 h-3 rounded-full ${color}`}></div>
+         <span className="text-[13px] font-bold text-slate-600 transition-colors group-hover:text-slate-900">{label}</span>
       </div>
       <div className="text-right">
-         <span className="block text-xs font-black text-brand-black">{((value / total) * 100).toFixed(1)}%</span>
-         <span className="block text-[10px] font-bold text-slate-400 tracking-tight">${value.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
+         <span className="block text-[13px] font-black text-slate-900 tracking-tight">{((value / total) * 100).toFixed(1)}%</span>
+         <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">${value.toLocaleString('en-US', { minimumFractionDigits: 0 })}</span>
       </div>
    </div>
 );
 
-const HealthIndicator = ({ label, value, suffix, status, target, inverse }: any) => {
-   const colors = {
-      good: 'bg-emerald-500 shadow-emerald-500/30',
-      warning: 'bg-amber-400 shadow-amber-400/30',
-      bad: 'bg-red-500 shadow-red-500/30'
+const HealthIndicator = ({ label, value, suffix, status, target }: any) => {
+   const barColors = {
+      good: 'bg-emerald-500',
+      warning: 'bg-amber-400',
+      bad: 'bg-red-500'
    };
    const textColors = {
-      good: 'text-emerald-700',
-      warning: 'text-amber-700',
-      bad: 'text-red-700'
+      good: 'text-emerald-500',
+      warning: 'text-amber-500',
+      bad: 'text-red-500'
    };
 
    return (
       <div className="flex items-center justify-between group">
-         <div className="flex items-center gap-4">
-            <div className={`w-4 h-4 rounded-full border-2 border-white ${colors[status as keyof typeof colors]} shadow-lg transition-transform group-hover:scale-125 duration-300`}></div>
+         <div className="flex items-center gap-5">
+            <div className={`w-1.5 h-12 rounded-full ${barColors[status as keyof typeof barColors]}`}></div>
             <div>
-               <h4 className="text-sm font-heading font-black text-brand-black tracking-tight">{label}</h4>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{target}</p>
+               <h4 className="text-base font-black text-slate-900 tracking-tight">{label}</h4>
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">{target}</p>
             </div>
          </div>
          <div className="text-right">
-            <span className={`text-2xl font-heading font-black tracking-tighter ${textColors[status as keyof typeof textColors]}`}>
-               {value.toFixed(1)}{suffix}
+            <span className={`text-4xl font-heading font-black tracking-tighter ${textColors[status as keyof typeof textColors]}`}>
+               {value < 0 ? '' : '+'}{value.toFixed(1)}{suffix}
             </span>
          </div>
       </div>

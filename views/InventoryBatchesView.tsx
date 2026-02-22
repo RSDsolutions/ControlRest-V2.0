@@ -209,19 +209,19 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                         Capa logística — trazabilidad de compras por lote. No afecta el PMP financiero.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-4">
                     <button
                         onClick={handleRunAutoWaste}
-                        className="flex items-center gap-2 px-4 py-3 bg-white border-2 border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 active:scale-95 transition-all text-sm"
+                        className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold flex items-center gap-2"
                         title="Correr Auto-Merma Manualmente"
                     >
-                        <span className="material-icons-round">cleaning_services</span> Limpiar Expirados
+                        <span className="material-icons-round text-[18px]">cleaning_services</span> Limpiar Expirados
                     </button>
                     <button
                         onClick={() => setShowForm(f => !f)}
-                        className="flex items-center gap-2 px-5 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 active:scale-95 transition-all"
+                        className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
                     >
-                        <span className="material-icons-round">add</span> Registrar Lote
+                        <span className="material-icons-round text-[18px]">add</span> Registrar Lote
                     </button>
                 </div>
             </header>
@@ -307,13 +307,18 @@ const InventoryBatchesView: React.FC<Props> = ({ branchId, currentUser }) => {
                             />
                         </div>
                     </div>
-                    <div className="flex gap-3 justify-end pt-2">
-                        <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-slate-500 font-bold text-sm hover:text-slate-700">
+                    <div className="flex justify-between items-center pt-6 border-t border-slate-100">
+                        <button
+                            type="button"
+                            onClick={() => setShowForm(false)}
+                            className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
+                        >
                             Cancelar
                         </button>
                         <button
-                            type="submit" disabled={saving}
-                            className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-md shadow-primary/20 disabled:opacity-50 active:scale-95 transition-all"
+                            type="submit"
+                            disabled={saving}
+                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] disabled:opacity-50"
                         >
                             {saving ? 'Guardando...' : 'Crear Lote'}
                         </button>

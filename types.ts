@@ -12,7 +12,6 @@ export interface User {
   email?: string;
   username?: string;
   role: UserRole;
-  pin?: string;
   branchId?: string;
   branchName?: string; // Hydrated
   restaurantId?: string; // New
@@ -301,4 +300,50 @@ export interface AccountsPayablePayment {
   cash_session_id: string | null;
   created_by: string;
   created_at: string;
+}
+
+export enum AlertSeverity {
+  INFO = 'info',
+  WARNING = 'warning',
+  CRITICAL = 'critical'
+}
+
+export enum AlertType {
+  INVENTORY = 'inventory',
+  FINANCIAL = 'financial',
+  SUPPLIER = 'supplier',
+  CASH = 'cash',
+  ADMIN = 'admin'
+}
+
+export interface SmartAlert {
+  id: string;
+  severity: AlertSeverity;
+  type: AlertType;
+  title: string;
+  message: string;
+  impact?: string;
+  actionLabel?: string;
+  branchId?: string;
+  relevantIds?: string[];
+  timestamp: string;
+  metadata?: any;
+  sourceRecordId?: string;
+  sourceTable?: string;
+  eventType?: string;
+}
+
+export interface SmartSuggestion {
+  id: string;
+  title: string;
+  description: string;
+  actionLabel: string;
+  impactFinancial?: string;
+  horizon?: 'daily' | 'monthly';
+  branchId?: string;
+  category: string;
+  metadata?: any;
+  sourceRecordId?: string;
+  sourceTable?: string;
+  eventType?: string;
 }

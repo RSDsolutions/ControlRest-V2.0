@@ -37,17 +37,40 @@ import KitchenRecipeView from './views/KitchenRecipeView';
 import KitchenWasteView from './views/KitchenWasteView';
 import SupplierInvoicesView from './views/SupplierInvoicesView';
 import AccountsPayableView from './views/AccountsPayableView';
+import BranchesConfigView from './views/BranchesConfigView';
+import IntelligenceDashboardView from './views/IntelligenceDashboardView';
 
 // Components
 import Sidebar from './components/Sidebar';
-import LockScreen from './components/LockScreen';
+
+// Access Control
+interface RoleGuardProps {
+  user: User | null;
+  allowedRoles: UserRole[];
+  children: React.ReactNode;
+}
+
+const RoleGuard: React.FC<RoleGuardProps> = ({ user, allowedRoles, children }) => {
+  if (!user) return <Navigate to="/" replace />;
+
+  if (!allowedRoles.includes(user.role)) {
+    const homePaths: Record<UserRole, string> = {
+      [UserRole.ADMIN]: '/admin',
+      [UserRole.WAITER]: '/waiter',
+      [UserRole.CASHIER]: '/cashier',
+      [UserRole.KITCHEN]: '/kitchen',
+    };
+    return <Navigate to={homePaths[user.role] || '/'} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const App: React.FC = () => {
   // Start the offline sync engine — runs a 5s loop flushing pending_operations to Supabase
   const { pendingCount } = useSyncEngine();
 
   const [user, setUser] = useState<User | null>(null);
-  const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
   const isStaffLoginRef = useRef(false);
   const [ingredients, setIngredients] = useState<Ingredient[]>(INITIAL_INGREDIENTS);
@@ -625,14 +648,6 @@ const App: React.FC = () => {
     window.location.hash = '#/';
   };
 
-  const handleUnlock = (u: User) => {
-    setUser(u);
-    setIsLocked(false);
-  };
-
-  const handleLock = () => {
-    setIsLocked(true);
-  };
 
   if (loading) {
     return (
@@ -642,9 +657,6 @@ const App: React.FC = () => {
     );
   }
 
-  if (isLocked) {
-    return <LockScreen onUnlock={handleUnlock} branchId={branchId} />;
-  }
 
   if (!user) {
     return <LoginView onLogin={handleLogin} />;
@@ -657,7 +669,6 @@ const App: React.FC = () => {
         <Sidebar
           user={user}
           onLogout={handleLogout}
-          onLock={handleLock}
           branches={branches}
           currentBranchId={branchId}
           onBranchChange={(id) => setBranchId(id)}
@@ -668,39 +679,41 @@ const App: React.FC = () => {
             <Route path="/" element={<Navigate to={user.role === UserRole.ADMIN ? "/admin" : user.role === UserRole.WAITER ? "/waiter" : user.role === UserRole.KITCHEN ? "/kitchen" : "/cashier"} />} />
 
             {/* Rutas de Administrador */}
-            <Route path="/admin" element={<AdminDashboard ingredients={ingredients} plates={plates} orders={orders} tables={tables} branchName={branches.find(b => b.id === branchId)?.name} branchId={branchId} />} />
-            <Route path="/waste" element={<WasteView ingredients={ingredients} currentUser={user} restaurantId={restaurantId || ''} branchId={branchId || ''} branches={branches} />} />
-            <Route path="/ingredients" element={<IngredientsView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} restaurantId={restaurantId} />} />
-            <Route path="/suppliers" element={<SuppliersView currentUser={user} restaurantId={restaurantId} />} />
-            <Route path="/purchase-requests" element={<PurchaseRequestView branchId={branchId} currentUser={user} />} />
-            <Route path="/inventory" element={<InventoryView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} />} />
-            <Route path="/inventory-batches" element={<InventoryBatchesView branchId={branchId} currentUser={user} />} />
-            <Route path="/tables" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <TablesView tables={tables} setTables={setTables} branchId={branchId} />} />
-            <Route path="/orders-history" element={<OrdersHistoryView plates={plates} tables={tables} branchId={branchId} branches={branches} currentUser={user} />} />
-            <Route path="/supplier-invoices" element={<SupplierInvoicesView currentUser={user} branches={branches} branchId={branchId} />} />
-            <Route path="/accounts-payable" element={<AccountsPayableView currentUser={user} branches={branches} branchId={branchId} />} />
-            <Route path="/users" element={<UserManagementView currentUser={user} branches={branches} />} />
-            <Route path="/enterprise-profile" element={<EnterpriseProfileView currentUser={user} branches={branches} setBranches={setBranches} />} />
-            <Route path="/audit" element={<AuditLogView branches={branches} />} />
-            <Route path="/period-locks" element={<AccountingPeriodLocksView currentUser={user} branches={branches} />} />
-            <Route path="/snapshots" element={<SnapshotHistoryView currentUser={user} branches={branches} />} />
-            <Route path="/plates" element={<PlatesView plates={plates} ingredients={ingredients} setPlates={setPlates} restaurantId={restaurantId} orders={orders} />} />
-            <Route path="/finance" element={<FinanceView orders={orders} ingredients={ingredients} expenses={expenses} plates={plates} wasteRecords={wasteRecords} branchId={branchId} />} />
-            <Route path="/expenses" element={<ExpensesView expenses={expenses} onAddExpense={(newExp) => setExpenses(prev => Array.isArray(prev) ? [newExp, ...prev] : [newExp])} branchId={branchId} branches={branches} orders={orders} ingredients={ingredients} plates={plates} />} />
+            <Route path="/admin" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><AdminDashboard ingredients={ingredients} plates={plates} orders={orders} tables={tables} branchName={branches.find(b => b.id === branchId)?.name} branchId={branchId} /></RoleGuard>} />
+            <Route path="/waste" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><WasteView ingredients={ingredients} currentUser={user} restaurantId={restaurantId || ''} branchId={branchId || ''} branches={branches} /></RoleGuard>} />
+            <Route path="/ingredients" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><IngredientsView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} restaurantId={restaurantId} /></RoleGuard>} />
+            <Route path="/suppliers" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><SuppliersView currentUser={user} restaurantId={restaurantId} /></RoleGuard>} />
+            <Route path="/purchase-requests" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><PurchaseRequestView branchId={branchId} currentUser={user} /></RoleGuard>} />
+            <Route path="/inventory" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><InventoryView ingredients={ingredients} setIngredients={setIngredients} branchId={branchId} /></RoleGuard>} />
+            <Route path="/inventory-batches" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><InventoryBatchesView branchId={branchId} currentUser={user} /></RoleGuard>} />
+            <Route path="/tables" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <TablesView tables={tables} setTables={setTables} branchId={branchId} />}</RoleGuard>} />
+            <Route path="/orders-history" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><OrdersHistoryView plates={plates} tables={tables} branchId={branchId} branches={branches} currentUser={user} /></RoleGuard>} />
+            <Route path="/supplier-invoices" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN, UserRole.CASHIER]}><SupplierInvoicesView currentUser={user} branches={branches} branchId={branchId} /></RoleGuard>} />
+            <Route path="/accounts-payable" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN, UserRole.CASHIER]}><AccountsPayableView currentUser={user} branches={branches} branchId={branchId} /></RoleGuard>} />
+            <Route path="/users" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><UserManagementView currentUser={user} branches={branches} /></RoleGuard>} />
+            <Route path="/enterprise-profile" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><EnterpriseProfileView currentUser={user} branches={branches} setBranches={setBranches} /></RoleGuard>} />
+            <Route path="/branches-config" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><BranchesConfigView currentUser={user} branches={branches} setBranches={setBranches} /></RoleGuard>} />
+            <Route path="/audit" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><AuditLogView branches={branches} /></RoleGuard>} />
+            <Route path="/period-locks" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><AccountingPeriodLocksView currentUser={user} branches={branches} /></RoleGuard>} />
+            <Route path="/snapshots" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><SnapshotHistoryView currentUser={user} branches={branches} /></RoleGuard>} />
+            <Route path="/plates" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><PlatesView plates={plates} ingredients={ingredients} setPlates={setPlates} restaurantId={restaurantId} orders={orders} /></RoleGuard>} />
+            <Route path="/finance" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><FinanceView orders={orders} ingredients={ingredients} expenses={expenses} plates={plates} wasteRecords={wasteRecords} branchId={branchId} /></RoleGuard>} />
+            <Route path="/expenses" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><ExpensesView expenses={expenses} onAddExpense={(newExp) => setExpenses(prev => Array.isArray(prev) ? [newExp, ...prev] : [newExp])} branchId={branchId} branches={branches} orders={orders} ingredients={ingredients} plates={plates} /></RoleGuard>} />
+            <Route path="/intelligence" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN]}><IntelligenceDashboardView branchId={branchId} /></RoleGuard>} />
 
             {/* Rutas de Mesero */}
-            <Route path="/waiter" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <WaiterView tables={tables} plates={plates} orders={orders} setOrders={setOrders} setTables={setTables} branchId={branchId} currentUser={user} fetchOrders={() => fetchOrders(branchId || '')} ingredients={ingredients} restaurantId={restaurantId} inventoryError={inventoryError} />} />
+            <Route path="/waiter" element={<RoleGuard user={user} allowedRoles={[UserRole.WAITER]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <WaiterView tables={tables} plates={plates} orders={orders} setOrders={setOrders} setTables={setTables} branchId={branchId} currentUser={user} fetchOrders={() => fetchOrders(branchId || '')} ingredients={ingredients} restaurantId={restaurantId} inventoryError={inventoryError} />}</RoleGuard>} />
 
             {/* Rutas de Cajero */}
-            <Route path="/cashier" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <CashierView tables={tables} plates={plates} setTables={setTables} branchId={branchId} currentUser={user} />} />
-            <Route path="/cashier-history" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <OrdersHistoryView plates={plates} tables={tables} branchId={branchId} currentUser={user} />} />
+            <Route path="/cashier" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN, UserRole.CASHIER]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <CashierView tables={tables} plates={plates} setTables={setTables} branchId={branchId} currentUser={user} />}</RoleGuard>} />
+            <Route path="/cashier-history" element={<RoleGuard user={user} allowedRoles={[UserRole.CASHIER]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <OrdersHistoryView plates={plates} tables={tables} branchId={branchId} currentUser={user} />}</RoleGuard>} />
 
             {/* Rutas de Cocina */}
-            <Route path="/kitchen" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="active" />} />
-            <Route path="/kitchen-history" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="history" />} />
-            <Route path="/kitchen/recipes" element={<KitchenRecipeView plates={plates} ingredients={ingredients} />} />
-            <Route path="/kitchen/purchase-requests" element={branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenPurchaseRequestView branchId={branchId} currentUser={user} />} />
-            <Route path="/kitchen/waste" element={<KitchenWasteView ingredients={ingredients} user={user} branchId={branchId} restaurantId={restaurantId} />} />
+            <Route path="/kitchen" element={<RoleGuard user={user} allowedRoles={[UserRole.ADMIN, UserRole.KITCHEN]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="active" />}</RoleGuard>} />
+            <Route path="/kitchen-history" element={<RoleGuard user={user} allowedRoles={[UserRole.KITCHEN]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenView orders={orders} plates={plates} tables={tables} setOrders={setOrders} branchId={branchId} fetchOrders={() => branchId && fetchOrders(branchId)} ingredients={ingredients} setIngredients={setIngredients} initialView="history" />}</RoleGuard>} />
+            <Route path="/kitchen/recipes" element={<RoleGuard user={user} allowedRoles={[UserRole.KITCHEN]}><KitchenRecipeView plates={plates} ingredients={ingredients} /></RoleGuard>} />
+            <Route path="/kitchen/purchase-requests" element={<RoleGuard user={user} allowedRoles={[UserRole.KITCHEN]}>{branchId === 'GLOBAL' ? <GlobalModeWarning /> : <KitchenPurchaseRequestView branchId={branchId} currentUser={user} />}</RoleGuard>} />
+            <Route path="/kitchen/waste" element={<RoleGuard user={user} allowedRoles={[UserRole.KITCHEN]}><KitchenWasteView ingredients={ingredients} user={user} branchId={branchId} restaurantId={restaurantId} /></RoleGuard>} />
 
             <Route path="*" element={<Navigate to={user.role === UserRole.ADMIN ? "/admin" : user.role === UserRole.WAITER ? "/waiter" : user.role === UserRole.KITCHEN ? "/kitchen" : "/cashier"} replace />} />
           </Routes>
