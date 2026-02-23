@@ -12,8 +12,13 @@ import { useOrdersQuery } from './hooks/useOrdersQuery';
 import { useTablesQuery } from './hooks/useTablesQuery';
 import { queryKeys } from './lib/queryKeys';
 
-// Views
 import LoginView from './views/LoginView';
+import LandingView from './views/landing/LandingView';
+import ProblemView from './views/landing/ProblemView';
+import HowItWorksView from './views/landing/HowItWorksView';
+import FeaturesView from './views/landing/FeaturesView';
+import PricingView from './views/landing/PricingView';
+import SupportView from './views/landing/SupportView';
 import AdminDashboard from './views/AdminDashboard';
 import IngredientsView from './views/IngredientsView';
 import InventoryView from './views/InventoryView';
@@ -710,7 +715,20 @@ const App: React.FC = () => {
 
 
   if (!user) {
-    return <LoginView onLogin={handleLogin} />;
+    return (
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingView />} />
+          <Route path="/problema" element={<ProblemView />} />
+          <Route path="/como-funciona" element={<HowItWorksView />} />
+          <Route path="/funcionalidades" element={<FeaturesView />} />
+          <Route path="/precios" element={<PricingView />} />
+          <Route path="/soporte" element={<SupportView />} />
+          <Route path="/login" element={<LoginView onLogin={handleLogin} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    );
   }
   console.log('[Render] Orders in state:', orders.length);
 

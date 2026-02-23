@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ControlRest V2.0 - ERP Financiero para Restaurantes</title>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#2563EB",
+                        "primary-dark": "#1D4ED8",
+                        "background-dark": "#0F172A",
+                        "surface-dark": "#1E293B",
+                        "surface-darker": "#111827",
+                        "accent-green": "#10B981",
+                        "accent-red": "#EF4444",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"],
+                        "sans": ["Work Sans", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-dark text-slate-100 font-display antialiased selection:bg-primary selection:text-white overflow-x-hidden">
+<!-- Top Navigation -->
+<header class="fixed top-0 left-0 right-0 z-50 border-b border-slate-800 bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<!-- Logo -->
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 flex items-center justify-center bg-primary rounded-lg text-white">
+<span class="material-symbols-outlined text-[20px]">dataset</span>
+</div>
+<span class="text-white text-lg font-bold tracking-tight">ControlRest V2.0</span>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#problema">Problema</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#proceso">Cómo Funciona</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#funcionalidades">Funcionalidades</a>
+<a class="text-slate-300 hover:text-white text-sm font-medium transition-colors" href="#precios">Precios</a>
+</nav>
+<!-- CTA -->
+<div class="hidden md:flex items-center">
+<button class="bg-primary hover:bg-primary-dark text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        Agendar Demo
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Mobile menu button -->
+<div class="md:hidden flex items-center">
+<button class="text-slate-300 hover:text-white p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative pt-20 pb-32 overflow-hidden">
+<!-- Background effects -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1200px] h-[500px] bg-primary/20 blur-[120px] rounded-full -z-10 opacity-30"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700 text-xs font-medium text-primary mb-6">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+                    Nuevo: Módulo de Inteligencia de Compras v2.0
+                </div>
+<h1 class="text-4xl md:text-6xl font-black tracking-tight text-white mb-6 max-w-4xl leading-tight">
+                    Tu restaurante vende.<br/>
+<span class="text-slate-400">Pero… ¿realmente estás ganando dinero?</span>
+</h1>
+<p class="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+                    Descubre tu <span class="text-white font-semibold">Utilidad Neta Real</span>, controla mermas y gestiona costos dinámicos con el ERP financiero definitivo para la gastronomía moderna.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 mb-20 w-full sm:w-auto">
+<button class="bg-primary hover:bg-primary-dark text-white text-base font-bold h-12 px-8 rounded-lg transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">play_circle</span>
+                        Ver Demo Interactiva
+                    </button>
+<button class="bg-surface-dark border border-slate-700 hover:border-slate-500 text-white text-base font-bold h-12 px-8 rounded-lg transition-colors flex items-center justify-center">
+                        Cómo Funciona
+                    </button>
+</div>
+<!-- Dashboard Mockup -->
+<div class="relative w-full max-w-6xl mx-auto rounded-xl border border-slate-700/50 bg-surface-darker/80 backdrop-blur-sm shadow-2xl overflow-hidden group">
+<!-- Fake Browser Header -->
+<div class="h-10 border-b border-slate-800 bg-surface-dark flex items-center px-4 gap-2">
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-slate-600"></div>
+<div class="w-3 h-3 rounded-full bg-slate-600"></div>
+<div class="w-3 h-3 rounded-full bg-slate-600"></div>
+</div>
+<div class="flex-1 text-center text-xs text-slate-500 font-mono">dashboard.controlrest.com/financial-overview</div>
+</div>
+<!-- Dashboard Content -->
+<div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
+<!-- Metric 1 -->
+<div class="bg-surface-dark rounded-lg p-5 border border-slate-800">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-sm text-slate-400 font-medium">Utilidad Neta Diaria</p>
+<h3 class="text-3xl font-bold text-white mt-1">$1,245.80</h3>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-accent-green/10 text-accent-green">
+                                    +12.5% <span class="material-symbols-outlined text-sm ml-1">trending_up</span>
+</span>
+</div>
+<div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-accent-green w-[75%]"></div>
+</div>
+<p class="text-xs text-slate-500 mt-2">Meta diaria: $1,650.00</p>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-dark rounded-lg p-5 border border-slate-800">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-sm text-slate-400 font-medium">Costo Primo (Food Cost)</p>
+<h3 class="text-3xl font-bold text-white mt-1">28.4%</h3>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-accent-green/10 text-accent-green">
+                                    -2.1% <span class="material-symbols-outlined text-sm ml-1">trending_down</span>
+</span>
+</div>
+<div class="h-16 flex items-end gap-1">
+<div class="w-1/6 bg-primary/30 h-[40%] rounded-t"></div>
+<div class="w-1/6 bg-primary/40 h-[60%] rounded-t"></div>
+<div class="w-1/6 bg-primary/50 h-[45%] rounded-t"></div>
+<div class="w-1/6 bg-primary/60 h-[70%] rounded-t"></div>
+<div class="w-1/6 bg-primary/80 h-[55%] rounded-t"></div>
+<div class="w-1/6 bg-primary h-[85%] rounded-t"></div>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-dark rounded-lg p-5 border border-slate-800">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-sm text-slate-400 font-medium">Mermas Reportadas</p>
+<h3 class="text-3xl font-bold text-white mt-1">$142.50</h3>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-accent-red/10 text-accent-red">
+                                    Alert <span class="material-symbols-outlined text-sm ml-1">warning</span>
+</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-xs text-slate-300 border-b border-slate-700/50 pb-2">
+<span>Caducidad (Lácteos)</span>
+<span class="font-bold text-white">$85.00</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-300 border-b border-slate-700/50 pb-2">
+<span>Error Cocina</span>
+<span class="font-bold text-white">$42.50</span>
+</div>
+<div class="flex items-center justify-between text-xs text-slate-300">
+<span>Rotura Vajilla</span>
+<span class="font-bold text-white">$15.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Problem Section -->
+<section class="py-24 bg-surface-darker border-y border-slate-800" id="problema">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row gap-12 items-start">
+<div class="md:w-1/3 sticky top-24">
+<h2 class="text-3xl md:text-4xl font-black text-white leading-tight mb-6">
+                            El 80% de restaurantes cree que gana dinero…
+                        </h2>
+<p class="text-lg text-slate-400 leading-relaxed mb-8">
+                            …pero pierden hasta un 15% de utilidad en fugas silenciosas. Sin un sistema integrado, estás operando a ciegas. Identifica dónde se va tu dinero.
+                        </p>
+<div class="flex items-center gap-4 text-sm font-medium text-slate-500">
+<span class="w-12 h-[1px] bg-slate-700"></span>
+<span>DATOS DE INDUSTRIA 2024</span>
+</div>
+</div>
+<div class="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="p-6 rounded-lg bg-surface-dark border border-slate-800 hover:border-primary/50 transition-colors group">
+<div class="w-12 h-12 bg-surface-darker rounded-lg flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors mb-4">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Recetas Estáticas</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Costos desactualizados que ignoran la inflación diaria de tus insumos clave.</p>
+</div>
+<!-- Card 2 -->
+<div class="p-6 rounded-lg bg-surface-dark border border-slate-800 hover:border-primary/50 transition-colors group">
+<div class="w-12 h-12 bg-surface-darker rounded-lg flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors mb-4">
+<span class="material-symbols-outlined">link_off</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Compras Desvinculadas</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Facturas que entran a contabilidad pero nunca cruzan datos con el consumo real.</p>
+</div>
+<!-- Card 3 -->
+<div class="p-6 rounded-lg bg-surface-dark border border-slate-800 hover:border-primary/50 transition-colors group">
+<div class="w-12 h-12 bg-surface-darker rounded-lg flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors mb-4">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Inventario Desconectado</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Stock teórico en excel que jamás coincide con la realidad física de tu almacén.</p>
+</div>
+<!-- Card 4 -->
+<div class="p-6 rounded-lg bg-surface-dark border border-slate-800 hover:border-primary/50 transition-colors group">
+<div class="w-12 h-12 bg-surface-darker rounded-lg flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-colors mb-4">
+<span class="material-symbols-outlined">money_off</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-2">Ventas sin Margen</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Platos populares que, tras recalcular costos ocultos, generan pérdidas invisibles.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works (Process) -->
+<section class="py-24 bg-background-dark" id="proceso">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-16">
+<h2 class="text-3xl md:text-4xl font-black text-white mb-4">La verdad financiera en 4 pasos</h2>
+<p class="text-slate-400 max-w-2xl mx-auto">Automatizamos el flujo de información desde que el mesero comanda hasta que ves tu utilidad neta.</p>
+</div>
+<div class="relative">
+<!-- Connector Line (Desktop) -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-800 -translate-y-1/2 z-0"></div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-full bg-surface-dark border-2 border-slate-700 group-hover:border-primary group-hover:bg-primary/10 text-slate-400 group-hover:text-primary flex items-center justify-center transition-all duration-300 mb-6 relative bg-background-dark">
+<span class="material-symbols-outlined text-3xl">point_of_sale</span>
+<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-xs flex items-center justify-center text-white">1</div>
+</div>
+<h3 class="text-lg font-bold text-white mb-2">Venta POS</h3>
+<p class="text-sm text-slate-500 px-4">Integración nativa con tu punto de venta. Cada ticket dispara el proceso.</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-full bg-surface-dark border-2 border-slate-700 group-hover:border-primary group-hover:bg-primary/10 text-slate-400 group-hover:text-primary flex items-center justify-center transition-all duration-300 mb-6 relative bg-background-dark">
+<span class="material-symbols-outlined text-3xl">remove_shopping_cart</span>
+<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-xs flex items-center justify-center text-white">2</div>
+</div>
+<h3 class="text-lg font-bold text-white mb-2">Baja de Inventario</h3>
+<p class="text-sm text-slate-500 px-4">Descuento automático de insumos basado en recetas técnicas precisas.</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-full bg-surface-dark border-2 border-slate-700 group-hover:border-primary group-hover:bg-primary/10 text-slate-400 group-hover:text-primary flex items-center justify-center transition-all duration-300 mb-6 relative bg-background-dark">
+<span class="material-symbols-outlined text-3xl">calculate</span>
+<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-xs flex items-center justify-center text-white">3</div>
+</div>
+<h3 class="text-lg font-bold text-white mb-2">Recálculo de Costo</h3>
+<p class="text-sm text-slate-500 px-4">Actualización del costo del plato según el último precio de compra.</p>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center text-center group">
+<div class="w-16 h-16 rounded-full bg-surface-dark border-2 border-accent-green group-hover:bg-accent-green/10 text-accent-green flex items-center justify-center transition-all duration-300 mb-6 relative bg-background-dark shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+<span class="material-symbols-outlined text-3xl">attach_money</span>
+<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-xs flex items-center justify-center text-white">4</div>
+</div>
+<h3 class="text-lg font-bold text-white mb-2">Utilidad Neta Real</h3>
+<p class="text-sm text-slate-500 px-4">Visualización inmediata del margen real tras costos operativos y mermas.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Grid -->
+<section class="py-24 bg-surface-darker border-y border-slate-800" id="funcionalidades">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-16">
+<h2 class="text-3xl md:text-4xl font-black text-white mb-4">Control Total: Funcionalidades ERP</h2>
+<p class="text-slate-400 max-w-2xl">Modular, preciso y diseñado exclusivamente para directores financieros gastronómicos.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Feature 1 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">currency_exchange</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Inventario Valorizado</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Conoce el valor exacto de tu stock en tiempo real. Audita movimientos y detecta robos hormiga al instante.</p>
+</div>
+<!-- Feature 2 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">sync_alt</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Costeo Dinámico</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Si el precio del tomate sube hoy, el costo de tu ensalada se actualiza hoy. Márgenes siempre reales.</p>
+</div>
+<!-- Feature 3 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">shopping_cart_checkout</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Compras Inteligentes</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Algoritmos que sugieren pedidos basados en consumo histórico y proyecciones de venta para evitar sobre-stock.</p>
+</div>
+<!-- Feature 4 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">delete_forever</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Control de Mermas</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Registro tipificado de desperdicios. Analiza si pierdes por caducidad, mala manipulación o errores de cocina.</p>
+</div>
+<!-- Feature 5 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Gastos Operativos</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Integra nómina, alquileres y servicios fijos para obtener una visión completa del P&amp;L (Estado de Resultados).</p>
+</div>
+<!-- Feature 6 -->
+<div class="p-8 rounded-xl bg-surface-dark border border-slate-800 hover:border-slate-600 transition-all hover:shadow-lg">
+<div class="w-10 h-10 rounded bg-primary/20 text-primary flex items-center justify-center mb-6">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+<h3 class="text-xl font-bold text-white mb-3">Utilidad Neta</h3>
+<p class="text-slate-400 text-sm leading-relaxed">Reportes financieros ejecutivos automáticos. Deja de gestionar ventas brutas y empieza a gestionar ganancias.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="py-24 bg-background-dark" id="precios">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-16">
+<h2 class="text-3xl md:text-4xl font-black text-white mb-4">Planes para cada etapa de madurez</h2>
+<p class="text-slate-400 max-w-2xl mx-auto">Desde operar el día a día hasta escalar una franquicia.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+<!-- Tier 1 -->
+<div class="rounded-2xl bg-surface-dark border border-slate-800 p-8 flex flex-col h-full">
+<div class="mb-6">
+<h3 class="text-xl font-bold text-white tracking-tight">OPERAR</h3>
+<p class="text-slate-400 text-sm mt-2">Para restaurantes individuales que buscan orden.</p>
+</div>
+<div class="text-3xl font-black text-white mb-6">$89<span class="text-lg font-normal text-slate-500">/mes</span></div>
+<button class="w-full py-3 px-4 rounded-lg border border-slate-600 text-white font-bold hover:bg-slate-700 transition-colors mb-8">Comenzar</button>
+<ul class="space-y-4 flex-1">
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Gestión de Recetas Estándar
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Control de Inventario Básico
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Integración POS (1 caja)
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Reportes de Ventas
+                            </li>
+</ul>
+</div>
+<!-- Tier 2 (Featured) -->
+<div class="rounded-2xl bg-surface-dark border-2 border-primary p-8 flex flex-col h-full relative shadow-[0_0_40px_rgba(37,99,235,0.1)] transform md:-translate-y-4">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                            Más Popular
+                        </div>
+<div class="mb-6">
+<h3 class="text-xl font-bold text-white tracking-tight">CONTROLAR</h3>
+<p class="text-slate-400 text-sm mt-2">El ERP completo para gestión financiera real.</p>
+</div>
+<div class="text-3xl font-black text-white mb-6">$199<span class="text-lg font-normal text-slate-500">/mes</span></div>
+<button class="w-full py-3 px-4 rounded-lg bg-primary text-white font-bold hover:bg-primary-dark transition-colors mb-8 shadow-lg shadow-primary/25">Prueba Gratis</button>
+<ul class="space-y-4 flex-1">
+<li class="flex items-start gap-3 text-sm text-white font-medium">
+<span class="material-symbols-outlined text-primary text-lg">check_circle</span>
+                                Todo en OPERAR +
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-primary text-lg">check</span>
+                                Costeo Dinámico Automático
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-primary text-lg">check</span>
+                                Módulo de Mermas y Desperdicios
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-primary text-lg">check</span>
+                                Sugerencias de Compra Inteligente
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-primary text-lg">check</span>
+                                P&amp;L en Tiempo Real
+                            </li>
+</ul>
+</div>
+<!-- Tier 3 -->
+<div class="rounded-2xl bg-surface-dark border border-slate-800 p-8 flex flex-col h-full">
+<div class="mb-6">
+<h3 class="text-xl font-bold text-white tracking-tight">ESCALAR</h3>
+<p class="text-slate-400 text-sm mt-2">Para grupos gastronómicos y franquicias.</p>
+</div>
+<div class="text-3xl font-black text-white mb-6">Personalizado</div>
+<button class="w-full py-3 px-4 rounded-lg border border-slate-600 text-white font-bold hover:bg-slate-700 transition-colors mb-8">Contactar Ventas</button>
+<ul class="space-y-4 flex-1">
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Todo en CONTROLAR +
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Multi-sucursal y Multi-almacén
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Consolidación Financiera de Grupo
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                API y Webhooks personalizados
+                            </li>
+<li class="flex items-start gap-3 text-sm text-slate-300">
+<span class="material-symbols-outlined text-green-500 text-lg">check</span>
+                                Gerente de Cuenta Dedicado
+                            </li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Final -->
+<section class="py-24 relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/10"></div>
+<div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent"></div>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+<h2 class="text-3xl md:text-5xl font-black text-white mb-6 leading-tight">
+                    Empieza a saber si tu restaurante<br/>realmente gana dinero
+                </h2>
+<p class="text-xl text-slate-300 mb-10">
+                    Deja de adivinar y empieza a controlar. Únete a los más de 500 restaurantes que han recuperado su margen de utilidad.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary hover:bg-primary-dark text-white text-lg font-bold h-14 px-8 rounded-lg transition-all shadow-lg hover:shadow-primary/50 flex items-center justify-center gap-2">
+                        Agendar Demo Personalizada
+                        <span class="material-symbols-outlined">calendar_month</span>
+</button>
+<button class="bg-surface-dark border border-slate-700 hover:border-white text-white text-lg font-bold h-14 px-8 rounded-lg transition-colors">
+                        Hablar con un experto
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-background-dark border-t border-slate-800 pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-4">
+<div class="w-6 h-6 flex items-center justify-center bg-slate-700 rounded text-white">
+<span class="material-symbols-outlined text-[16px]">dataset</span>
+</div>
+<span class="text-white font-bold">ControlRest</span>
+</div>
+<p class="text-slate-500 text-sm">
+                        El ERP financiero líder para el sector gastronómico en Latinoamérica.
+                    </p>
+</div>
+<div>
+<h4 class="text-white font-bold mb-4">Producto</h4>
+<ul class="space-y-2 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Características</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Integraciones</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Precios</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Novedades</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-bold mb-4">Recursos</h4>
+<ul class="space-y-2 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Blog Financiero</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Casos de Éxito</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Calculadora de Food Cost</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Ayuda</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-bold mb-4">Legal</h4>
+<ul class="space-y-2 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Privacidad</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Términos</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Seguridad</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-slate-600 text-xs text-center md:text-left">
+                    © 2024 ControlRest Inc. Todos los derechos reservados.
+                </p>
+<div class="flex gap-4">
+<a class="text-slate-600 hover:text-white transition-colors" href="#">
+<span class="sr-only">LinkedIn</span>
+<svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill-rule="evenodd"></path>
+</svg>
+</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

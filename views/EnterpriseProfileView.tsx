@@ -306,9 +306,15 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                                         {subscription?.subscription_plans?.name || 'SIN PLAN ACTIVO'}
                                     </span>
                                     {subscription?.ends_at && (
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
-                                            Vence: {new Date(subscription.ends_at).toLocaleDateString()}
-                                        </p>
+                                        <div className="mt-2 flex flex-col items-center gap-1">
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                                                Vence: {new Date(subscription.ends_at).toLocaleDateString()}
+                                            </p>
+                                            <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-lg text-[9px] font-black uppercase tracking-wider border border-amber-100 flex items-center gap-1.5">
+                                                <span className="material-icons-round text-[12px]">schedule</span>
+                                                {Math.ceil((new Date(subscription.ends_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} días restantes
+                                            </span>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -316,9 +322,10 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                             <div className="pt-4 border-t border-slate-50">
                                 <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-2">Permisos Totales</h4>
                                 <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                                    {subscription?.subscription_plans?.code === 'PLAN_OPERATIVO'
-                                        ? 'Tienes acceso a la operación base: POS, Cocina, Caja e Inventario estándar.'
-                                        : 'Tienes acceso completo a configuraciones financieras, inteligencia operativa y reportes corporativos.'}
+                                    {subscription?.subscription_plans?.code === 'PLAN_OPERATIVO' && 'Tienes acceso a la operación base: POS, Cocina, Caja e Inventario estándar.'}
+                                    {subscription?.subscription_plans?.code === 'PLAN_CONTROL' && 'Tienes acceso a control financiero: Gastos operativos, análisis de rentabilidad y alertas inteligentes.'}
+                                    {subscription?.subscription_plans?.code === 'PLAN_MULTIPRODUCTIVO' && 'Tienes acceso corporativo total: Auditoría, cuentas por pagar, trazabilidad por lotes y reportes avanzados.'}
+                                    {!['PLAN_OPERATIVO', 'PLAN_CONTROL', 'PLAN_MULTIPRODUCTIVO'].includes(subscription?.subscription_plans?.code) && 'Tienes acceso completo a configuraciones financieras, inteligencia operativa y reportes corporativos.'}
                                 </p>
                             </div>
                         </div>

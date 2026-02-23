@@ -277,9 +277,17 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-white/90 truncate leading-tight">{user.name}</p>
-            <p className="text-[10px] text-white/35 truncate">
-              {branches.find(b => b.id === currentBranchId)?.name || 'Modo Global'}
-            </p>
+            <div className="flex flex-col gap-0.5 mt-0.5">
+              <p className="text-[10px] text-white/35 truncate">
+                {branches.find(b => b.id === currentBranchId)?.name || 'Modo Global'}
+              </p>
+              {planData?.endsAt && (
+                <p className="text-[9px] font-black text-amber-500/80 uppercase tracking-tight flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50 animate-pulse" />
+                  {Math.ceil((new Date(planData.endsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} días restantes
+                </p>
+              )}
+            </div>
           </div>
           <span className="material-icons-round text-[15px] text-white/25 group-hover:text-white/70 transition-colors">logout</span>
         </div>

@@ -29,7 +29,7 @@ export function usePlanFeatures(restaurantId?: string) {
             // Get the active plan_id first
             const { data: subData } = await supabase
                 .from('restaurant_subscriptions')
-                .select('plan_id, subscription_plans(code)')
+                .select('plan_id, ends_at, subscription_plans(code)')
                 .eq('restaurant_id', targetRestaurantId)
                 .eq('status', 'active')
                 .single();
@@ -55,7 +55,8 @@ export function usePlanFeatures(restaurantId?: string) {
             return {
                 features: featureMap,
                 planCode: (subData.subscription_plans as any)?.code || null,
-                planId: subData.plan_id
+                planId: subData.plan_id,
+                endsAt: subData.ends_at
             };
         },
         staleTime: 1000 * 60 * 5, // 5 minutes
