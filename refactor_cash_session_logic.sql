@@ -63,11 +63,13 @@ BEGIN
     ) RETURNING id INTO v_session_id;
 
     -- 4. Log in Financial Ledger (Generic Schema)
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_restaurant_id, p_branch_id, v_session_id, 'CASH_OPENING_FLOAT', p_initial_cash, 'cash_sessions', v_session_id, p_user_id
-    );
+    IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_restaurant_id, p_branch_id, v_session_id, 'CASH_OPENING_FLOAT', p_initial_cash, 'cash_sessions', v_session_id, p_user_id
+        );
+    END IF;
 
     -- 5. Log in Cash Session Transactions (Specific for Cash/Bank audit)
     INSERT INTO public.cash_session_transactions (
@@ -123,7 +125,7 @@ BEGIN
     WHERE id = p_session_id;
 
     -- 4. Log Discrepancy in Ledger if exists
-    IF v_difference != 0 THEN
+    IF v_difference != 0 AND public.is_feature_enabled(v_session.restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
         INSERT INTO public.financial_ledger (
             restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
         ) VALUES (
@@ -194,11 +196,13 @@ BEGIN
     ) RETURNING id INTO v_invoice_id;
 
     -- 5. Register in Ledger (Operational Expense)
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_restaurant_id, p_branch_id, v_session_id, 'SUPPLIER_PURCHASE', p_total_amount, 'supplier_invoices', v_invoice_id, p_user_id
-    );
+    IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_restaurant_id, p_branch_id, v_session_id, 'SUPPLIER_PURCHASE', p_total_amount, 'supplier_invoices', v_invoice_id, p_user_id
+        );
+    END IF;
 
     -- 6. If 'contado' (cash), log Cash Transaction
     IF p_payment_terms = 'contado' THEN
@@ -268,11 +272,13 @@ BEGIN
     WHERE id = p_ap_id;
 
     -- 5. Log in Ledger
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_ap.restaurant_id, v_ap.branch_id, v_session_id, 'SUPPLIER_PAYMENT', p_amount, 'accounts_payable_payments', v_payment_id, p_user_id
-    );
+    IF public.is_feature_enabled(v_ap.restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_ap.restaurant_id, v_ap.branch_id, v_session_id, 'SUPPLIER_PAYMENT', p_amount, 'accounts_payable_payments', v_payment_id, p_user_id
+        );
+    END IF;
 
     -- 6. Log in Cash Transactions if Cash
     IF p_payment_method = 'Efectivo' AND v_session_id IS NOT NULL THEN
@@ -324,11 +330,13 @@ BEGIN
     ) RETURNING id INTO v_expense_id;
 
     -- Log Ledger
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_restaurant_id, p_branch_id, v_session_id, 'EXPENSE', p_amount, 'expenses', v_expense_id, p_user_id
-    );
+    IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_restaurant_id, p_branch_id, v_session_id, 'EXPENSE', p_amount, 'expenses', v_expense_id, p_user_id
+        );
+    END IF;
 
     -- Log Cash if applicable
     IF p_payment_method = 'Efectivo' AND v_session_id IS NOT NULL THEN
@@ -376,11 +384,13 @@ BEGIN
     ) RETURNING id INTO v_income_id;
 
     -- Log Ledger
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_restaurant_id, p_branch_id, v_session_id, 'MANUAL_INCOME', p_amount, 'manual_income', v_income_id, p_user_id
-    );
+    IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_restaurant_id, p_branch_id, v_session_id, 'MANUAL_INCOME', p_amount, 'manual_income', v_income_id, p_user_id
+        );
+    END IF;
 
     -- Log Cash
     INSERT INTO public.cash_session_transactions (
@@ -433,11 +443,13 @@ BEGIN
 
     -- Log Ledger (Outflow from Source)
     IF v_from_session_id IS NOT NULL THEN
-        INSERT INTO public.financial_ledger (
-            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-        ) VALUES (
-            v_restaurant_id, p_from_branch_id, v_from_session_id, 'TRANSFER_OUT', p_amount, 'internal_transfers', v_transfer_id, p_user_id
-        );
+        IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+            INSERT INTO public.financial_ledger (
+                restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+            ) VALUES (
+                v_restaurant_id, p_from_branch_id, v_from_session_id, 'TRANSFER_OUT', p_amount, 'internal_transfers', v_transfer_id, p_user_id
+            );
+        END IF;
 
         INSERT INTO public.cash_session_transactions (
             cash_session_id, amount, type, reference_type, reference_id, created_by
@@ -448,11 +460,13 @@ BEGIN
 
     -- Log Ledger (Inflow to Target)
     IF v_to_session_id IS NOT NULL THEN
-        INSERT INTO public.financial_ledger (
-            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-        ) VALUES (
-            v_restaurant_id, p_to_branch_id, v_to_session_id, 'TRANSFER_IN', p_amount, 'internal_transfers', v_transfer_id, p_user_id
-        );
+        IF public.is_feature_enabled(v_restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+            INSERT INTO public.financial_ledger (
+                restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+            ) VALUES (
+                v_restaurant_id, p_to_branch_id, v_to_session_id, 'TRANSFER_IN', p_amount, 'internal_transfers', v_transfer_id, p_user_id
+            );
+        END IF;
 
         INSERT INTO public.cash_session_transactions (
             cash_session_id, amount, type, reference_type, reference_id, created_by
@@ -502,11 +516,13 @@ BEGIN
     WHERE id IN (SELECT DISTINCT table_id FROM public.orders WHERE id = ANY(p_order_ids));
 
     -- 3. Log in Ledger (Revenue)
-    INSERT INTO public.financial_ledger (
-        restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
-    ) VALUES (
-        v_session.restaurant_id, v_session.branch_id, p_shift_id, 'SALE_REVENUE', p_total_paid, 'orders', p_order_ids[1], v_session.opened_by
-    );
+    IF public.is_feature_enabled(v_session.restaurant_id, 'ENABLE_FINANCIAL_LEDGER_IMPACT') THEN
+        INSERT INTO public.financial_ledger (
+            restaurant_id, branch_id, cash_session_id, entry_type, amount, source_table, source_id, created_by
+        ) VALUES (
+            v_session.restaurant_id, v_session.branch_id, p_shift_id, 'SALE_REVENUE', p_total_paid, 'orders', p_order_ids[1], v_session.opened_by
+        );
+    END IF;
 
     -- 4. Log in Cash Transactions if Cash
     IF p_payment_method = 'cash' THEN

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { User, Branch } from '../types';
 import { supabase } from '../supabaseClient';
 import { logActivity } from '../services/audit';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface BranchesConfigViewProps {
     currentUser: User | null;
@@ -23,6 +25,10 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
     });
 
     const [branchStats, setBranchStats] = useState<Record<string, { users: number; tables: number }>>({});
+
+    const { data: planData } = usePlanFeatures(currentUser?.restaurantId);
+    const canManageBranches = isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS');
+    const isPlan3 = planData?.planCode === 'PLAN_MULTIPRODUCTIVO';
 
     useEffect(() => {
         fetchBranchStats();
@@ -158,6 +164,10 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
         }
     };
 
+    if (!canManageBranches) {
+        return <PlanUpgradeFullPage featureName="Gestión Multi-Sucursal" description="La expansión de sucursales y la gestión centralizada de múltiples sedes están reservadas para el plan PRO. Haz crecer tu negocio con nuestra infraestructura escalable." />;
+    }
+
     return (
         <>
             <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans">
@@ -171,12 +181,14 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
                             <p className="text-sm text-slate-500 font-medium">RESTOGESTIÓN V2.0 • Gestiona las ubicaciones físicas de tu negocio y sus estados.</p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => openModal()}
-                        className="btn bg-primary text-white hover:bg-primary-dark transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-primary flex items-center gap-2"
-                    >
-                        <span className="material-icons-round text-[18px]">add</span> Nueva Sucursal
-                    </button>
+                    {!isPlan3 && (
+                        <button
+                            onClick={() => openModal()}
+                            className="btn bg-primary text-white hover:bg-primary-dark transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-primary flex items-center gap-2"
+                        >
+                            <span className="material-icons-round text-[18px]">add</span> Nueva Sucursal
+                        </button>
+                    )}
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -226,20 +238,29 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
                                 </div>
 
                                 <div className="mt-8 flex gap-3">
-                                    <button
-                                        onClick={() => openModal(branch)}
-                                        className="flex-1 btn btn-outline py-2.5 text-xs group/btn"
-                                    >
-                                        <span className="material-icons-round text-sm mr-2 transition-transform group-hover/btn:rotate-12">edit</span>
-                                        Editar Perfil
-                                    </button>
-                                    <button
-                                        onClick={() => toggleStatus(branch)}
-                                        className={`w-12 h-10 rounded-xl flex items-center justify-center border transition-all ${branch.isActive ? 'bg-rose-50 border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}
-                                        title={branch.isActive ? 'Desactivar Sucursal' : 'Activar Sucursal'}
-                                    >
-                                        <span className="material-icons-round text-xl">{branch.isActive ? 'block' : 'check_circle'}</span>
-                                    </button>
+                                    {!isPlan3 && (
+                                        <>
+                                            <button
+                                                onClick={() => openModal(branch)}
+                                                className="flex-1 btn btn-outline py-2.5 text-xs group/btn"
+                                            >
+                                                <span className="material-icons-round text-sm mr-2 transition-transform group-hover/btn:rotate-12">edit</span>
+                                                Editar Perfil
+                                            </button>
+                                            <button
+                                                onClick={() => toggleStatus(branch)}
+                                                className={`w-12 h-10 rounded-xl flex items-center justify-center border transition-all ${branch.isActive ? 'bg-rose-50 border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white' : 'bg-emerald-50 border-emerald-100 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}
+                                                title={branch.isActive ? 'Desactivar Sucursal' : 'Activar Sucursal'}
+                                            >
+                                                <span className="material-icons-round text-xl">{branch.isActive ? 'block' : 'check_circle'}</span>
+                                            </button>
+                                        </>
+                                    )}
+                                    {isPlan3 && (
+                                        <div className="flex-1 p-3 bg-slate-50 rounded-xl text-center">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Configuración Bloqueada</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="absolute -right-2 -bottom-2 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
@@ -249,15 +270,17 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
                         );
                     })}
 
-                    <button
-                        onClick={() => openModal()}
-                        className="card p-8 border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center justify-center gap-4 hover:border-primary/30 hover:bg-white transition-all group min-h-[300px]"
-                    >
-                        <div className="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-300 group-hover:text-primary transition-colors shadow-sm">
-                            <span className="material-icons-round text-3xl">add</span>
-                        </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Añadir Sucursal</p>
-                    </button>
+                    {!isPlan3 && (
+                        <button
+                            onClick={() => openModal()}
+                            className="card p-8 border-2 border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center justify-center gap-4 hover:border-primary/30 hover:bg-white transition-all group min-h-[300px]"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-300 group-hover:text-primary transition-colors shadow-sm">
+                                <span className="material-icons-round text-3xl">add</span>
+                            </div>
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Añadir Sucursal</p>
+                        </button>
+                    )}
                 </div>
 
                 <footer className="pt-12 pb-8 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">

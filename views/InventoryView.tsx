@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Ingredient } from '../types';
 import { supabase } from '../supabaseClient';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface InventoryViewProps {
   ingredients: Ingredient[];
   setIngredients: React.Dispatch<React.SetStateAction<Ingredient[]>>;
   branchId: string | null;
+  restaurantId?: string | null;
 }
 
 const KPIItem = ({ label, value, sub, icon, color }: any) => (
@@ -93,8 +96,8 @@ const InventoryCard: React.FC<{ ingredient: Ingredient; onViewDetails: (ing: Ing
   );
 };
 
-const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredients, branchId }) => {
-  const [activeTab, setActiveTab] = useState<'stock' | 'batches' | 'expr'>('stock');
+const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredients, branchId, restaurantId }) => {
+  const [activeTab, setActiveTab] = useState<'stock' | 'batches' | 'expiration'>('stock');
 
   // Tab 1: Stock
   const [selectedIng, setSelectedIng] = useState<Ingredient | null>(null);
@@ -104,6 +107,9 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
   const [batches, setBatches] = useState<any[]>([]);
   const [expiringBatches, setExpiringBatches] = useState<any[]>([]);
   const [loadingExtras, setLoadingExtras] = useState(false);
+
+  const { data: planData } = usePlanFeatures(restaurantId || undefined);
+  const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
   const fetchExtras = useCallback(async () => {
     if (!branchId || branchId === 'GLOBAL') return;
@@ -153,6 +159,10 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
       alert('Error al actualizar stock: ' + err.message);
     }
   };
+
+  if (isPlanOperativo) {
+    return <PlanUpgradeFullPage featureName="Gestión de Inventario Avanzada" description="El control detallado de inventario, trazabilidad FIFO y gestión de caducidades están disponibles en planes superiores. Optimiza tu stock y evita mermas con nuestras herramientas profesionales." />;
+  }
 
   return (
     <>

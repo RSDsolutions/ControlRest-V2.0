@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, UserRole, Order, Branch } from '../types';
 import { supabase } from '../supabaseClient';
 import { logActivity } from '../services/audit';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
 
 interface UserManagementViewProps {
     currentUser: User | null;
@@ -23,6 +24,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
     });
     const [loading, setLoading] = useState(false);
     const [metrics, setMetrics] = useState<any>(null); // For selected user metrics
+    const { data: planData } = usePlanFeatures(currentUser?.restaurantId);
+    const features = planData?.features;
+    const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
+    const isPlan3 = planData?.planCode === 'PLAN_MULTIPRODUCTIVO';
 
     useEffect(() => {
         fetchUsers();
@@ -51,6 +56,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
             .select('*, branches(name)')
             .eq('restaurant_id', currentUser.restaurantId)
             .neq('role', UserRole.ADMIN)
+            .neq('role', UserRole.SUPERADMIN)
             .abortSignal(controller.signal)
             .order('full_name');
 
@@ -227,12 +233,14 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                             <p className="text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 • Administra meseros, cajeros y permisos de acceso por sucursal.</p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => openModal()}
-                        className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2 text-sm"
-                    >
-                        <span className="material-icons-round text-[20px]">person_add</span> Nuevo Usuario
-                    </button>
+                    {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') && !isPlan3 && (
+                        <button
+                            onClick={() => openModal()}
+                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2 text-sm"
+                        >
+                            <span className="material-icons-round text-[20px]">person_add</span> Nuevo Usuario
+                        </button>
+                    )}
                 </header>
 
                 {/* Filter Bar */}
@@ -249,16 +257,18 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <select
-                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                            value={branchFilter}
-                            onChange={(e) => { setBranchFilter(e.target.value); setCurrentPage(1); }}
-                        >
-                            <option value="ALL">Todas las Sucursales</option>
-                            {branches.map(b => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
+                        {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') && (
+                            <select
+                                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                value={branchFilter}
+                                onChange={(e) => { setBranchFilter(e.target.value); setCurrentPage(1); }}
+                            >
+                                <option value="ALL">Todas las Sucursales</option>
+                                {branches.map(b => (
+                                    <option key={b.id} value={b.id}>{b.name}</option>
+                                ))}
+                            </select>
+                        )}
 
                         <select
                             className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
@@ -486,7 +496,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                                         <div className="relative">
                                             <select
                                                 required
-                                                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-semibold text-slate-700 appearance-none cursor-pointer"
+                                                disabled={(!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') || isPlan3) && !!editingUser}
+                                                className={`w-full px-5 py-3.5 border rounded-2xl text-sm transition-all outline-none font-semibold appearance-none cursor-pointer ${(!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') || isPlan3) && editingUser ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50/50 border-slate-100 text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary'}`}
                                                 value={formData.branchId}
                                                 onChange={e => setFormData({ ...formData, branchId: e.target.value })}
                                             >
@@ -506,7 +517,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                                         </label>
                                         <div className="relative">
                                             <select
-                                                className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all outline-none font-semibold text-slate-700 appearance-none cursor-pointer"
+                                                disabled={(!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') || isPlan3) && !!editingUser}
+                                                className={`w-full px-5 py-3.5 border rounded-2xl text-sm transition-all outline-none font-semibold appearance-none cursor-pointer ${(!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') || isPlan3) && editingUser ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50/50 border-slate-100 text-slate-700 focus:ring-4 focus:ring-primary/5 focus:border-primary'}`}
                                                 value={formData.role}
                                                 onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
                                             >

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Ingredient, User, WasteRecord } from '../types';
 import { supabase } from '../supabaseClient';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface WasteViewProps {
     ingredients: Ingredient[];
@@ -23,6 +25,9 @@ const WasteView: React.FC<WasteViewProps> = ({ ingredients, currentUser, restaur
     const [reason, setReason] = useState<WasteRecord['reason']>('expired');
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { data: planData } = usePlanFeatures(restaurantId);
+    const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
     // Fetch data
     useEffect(() => {
@@ -137,6 +142,10 @@ const WasteView: React.FC<WasteViewProps> = ({ ingredients, currentUser, restaur
         const map: any = { 'damaged': 'Dañado', 'expired': 'Vencido', 'kitchen_error': 'Error Cocina', 'adjustment': 'Ajuste', 'other': 'Otro' };
         return map[r] || r;
     };
+
+    if (isPlanOperativo) {
+        return <PlanUpgradeFullPage featureName="Control de Mermas" description="La gestión avanzada de mermas y desperdicios, incluyendo reportes de cocina y auditoría de inventario, está disponible en planes superiores. Optimiza tu rentabilidad reduciendo desperdicios." />;
+    }
 
     return (
         <div className="p-8 max-w-7xl mx-auto animate-fadeIn pb-24">

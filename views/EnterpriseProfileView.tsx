@@ -28,12 +28,39 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
         mainAddress: ''
     });
 
+    // Subscription State
+    const [subscription, setSubscription] = useState<any>(null);
+
     useEffect(() => {
         if (currentUser) {
             setProfileName(currentUser.name);
             fetchCompanyProfile();
+            fetchSubscription();
         }
     }, [currentUser]);
+
+    const fetchSubscription = async () => {
+        if (!currentUser?.restaurantId) return;
+        try {
+            const { data, error } = await supabase
+                .from('restaurant_subscriptions')
+                .select(`
+                    id,
+                    status,
+                    ends_at,
+                    subscription_plans (
+                        name,
+                        code
+                    )
+                `)
+                .eq('restaurant_id', currentUser.restaurantId)
+                .single();
+
+            if (data) setSubscription(data);
+        } catch (err) {
+            console.error('Error fetching subscription:', err);
+        }
+    };
 
     const fetchCompanyProfile = async () => {
         if (!currentUser?.restaurantId) return;
@@ -270,11 +297,30 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                                 {currentUser?.role || 'Guest'}
                             </span>
                         </div>
-                        <div className="pt-4 border-t border-slate-50 w-full">
-                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-2">Permisos Totales</h4>
-                            <p className="text-xs text-slate-400 font-medium leading-relaxed">
-                                Tienes acceso completo a configuraciones financieras, gestión de personal y reportes corporativos.
-                            </p>
+                        <div className="pt-4 border-t border-slate-50 w-full space-y-4">
+                            <div className="space-y-1">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Suscripción</h4>
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className={`w-full px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider border flex items-center justify-center gap-2 ${subscription?.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${subscription?.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                                        {subscription?.subscription_plans?.name || 'SIN PLAN ACTIVO'}
+                                    </span>
+                                    {subscription?.ends_at && (
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                                            Vence: {new Date(subscription.ends_at).toLocaleDateString()}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-slate-50">
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-tight mb-2">Permisos Totales</h4>
+                                <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                                    {subscription?.subscription_plans?.code === 'PLAN_OPERATIVO'
+                                        ? 'Tienes acceso a la operación base: POS, Cocina, Caja e Inventario estándar.'
+                                        : 'Tienes acceso completo a configuraciones financieras, inteligencia operativa y reportes corporativos.'}
+                                </p>
+                            </div>
                         </div>
                     </div>
 

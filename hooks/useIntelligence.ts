@@ -17,8 +17,24 @@ export function useIntelligence(branchId: string | 'GLOBAL' | null) {
                 .from('system_events')
                 .select('*')
                 .eq('resolved', false)
-                .order('severity', { ascending: false }) // Critical first (depends on how DB sorts strings, usually we'd sort by created_at or case)
+                .order('severity', { ascending: false })
                 .order('created_at', { ascending: false });
+
+            // Ensure restaurant-level isolation even if RLS is bypassed or the app logic is reused
+            const { data: userData } = await supabase.auth.getUser();
+            const userId = userData.user?.id;
+
+            if (userId) {
+                const { data: userProfile } = await supabase
+                    .from('users')
+                    .select('restaurant_id')
+                    .eq('id', userId)
+                    .single();
+
+                if (userProfile?.restaurant_id) {
+                    query = query.eq('restaurant_id', userProfile.restaurant_id);
+                }
+            }
 
             if (branchId && branchId !== 'GLOBAL') {
                 query = query.eq('branch_id', branchId);

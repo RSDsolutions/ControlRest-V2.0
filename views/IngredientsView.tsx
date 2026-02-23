@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Ingredient } from '../types';
 import { supabase } from '../supabaseClient';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
 
 interface IngredientsViewProps {
   ingredients: Ingredient[];
@@ -11,6 +11,7 @@ interface IngredientsViewProps {
   branchId: string | null;
   restaurantId: string | null;
 }
+
 const INGREDIENT_ICONS = [
   '🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑',
   '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕', '🫒', '🧄', '🧅', '🥔', '🍠', '🫘', '🍄', '🥜', '🌰', '🍞', '🥐', '🥖', '🫓',
@@ -27,11 +28,15 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
   const [purchaseQty, setPurchaseQty] = useState(1);
   const [purchaseUnit, setPurchaseUnit] = useState<string>('kg');
   const [purchasePrice, setPurchasePrice] = useState(15.00);
+  const [purchaseExpiration, setPurchaseExpiration] = useState('');
 
   // Batches
   const [batches, setBatches] = useState<any[]>([]);
   const [viewBatchDetailsIngId, setViewBatchDetailsIngId] = useState<string | null>(null);
   const [showIconPicker, setShowIconPicker] = useState(false);
+
+  const { data: planData } = usePlanFeatures(restaurantId || undefined);
+  const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
   const generateIngredientPDF = (ing: Ingredient) => {
     const doc = new jsPDF();
@@ -65,7 +70,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
     doc.setFontSize(14);
     doc.setTextColor(15, 23, 42);
     doc.text(`${ing.currentQty.toLocaleString()} ${ing.measureUnit === 'ml' ? 'ml' : 'gr'}`, 20, 95);
-    doc.text(`$${ing.unitPrice.toFixed(4)}`, 80, 95);
+    doc.text(`$${(ing.unitPrice || 0).toFixed(4)}`, 80, 95);
     doc.text(ing.measureUnit === 'ml' ? 'Líquido' : 'Sólido', 140, 95);
 
     // Batches Table
@@ -107,16 +112,6 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
     }
   }, [branchId]);
 
-  // Sync purchase unit when ingredient changes
-  React.useEffect(() => {
-    if (selectedIngId) {
-      const ing = ingredients.find(i => i.id === selectedIngId);
-      if (ing) {
-        setPurchaseUnit(ing.measureUnit === 'ml' ? 'L' : 'kg');
-      }
-    }
-  }, [selectedIngId, ingredients]);
-
   const [newIng, setNewIng] = useState({
     name: '',
     category: 'Proteínas (Carnes y Sustitutos)',
@@ -127,7 +122,8 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
     initialQty: 0,
     initialPrice: 0,
     unitType: 'solid' as 'solid' | 'liquid',
-    measureUnit: 'gr' as 'gr' | 'kg' | 'lb' | 'ml' | 'L' | 'gal'
+    measureUnit: 'gr' as 'gr' | 'kg' | 'lb' | 'ml' | 'L' | 'gal',
+    expirationDate: ''
   });
 
   const getBaseUnit = (type: 'solid' | 'liquid') => type === 'solid' ? 'gr' : 'ml';
@@ -157,41 +153,37 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       default: break; // gr, ml
     }
 
-    // Weighted Average Calculation
-    const oldTotalValue = ing.currentQty * ing.unitPrice;
-    const newTotalValue = oldTotalValue + purchasePrice;
-    const newTotalQty = ing.currentQty + addedQty;
-    const updatedUnitPrice = newTotalQty > 0 ? newTotalValue / newTotalQty : 0;
-
     try {
-      // Update inventory in Supabase
-      const { error } = await supabase
-        .from('inventory')
-        .update({
-          quantity_gr: newTotalQty,
-          unit_cost_gr: updatedUnitPrice
-        })
-        .match({ branch_id: branchId, ingredient_id: selectedIngId });
+      const { data, error } = await supabase.rpc('receive_ingredient_stock', {
+        p_ingredient_id: selectedIngId,
+        p_branch_id: branchId,
+        p_quantity: addedQty,
+        p_unit_cost: addedQty > 0 ? purchasePrice / addedQty : 0,
+        p_expiration_date: purchaseExpiration || null,
+        p_reference: `Compra Directa - ${new Date().toLocaleDateString()}`
+      });
 
       if (error) throw error;
 
-      // Update local state
+      // Update local state with returned values from RPC
       setIngredients(prev => prev.map(i => {
         if (i.id === selectedIngId) {
-          return { ...i, currentQty: newTotalQty, unitPrice: updatedUnitPrice };
+          return {
+            ...i,
+            currentQty: data.new_total_qty,
+            unitPrice: data.new_avg_cost
+          };
         }
         return i;
       }));
+
       setShowPurchaseModal(false);
+      setPurchaseExpiration('');
     } catch (err) {
       console.error('Error updating inventory:', err);
       alert('Error al registrar la compra. Intente nuevamente.');
     }
   };
-
-  // Helper for Modal UI
-  const selectedIngredient = ingredients.find(i => i.id === selectedIngId);
-  const isLiquidType = selectedIngredient?.measureUnit === 'ml';
 
   const handleCreateIngredient = async () => {
     if (!newIng.name || !branchId || !restaurantId) {
@@ -215,42 +207,48 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
       is_active: true
     };
 
-    console.log('Inserting Ingredient Payload:', payload);
-
     try {
-      // 1. Insert into ingredients table
       const { data: ingData, error: ingError } = await supabase
         .from('ingredients')
         .insert([payload])
         .select()
         .single();
 
-      if (ingError) {
-        console.error('RLS Error details:', {
-          message: ingError.message,
-          details: ingError.details,
-          hint: ingError.hint,
-          code: ingError.code
-        });
-        throw ingError;
-      }
+      if (ingError) throw ingError;
 
       if (ingData) {
-        // 2. Insert into inventory table
-        const { error: invError } = await supabase
-          .from('inventory')
-          .insert({
-            ingredient_id: ingData.id,
-            branch_id: branchId,
-            quantity_gr: baseQty,
-            unit_cost_gr: unitPrice,
-            min_level_gr: newIng.minQty,
-            critical_level_gr: newIng.criticalQty
+        if (baseQty > 0) {
+          const { error: invError } = await supabase.rpc('receive_ingredient_stock', {
+            p_ingredient_id: ingData.id,
+            p_branch_id: branchId,
+            p_quantity: baseQty,
+            p_unit_cost: unitPrice,
+            p_expiration_date: newIng.expirationDate || null,
+            p_reference: 'Saldo Inicial de Apertura'
           });
 
-        if (invError) throw invError;
+          if (invError) throw invError;
 
-        // 3. Update local state
+          await supabase.from('inventory').update({
+            min_level_gr: newIng.minQty,
+            critical_level_gr: newIng.criticalQty
+          }).match({ branch_id: branchId, ingredient_id: ingData.id });
+
+        } else {
+          const { error: invError } = await supabase
+            .from('inventory')
+            .insert({
+              ingredient_id: ingData.id,
+              branch_id: branchId,
+              quantity_gr: 0,
+              unit_cost_gr: 0,
+              min_level_gr: newIng.minQty,
+              critical_level_gr: newIng.criticalQty
+            });
+
+          if (invError) throw invError;
+        }
+
         const newIngredient: Ingredient = {
           id: ingData.id,
           name: newIng.name,
@@ -276,7 +274,8 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
           initialQty: 0,
           initialPrice: 0,
           unitType: 'solid',
-          measureUnit: 'gr'
+          measureUnit: 'gr',
+          expirationDate: ''
         });
       }
     } catch (err: any) {
@@ -290,36 +289,19 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
     if (!ing) return;
 
     if (ing.currentQty > 0) {
-      alert(`No se puede eliminar "${ing.name}" porque todavía tiene stock (${ing.currentQty} ${ing.measureUnit}).`);
+      alert(`No se puede eliminar "${ing.name}" porque todavía tiene stock.`);
       return;
     }
 
-    if (!confirm(`¿Estás seguro de eliminar el ingrediente "${ing.name}"? Esta acción no se puede deshacer.`)) return;
+    if (!confirm(`¿Estás seguro de eliminar el ingrediente "${ing.name}"?`)) return;
 
     try {
-      // 1. Delete from inventory table first
-      const { error: invError } = await supabase
-        .from('inventory')
-        .delete()
-        .match({ ingredient_id: id });
-
+      const { error: invError } = await supabase.from('inventory').delete().match({ ingredient_id: id });
       if (invError) throw invError;
 
-      // 2. Delete from ingredients table
-      const { error: ingError } = await supabase
-        .from('ingredients')
-        .delete()
-        .match({ id });
+      const { error: ingError } = await supabase.from('ingredients').delete().match({ id });
+      if (ingError) throw ingError;
 
-      if (ingError) {
-        // Handle foreign key constraint (e.g., used in Plate ingredients)
-        if (ingError.code === '23503') {
-          throw new Error('Este ingrediente está siendo usado en la receta de algún plato. Elimine la receta primero.');
-        }
-        throw ingError;
-      }
-
-      // 3. Update local state
       setIngredients(prev => prev.filter(i => i.id !== id));
     } catch (err: any) {
       console.error('Error deleting ingredient:', err);
@@ -346,7 +328,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
               <span className="material-icons-round text-[18px]">add</span> Nuevo Insumo
             </button>
             <button
-              onClick={() => { setSelectedIngId(ingredients[0]?.id); setShowPurchaseModal(true); }}
+              onClick={() => { setSelectedIngId(ingredients[0]?.id || null); setShowPurchaseModal(true); }}
               className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center gap-2 px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
             >
               <span className="material-icons-round text-[18px]">shopping_cart</span> Registrar Compra
@@ -355,53 +337,13 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <KPIItem
-            label="Catálogo Activo"
-            value={ingredients.length}
-            sub="Items registrados"
-            icon="inventory_2"
-            color="bg-slate-500"
-          />
-          <KPIItem
-            label="Stock Bajo"
-            value={ingredients.filter(i => i.currentQty <= i.minQty).length}
-            sub="Requieren reposición"
-            icon="warning"
-            color="bg-amber-500"
-          />
-          <KPIItem
-            label="Nivel Crítico"
-            value={ingredients.filter(i => i.currentQty <= i.criticalQty).length}
-            sub="Riesgo de quiebre"
-            icon="dangerous"
-            color="bg-red-500"
-          />
-          <KPIItem
-            label="Valorización de Stock"
-            value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * ing.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-            sub="Costo total en bodega"
-            icon="account_balance_wallet"
-            color="bg-emerald-500"
-          />
+          <KPIItem label="Catálogo Activo" value={ingredients.length} sub="Items registrados" icon="inventory_2" color="bg-slate-500" />
+          <KPIItem label="Stock Bajo" value={ingredients.filter(i => i.currentQty <= i.minQty).length} sub="Requieren reposición" icon="warning" color="bg-amber-500" />
+          <KPIItem label="Nivel Crítico" value={ingredients.filter(i => i.currentQty <= i.criticalQty).length} sub="Riesgo de quiebre" icon="dangerous" color="bg-red-500" />
+          <KPIItem label="Valorización de Stock" value={`$${ingredients.reduce((acc, ing) => acc + (ing.currentQty * (ing.unitPrice || 0)), 0).toLocaleString()}`} sub="Costo total en bodega" icon="account_balance_wallet" color="bg-emerald-500" />
         </div>
 
-        <div className="card p-0 overflow-hidden flex flex-col min-h-[600px] shadow-brand border-slate-200">
-          <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-50/50">
-            <div className="relative w-full md:w-96 group">
-              <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-              <input
-                type="text"
-                placeholder="Filtrar catálogo de insumos..."
-                className="input pl-12 bg-white border-slate-200 focus:bg-white shadow-sm"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
-                Mostrando {ingredients.length} items
-              </span>
-            </div>
-          </div>
-
+        <div className="card p-0 overflow-hidden flex flex-col min-h-[600px] shadow-brand border-slate-200 mt-8">
           <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left">
               <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
@@ -411,7 +353,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                   <th className="px-8 py-5 text-right">Existencias</th>
                   <th className="px-8 py-5 text-right">Costo Promedio</th>
                   <th className="px-8 py-5 text-right">Lotes</th>
-                  <th className="px-8 py-5 text-center">Estado Auditoría</th>
+                  <th className="px-8 py-5 text-center">Estado</th>
                   <th className="px-8 py-5"></th>
                 </tr>
               </thead>
@@ -426,7 +368,6 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     status = 'Reorden';
                     statusColor = 'bg-amber-50 text-amber-600 border-amber-100';
                   }
-                  const unitLabel = ing.measureUnit === 'ml' ? 'ml' : 'gr';
                   const lotCount = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0).length;
                   const expiringSoon = batches.filter(b => b.ingredient_id === ing.id && b.quantity_remaining > 0 && b.expiration_status === 'expiring').length;
 
@@ -434,82 +375,45 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
                     <tr key={ing.id} className="hover:bg-slate-50/50 transition-all group">
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-3xl transition-transform group-hover:scale-110 duration-300">
-                            {ing.icon}
-                          </div>
+                          <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-2xl">{ing.icon}</div>
                           <div>
-                            <p className="font-heading font-black text-brand-black text-sm uppercase tracking-tight leading-tight">{ing.name}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 line-clamp-1">
-                              {ing.description || `SKU: ${ing.id.split('-')[0]}`}
-                            </p>
+                            <p className="font-bold text-slate-900 text-sm uppercase">{ing.name}</p>
+                            <p className="text-[10px] text-slate-400">SKU: {ing.id.split('-')[0]}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-100/50 px-2 py-1 rounded-md">
-                          {ing.category}
-                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-2 py-1 rounded">{ing.category}</span>
                       </td>
-                      <td className="px-8 py-5 text-right">
-                        <div className="flex flex-col items-end">
-                          <span className="font-heading font-black text-brand-black text-sm">
-                            {ing.currentQty.toLocaleString()} {unitLabel}
-                          </span>
-                          <div className="w-20 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-1000 ${status === 'Crítico' ? 'bg-red-500' : status === 'Reorden' ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                              style={{ width: `${Math.min(100, (ing.currentQty / (ing.minQty * 2)) * 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
+                      <td className="px-8 py-5 text-right font-bold text-slate-900">
+                        {ing.currentQty.toLocaleString()} {ing.measureUnit}
                       </td>
-                      <td className="px-8 py-5 text-right">
-                        <p className="text-xs font-black text-primary">${ing.unitPrice.toFixed(4)}</p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">u/{unitLabel}</p>
+                      <td className="px-8 py-5 text-right text-primary font-bold">
+                        ${(ing.unitPrice || 0).toFixed(4)}
                       </td>
                       <td className="px-8 py-5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <div className="flex flex-col items-end">
-                            <span className="text-sm font-black text-brand-black">{lotCount}</span>
-                            {expiringSoon > 0 && <span className="text-[9px] text-amber-600 font-bold uppercase tracking-tighter">! {expiringSoon} x Expira</span>}
-                          </div>
-                          <button onClick={() => setViewBatchDetailsIngId(ing.id)} className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-primary hover:bg-white hover:shadow-sm transition-all flex items-center justify-center">
-                            <span className="material-icons-round text-lg">history</span>
-                          </button>
+                          <span className="text-sm font-bold text-slate-900">{lotCount}</span>
+                          {expiringSoon > 0 && <span className="text-[10px] text-amber-600 font-bold">! {expiringSoon}</span>}
+                          {!isPlanOperativo && (
+                            <button onClick={() => setViewBatchDetailsIngId(ing.id)} className="p-1.5 rounded-lg bg-slate-50 border hover:bg-white text-slate-400 hover:text-primary transition-all">
+                              <span className="material-icons-round text-lg">history</span>
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td className="px-8 py-5 text-center">
-                        <span className={`inline-flex px-3 py-1.5 rounded-full text-[9px] font-black border tracking-widest ${statusColor}`}>
-                          {status.toUpperCase()}
-                        </span>
+                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-black border uppercase tracking-wider ${statusColor}`}>{status}</span>
                       </td>
                       <td className="px-8 py-5 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => generateIngredientPDF(ing)}
-                            className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
-                            title="Exportar Ficha Técnica"
-                          >
-                            <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">picture_as_pdf</span>
-                          </button>
-                          <button
-                            onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }}
-                            className="w-10 h-10 rounded-xl bg-primary/5 text-primary hover:bg-primary hover:text-white transition-all shadow-none flex items-center justify-center group/btn"
-                            title="Registrar Compra"
-                          >
-                            <span className="material-icons-round text-xl transition-transform group-hover/btn:scale-110">add_shopping_cart</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteIngredient(ing.id)}
-                            disabled={ing.currentQty > 0}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${ing.currentQty > 0
-                              ? 'bg-slate-50 text-slate-200 cursor-not-allowed opacity-50'
-                              : 'bg-red-50 text-red-400 hover:bg-red-500 hover:text-white'
-                              }`}
-                            title={ing.currentQty > 0 ? "Bloqueado: Stock detectado" : "Eliminar Insumo"}
-                          >
-                            <span className="material-icons-round text-xl">delete_outline</span>
-                          </button>
+                        <div className="flex items-center justify-end gap-2 text-slate-400">
+                          {!isPlanOperativo && (
+                            <button onClick={() => generateIngredientPDF(ing)} className="p-2 hover:bg-emerald-50 hover:text-emerald-500 rounded-lg transition-all" title="Exportar PDF">
+                              <span className="material-icons-round text-xl">picture_as_pdf</span>
+                            </button>
+                          )}
+                          <button onClick={() => { setSelectedIngId(ing.id); setShowPurchaseModal(true); }} className="p-2 hover:bg-primary/5 hover:text-primary rounded-lg transition-all" title="Registrar Compra"><span className="material-icons-round text-xl">add_shopping_cart</span></button>
+                          <button onClick={() => handleDeleteIngredient(ing.id)} disabled={ing.currentQty > 0} className={`p-2 rounded-lg transition-all ${ing.currentQty > 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-red-50 hover:text-red-500'}`}><span className="material-icons-round text-xl">delete_outline</span></button>
                         </div>
                       </td>
                     </tr>
@@ -523,171 +427,107 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
 
       {showNewIngModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
-            onClick={() => setShowNewIngModal(false)}
-          ></div>
-
-          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
-            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onClick={() => setShowNewIngModal(false)}></div>
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
               <div>
-                <h3 className="text-[22px] font-bold text-slate-900 tracking-tight leading-none">Alta de Insumo Maestro</h3>
-                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.05em] mt-2.5">CONFIGURACIÓN TÉCNICA DE ALMACÉN</p>
+                <h3 className="text-xl font-bold text-slate-900">Configuración de Nuevo Insumo</h3>
+                <p className="text-[11px] text-slate-400 uppercase font-black tracking-widest mt-1">Gestión Técnica Almacén</p>
               </div>
-              <button onClick={() => setShowNewIngModal(false)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
-                <span className="material-icons-round">close</span>
-              </button>
+              <button onClick={() => setShowNewIngModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-50 flex items-center justify-center border text-slate-400"><span className="material-icons-round text-lg">close</span></button>
             </header>
-
-            <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-1 md:col-span-2 flex gap-4">
-                  <div className="shrink-0 space-y-2">
-                    <label className="text-[13px] font-bold text-slate-700 block">Icono</label>
-                    <button
-                      type="button"
-                      onClick={() => setShowIconPicker(!showIconPicker)}
-                      className="w-[52px] h-[52px] rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl hover:bg-white hover:border-primary transition-all shadow-sm group relative"
-                    >
-                      {newIng.icon}
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary text-white rounded-full flex items-center justify-center">
-                        <span className="material-icons-round text-[10px]">edit</span>
-                      </div>
-                    </button>
-                  </div>
+            <div className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="col-span-2 flex gap-4">
+                  <button onClick={() => setShowIconPicker(!showIconPicker)} className="w-[52px] h-[52px] rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl hover:bg-white transition-all shadow-sm relative">
+                    {newIng.icon}
+                  </button>
                   <div className="flex-1 space-y-2">
-                    <label className="text-[13px] font-bold text-slate-700 block text-left">Nombre Descriptivo</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 h-[52px] text-sm rounded-xl border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold"
-                      placeholder="Ej. Lomo Alto de Res (Angus)"
-                      value={newIng.name}
-                      onChange={e => setNewIng({ ...newIng, name: e.target.value })}
-                    />
+                    <label className="text-xs font-bold text-slate-700 uppercase">Nombre Insumo</label>
+                    <input type="text" className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 font-bold" value={newIng.name} onChange={e => setNewIng({ ...newIng, name: e.target.value })} placeholder="Ej: Pechuga de Pollo" />
                   </div>
                 </div>
 
-                {showIconPicker && (
-                  <div className="col-span-1 md:col-span-2 animate-fade-in">
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 overflow-hidden">
-                      <div className="flex justify-between items-center mb-3 px-1">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seleccionar Icono</span>
-                        <button onClick={() => setShowIconPicker(false)} className="text-[10px] font-bold text-primary hover:underline">Cerrar</button>
-                      </div>
-                      <div className="grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 max-h-[200px] overflow-y-auto custom-scrollbar p-1">
-                        {INGREDIENT_ICONS.map(emoji => (
-                          <button
-                            key={emoji}
-                            type="button"
-                            onClick={() => {
-                              setNewIng({ ...newIng, icon: emoji });
-                              setShowIconPicker(false);
-                            }}
-                            className={`w-10 h-10 flex items-center justify-center text-xl rounded-lg hover:bg-white hover:shadow-sm transition-all border ${newIng.icon === emoji ? 'bg-white border-primary shadow-sm' : 'border-transparent'}`}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
+                <div className="col-span-2 grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase block">Categoría</label>
+                    <select className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
+                      <option>Proteínas (Carnes y Sustitutos)</option>
+                      <option>Verduras y Hortalizas</option>
+                      <option>Cereales y Harinas</option>
+                      <option>Lácteos</option>
+                      <option>Grasas y Aceites</option>
+                      <option>Condimentos y Especias</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase block">Tipo de Insumo</label>
+                    <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                      <button
+                        onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'gr' })}
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${newIng.unitType === 'solid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
+                      >Sólido</button>
+                      <button
+                        onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'ml' })}
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${newIng.unitType === 'liquid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400'}`}
+                      >Líquido</button>
                     </div>
                   </div>
-                )}
-                <div className="col-span-1 md:col-span-2">
-                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Categoría del Insumo</label>
-                  <select className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all font-bold" value={newIng.category} onChange={e => setNewIng({ ...newIng, category: e.target.value })}>
-                    <option>Proteínas (Carnes y Sustitutos)</option>
-                    <option>Verduras y Hortalizas</option>
-                    <option>Cereales y Harinas</option>
-                    <option>Lácteos</option>
-                    <option>Grasas y Aceites</option>
-                    <option>Condimentos y Especias</option>
-                    <option>Salsas y Bases</option>
-                    <option>Azúcares y Endulzantes</option>
-                    <option>Frutas</option>
-                    <option>Bebidas Base y Otros</option>
-                  </select>
                 </div>
-              </div>
 
-              <div className="space-y-6">
-                <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <span className="material-icons-round text-primary text-lg">straighten</span> Unidades y Costeo Inicial
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-inner">
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Estado Físico</label>
-                    <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'solid', measureUnit: 'kg' })} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'solid' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>Sólido</button>
-                      <button onClick={() => setNewIng({ ...newIng, unitType: 'liquid', measureUnit: 'L' })} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newIng.unitType === 'liquid' ? 'bg-primary text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>Líquido</button>
-                    </div>
+                <div className="grid grid-cols-3 gap-4 col-span-2 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Cant. Apertura</label>
+                    <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Unidad de Gestión</label>
-                    <select className="w-full px-4 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-black h-[42px]" value={newIng.measureUnit} onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Unidad</label>
+                    <select
+                      className="w-full px-4 py-3 text-sm font-bold rounded-lg border border-slate-200 bg-white"
+                      value={newIng.measureUnit}
+                      onChange={e => setNewIng({ ...newIng, measureUnit: e.target.value as any })}
+                    >
                       {newIng.unitType === 'solid' ? (
                         <>
-                          <option value="kg">Kilogramos (kg)</option>
-                          <option value="lb">Libras (lb)</option>
                           <option value="gr">Gramos (gr)</option>
+                          <option value="kg">Kilos (kg)</option>
+                          <option value="lb">Libras (lb)</option>
                         </>
                       ) : (
                         <>
+                          <option value="ml">Mililitros (ml)</option>
                           <option value="L">Litros (L)</option>
                           <option value="gal">Galones (gal)</option>
-                          <option value="ml">Mililitros (ml)</option>
                         </>
                       )}
                     </select>
                   </div>
-
                   <div className="space-y-1">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Cantidad Apertura</label>
-                    <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-slate-900" placeholder="0" value={newIng.initialQty || ''} onChange={e => setNewIng({ ...newIng, initialQty: parseFloat(e.target.value) || 0 })} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-tight">Valor factura (USD)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                      <input type="number" className="w-full pl-8 pr-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-emerald-600" placeholder="0.00" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
-                    </div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase">Costo Total</label>
+                    <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200" value={newIng.initialPrice || ''} onChange={e => setNewIng({ ...newIng, initialPrice: parseFloat(e.target.value) || 0 })} />
                   </div>
                 </div>
 
-                <div className="px-6 py-4 bg-[#136dec]/5 rounded-xl border border-[#136dec]/10 flex items-center justify-between">
-                  <span className="text-[10px] font-black text-[#136dec]/60 uppercase tracking-widest">Costo Técnico x {getBaseUnit(newIng.unitType)}</span>
-                  <span className="text-sm font-black text-[#136dec]">
-                    ${newIng.initialQty > 0 ? (newIng.initialPrice / convertToBase(newIng.initialQty, newIng.measureUnit)).toFixed(5) : '0.00000'}
-                  </span>
+                <div className="grid grid-cols-2 gap-6 col-span-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase">Stock Mínimo ({newIng.unitType === 'solid' ? 'gr' : 'ml'})</label>
+                    <input type="number" className="w-full px-4 py-3 text-sm font-bold rounded-lg border border-slate-200" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseFloat(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase">Stock Crítico ({newIng.unitType === 'solid' ? 'gr' : 'ml'})</label>
+                    <input type="number" className="w-full px-4 py-3 text-sm font-bold rounded-lg border border-slate-200" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseFloat(e.target.value) || 0 })} />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Stock de Seguridad ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-bold" value={newIng.minQty} onChange={e => setNewIng({ ...newIng, minQty: parseInt(e.target.value) || 0 })} />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[13px] font-bold text-slate-700 block mb-2">Alerta Crítica ({getBaseUnit(newIng.unitType)})</label>
-                  <input type="number" className="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-200 bg-red-50/20 text-red-600 font-bold" value={newIng.criticalQty} onChange={e => setNewIng({ ...newIng, criticalQty: parseInt(e.target.value) || 0 })} />
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase">Vencimiento Lote Inicial</label>
+                  <input type="date" className="w-full px-4 py-3 text-sm font-bold rounded-lg border border-slate-200" value={newIng.expirationDate} onChange={e => setNewIng({ ...newIng, expirationDate: e.target.value })} />
                 </div>
               </div>
             </div>
-
-            <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
-              <button
-                onClick={() => setShowNewIngModal(false)}
-                className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateIngredient}
-                className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
-              >
-                Registrar en Almacén
-              </button>
+            <footer className="px-8 py-6 bg-slate-50 border-t flex justify-between shrink-0">
+              <button onClick={() => setShowNewIngModal(false)} className="px-8 py-3 rounded-full font-bold border hover:bg-white transition-all">Cancelar</button>
+              <button onClick={handleCreateIngredient} className="px-8 py-3 rounded-full font-bold bg-[#136dec] text-white hover:bg-[#0d5cc7] shadow-lg shadow-blue-100 transition-all border border-[#136dec]">Crear Insumo</button>
             </footer>
           </div>
         </div>
@@ -695,104 +535,59 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
 
       {showPurchaseModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
-            onClick={() => setShowPurchaseModal(false)}
-          ></div>
-
-          <div className="relative bg-white w-full max-w-lg rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
-            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-                  <span className="material-icons-round text-xl">shopping_cart</span>
-                </div>
-                <div>
-                  <h3 className="text-[20px] font-bold text-slate-900 tracking-tight leading-none">Ingreso de Compra</h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1.5">ACTUALIZACIÓN DE STOCK</p>
-                </div>
-              </div>
-              <button onClick={() => setShowPurchaseModal(false)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
-                <span className="material-icons-round">close</span>
-              </button>
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onClick={() => setShowPurchaseModal(false)}></div>
+          <div className="relative bg-white w-full max-w-lg rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex items-center justify-between shrink-0">
+              <h3 className="text-xl font-bold text-slate-900">Registro de Compra</h3>
+              <button onClick={() => setShowPurchaseModal(false)} className="w-8 h-8 rounded-full hover:bg-slate-50 flex items-center justify-center border text-slate-400"><span className="material-icons-round text-lg">close</span></button>
             </header>
-
-            <div className="p-8 space-y-8 flex-1 overflow-y-auto custom-scrollbar">
+            <div className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-slate-700 block">Insumo a Reponer</label>
-                <select className="w-full px-4 py-3.5 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-black" value={selectedIngId || ''} onChange={e => {
-                  const newId = e.target.value;
-                  setSelectedIngId(newId);
-                  const newIng = ingredients.find(i => i.id === newId);
-                  if (newIng?.measureUnit === 'ml') setPurchaseUnit('L');
-                  else setPurchaseUnit('kg');
-                }}>
+                <label className="text-xs font-bold text-slate-700 uppercase block">Insumo Seleccionado</label>
+                <select className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 font-bold" value={selectedIngId || ''} onChange={e => setSelectedIngId(e.target.value)}>
                   {ingredients.map(ing => <option key={ing.id} value={ing.id}>{ing.icon} {ing.name}</option>)}
                 </select>
               </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-[13px] font-bold text-slate-700 block">Cantidad Comprada</label>
-                  <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200 bg-white text-slate-900" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
+              <div className="grid grid-cols-3 gap-6">
+                <div className="col-span-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase block">Cantidad</label>
+                  <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200" value={purchaseQty} onChange={e => setPurchaseQty(parseFloat(e.target.value) || 0)} />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[13px] font-bold text-slate-700 block">Unidad Medida</label>
-                  <select className="w-full px-4 py-3 text-sm rounded-lg border border-slate-200 bg-white text-slate-900 font-bold h-[52px]" value={purchaseUnit} onChange={e => setPurchaseUnit(e.target.value as any)}>
-                    {isLiquidType ? (
+                <div className="col-span-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase block">Unidad</label>
+                  <select
+                    className="w-full px-4 py-3 text-sm font-bold rounded-lg border border-slate-200 bg-white"
+                    value={purchaseUnit}
+                    onChange={e => setPurchaseUnit(e.target.value)}
+                  >
+                    {ingredients.find(i => i.id === selectedIngId)?.measureUnit === 'ml' ? (
                       <>
+                        <option value="ml">ml</option>
                         <option value="L">Litros (L)</option>
                         <option value="gal">Galones (gal)</option>
-                        <option value="ml">Mililitros (ml)</option>
                       </>
                     ) : (
                       <>
-                        <option value="kg">Kilogramos (kg)</option>
+                        <option value="gr">gr</option>
+                        <option value="kg">Kilos (kg)</option>
                         <option value="lb">Libras (lb)</option>
-                        <option value="gr">Gramos (gr)</option>
                       </>
                     )}
                   </select>
                 </div>
-              </div>
-
-              <div className="p-6 bg-emerald-50 border-2 border-emerald-100 rounded-2xl flex items-center gap-6 shadow-sm">
-                <div className="w-12 h-12 shrink-0 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg"><span className="material-icons-round text-xl">scale</span></div>
-                <div>
-                  <p className="text-[10px] text-emerald-600 font-black uppercase tracking-widest mb-1.5 leading-none">Neto Entrante</p>
-                  <p className="text-xl font-bold text-slate-900 leading-none">
-                    {(() => {
-                      let val = purchaseQty;
-                      if (purchaseUnit === 'kg' || purchaseUnit === 'L') val *= 1000;
-                      else if (purchaseUnit === 'lb') val *= 453.592;
-                      else if (purchaseUnit === 'gal') val *= 3785.41;
-                      return val.toLocaleString(undefined, { maximumFractionDigits: 0 });
-                    })()} {isLiquidType ? 'ml' : 'gr'}
-                  </p>
+                <div className="col-span-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase block">Total USD</label>
+                  <input type="number" className="w-full px-4 py-3 text-lg font-black rounded-lg border border-slate-200" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
                 </div>
               </div>
-
               <div className="space-y-3">
-                <label className="text-[13px] font-bold text-slate-700 block">Total Inversión Bruta (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-slate-400 text-3xl">$</span>
-                  <input type="number" className="w-full pl-12 pr-6 py-6 text-4xl font-bold text-primary rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all" value={purchasePrice} onChange={e => setPurchasePrice(parseFloat(e.target.value) || 0)} />
-                </div>
+                <label className="text-xs font-bold text-slate-700 uppercase block">Fecha de Vencimiento de Lote</label>
+                <input type="date" className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 font-bold" value={purchaseExpiration} onChange={e => setPurchaseExpiration(e.target.value)} />
               </div>
             </div>
-
-            <footer className="px-8 py-6 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center shrink-0">
-              <button
-                onClick={() => setShowPurchaseModal(false)}
-                className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleRegisterPurchase}
-                className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
-              >
-                Confirmar Ingreso
-              </button>
+            <footer className="px-8 py-6 bg-slate-50 border-t flex justify-between shrink-0">
+              <button onClick={() => setShowPurchaseModal(false)} className="px-8 py-3 rounded-full font-bold border">Cancelar</button>
+              <button onClick={handleRegisterPurchase} className="px-8 py-3 rounded-full font-bold bg-[#136dec] text-white">Ingresar Stock</button>
             </footer>
           </div>
         </div>
@@ -800,105 +595,65 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
 
       {viewBatchDetailsIngId && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in"
-            onClick={() => setViewBatchDetailsIngId(null)}
-          ></div>
-
-          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
-            <header className="px-8 py-7 border-b border-slate-100 bg-white shrink-0 flex justify-between items-center">
-              <div>
-                <h2 className="text-[24px] font-bold text-slate-900 tracking-tight leading-none flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
-                    <span className="material-icons-round text-slate-500 text-xl">inventory_2</span>
-                  </div>
-                  Kardex de Lotes en Almacén
-                </h2>
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-[10px] font-black text-white bg-[#136dec] px-2 py-0.5 rounded uppercase tracking-widest">Insumo</span>
-                  <p className="text-[12px] text-slate-500 font-bold tracking-tight">
-                    {ingredients.find(i => i.id === viewBatchDetailsIngId)?.name}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setViewBatchDetailsIngId(null)}
-                className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100"
-              >
-                <span className="material-icons-round">close</span>
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onClick={() => setViewBatchDetailsIngId(null)}></div>
+          <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <header className="px-8 py-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Kardex de Lotes Técnicos</h2>
+              <button onClick={() => setViewBatchDetailsIngId(null)} className="w-8 h-8 rounded-full hover:bg-slate-50 border text-slate-400">
+                <span className="material-icons-round text-lg">close</span>
               </button>
             </header>
-
-            <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/30">
-              {(() => {
-                const ingBatches = batches.filter(b => b.ingredient_id === viewBatchDetailsIngId);
-                if (ingBatches.length === 0) return (
-                  <div className="py-20 text-center space-y-4">
-                    <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto border border-slate-200">
-                      <span className="material-icons-round text-slate-300 text-4xl">inventory</span>
-                    </div>
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No se detectan lotes vigentes para este insumo</p>
+            <div className="flex-1 overflow-y-auto p-8 space-y-4 custom-scrollbar bg-slate-50/10">
+              {batches.filter(b => b.ingredient_id === viewBatchDetailsIngId).map(b => (
+                <div key={b.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                  <div className="flex justify-between items-start mb-3">
+                    <p className="text-sm font-bold text-slate-900 uppercase">Lote: {b.id.split('-')[0]}</p>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${b.expiration_status === 'valid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                      b.expiration_status === 'expiring' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                        'bg-red-50 text-red-600 border-red-100'
+                      }`}>
+                      {b.expiration_status}
+                    </span>
                   </div>
-                );
-
-                return ingBatches.map(b => (
-                  <div key={b.id} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-3">
-                        <span className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500 uppercase">Lote</span>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">#{b.id.split('-')[0]}</p>
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${b.quantity_remaining > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
-                            {b.quantity_remaining > 0 ? 'En Existencias' : 'Agotado'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Costo Unit.</p>
-                        <p className="text-lg font-bold text-[#136dec]">${Number(b.unit_cost).toFixed(4)}</p>
-                      </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Saldo Disponible</p>
+                      <p className="text-lg font-black text-slate-900">{b.quantity_remaining.toLocaleString()} gr</p>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Proveedor</p>
-                        <p className="text-xs font-semibold text-slate-700">{b.suppliers?.name || 'Distribución Global'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha de Caducidad</p>
-                        {b.expiration_date ? (
-                          <p className={`text-xs font-bold ${b.expiration_status === 'expired' ? 'text-red-500' : b.expiration_status === 'expiring' ? 'text-amber-600' : 'text-emerald-500'}`}>
-                            {new Date(b.expiration_date).toLocaleDateString()}
-                          </p>
-                        ) : <p className="text-xs text-slate-400">Sin vigencia</p>}
-                      </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Costo Unit.</p>
+                      <p className="text-lg font-black text-primary">${Number(b.unit_cost).toFixed(4)}</p>
                     </div>
-
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase">Saldo Restante</p>
-                        <p className="text-xl font-bold text-slate-900">{b.quantity_remaining.toLocaleString()} gr</p>
+                    {b.expiration_date && (
+                      <div className="col-span-2 mt-2 pt-2 border-t border-slate-50 flex items-center gap-2">
+                        <span className="material-icons-round text-slate-300 text-lg">calendar_today</span>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase">Caducidad: {new Date(b.expiration_date).toLocaleDateString()}</p>
                       </div>
-                      <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500" style={{ width: '100%' }}></div>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                ));
-              })()}
+                </div>
+              ))}
             </div>
-            <footer className="px-8 py-4 border-t border-slate-100 bg-white shrink-0 flex justify-between items-center">
-              <button
-                onClick={() => {
-                  const ing = ingredients.find(i => i.id === viewBatchDetailsIngId);
-                  if (ing) generateIngredientPDF(ing);
-                }}
-                className="px-6 py-2 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-2"
-              >
-                <span className="material-icons-round text-sm">picture_as_pdf</span> Exportar Ficha
-              </button>
-              <button onClick={() => setViewBatchDetailsIngId(null)} className="px-6 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-200 transition-all">Cerrar Detalle</button>
-            </footer>
+          </div>
+        </div>
+      )}
+
+      {showIconPicker && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]" onClick={() => setShowIconPicker(false)}></div>
+          <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 border border-slate-200">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6 border-b pb-4">Seleccionar Icono de Insumo</h4>
+            <div className="grid grid-cols-6 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+              {INGREDIENT_ICONS.map(icon => (
+                <button
+                  key={icon}
+                  onClick={() => { setNewIng({ ...newIng, icon }); setShowIconPicker(false); }}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

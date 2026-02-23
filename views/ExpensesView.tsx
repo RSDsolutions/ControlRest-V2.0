@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { Expense, Order, Ingredient, Plate } from '../types';
 import { supabase } from '../supabaseClient';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface ExpensesViewProps {
     expenses: Expense[];
@@ -11,12 +13,16 @@ interface ExpensesViewProps {
     onAddExpense: (exp: Expense) => void;
     branchId: string | 'GLOBAL' | null;
     branches?: any[];
+    restaurantId?: string | null;
 }
 
-const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [], ingredients = [], plates = [], onAddExpense, branchId, branches = [] }) => {
+const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [], ingredients = [], plates = [], onAddExpense, branchId, branches = [], restaurantId }) => {
     const [activeTab, setActiveTab] = useState<'dashboard' | 'list'>('dashboard');
     const [showAddModal, setShowAddModal] = useState(false);
     const [currentDate, setCurrentDate] = useState(new Date());
+
+    const { data: planData } = usePlanFeatures(restaurantId || undefined);
+    const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
     // Filter Data by Month
     const filteredExpenses = useMemo(() => {
@@ -136,6 +142,10 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
             alert("Error al registrar gasto: " + err.message);
         }
     };
+
+    if (isPlanOperativo) {
+        return <PlanUpgradeFullPage featureName="Gastos Operativos" description="El control financiero avanzado, análisis de COGS y estados de resultados pro-forma están disponibles en planes superiores. Toma decisiones basadas en datos financieros precisos." />;
+    }
 
     return (
         <>

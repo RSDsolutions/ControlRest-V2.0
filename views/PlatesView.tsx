@@ -4,6 +4,7 @@ import { Plate, Ingredient, PlateIngredient, Order } from '../types';
 import { supabase } from '../supabaseClient';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
 
 
 interface PlatesViewProps {
@@ -15,6 +16,9 @@ interface PlatesViewProps {
 }
 
 const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates, restaurantId, orders }) => {
+
+  const { data: planData } = usePlanFeatures(restaurantId || undefined);
+  const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
   // Helper functions
   const convertToBase = (qty: number, unit: string) => {
@@ -779,12 +783,14 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                 >
                   <span className="material-icons-round text-base">edit</span> Editar Receta
                 </button>
-                <button
-                  className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
-                  onClick={() => generatePDF(selectedPlate)}
-                >
-                  <span className="material-icons-round text-base">picture_as_pdf</span> Exportar Ficha Técnica
-                </button>
+                {!isPlanOperativo && (
+                  <button
+                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
+                    onClick={() => generatePDF(selectedPlate)}
+                  >
+                    <span className="material-icons-round text-base">picture_as_pdf</span> Exportar Ficha Técnica
+                  </button>
+                )}
               </footer>
             </div>
           </div>

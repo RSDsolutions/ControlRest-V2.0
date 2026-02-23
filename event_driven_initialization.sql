@@ -71,37 +71,41 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION generate_daily_snapshots() RETURNS void AS $$
 BEGIN
     -- Populate Recipe Cost Snapshot Daily (Branch Specific)
-    INSERT INTO public.recipe_cost_snapshot_daily (recipe_id, branch_id, avg_cost_per_unit, snapshot_date)
-    SELECT 
-        r.id as recipe_id,
-        i.branch_id,
-        COALESCE(SUM(ri.quantity_gr * i.unit_cost_gr), 0) as avg_cost_per_unit,
-        CURRENT_DATE
-    FROM public.recipes r
-    JOIN public.recipe_items ri ON r.id = ri.recipe_id
-    JOIN (
-        -- Group inventory by branch to get specific costs per branch
-        SELECT ingredient_id, branch_id, AVG(unit_cost_gr) as unit_cost_gr 
-        FROM public.inventory 
-        GROUP BY ingredient_id, branch_id
-    ) i ON ri.ingredient_id = i.ingredient_id
-    GROUP BY r.id, i.branch_id
-    ON CONFLICT (recipe_id, branch_id, snapshot_date) DO UPDATE 
-    SET avg_cost_per_unit = EXCLUDED.avg_cost_per_unit;
+    IF public.is_feature_enabled((SELECT restaurant_id FROM public.branches WHERE id = ANY(SELECT branch_id FROM public.inventory LIMIT 1)), 'ENABLE_DAILY_FINANCIAL_SNAPSHOT') THEN
+        INSERT INTO public.recipe_cost_snapshot_daily (recipe_id, branch_id, avg_cost_per_unit, snapshot_date)
+        SELECT 
+            r.id as recipe_id,
+            i.branch_id,
+            COALESCE(SUM(ri.quantity_gr * i.unit_cost_gr), 0) as avg_cost_per_unit,
+            CURRENT_DATE
+        FROM public.recipes r
+        JOIN public.recipe_items ri ON r.id = ri.recipe_id
+        JOIN (
+            -- Group inventory by branch to get specific costs per branch
+            SELECT ingredient_id, branch_id, AVG(unit_cost_gr) as unit_cost_gr 
+            FROM public.inventory 
+            GROUP BY ingredient_id, branch_id
+        ) i ON ri.ingredient_id = i.ingredient_id
+        GROUP BY r.id, i.branch_id
+        ON CONFLICT (recipe_id, branch_id, snapshot_date) DO UPDATE 
+        SET avg_cost_per_unit = EXCLUDED.avg_cost_per_unit;
+    END IF;
 
     -- Populate Inventory Idle Snapshot
-    INSERT INTO public.inventory_idle_snapshot (ingredient_id, branch_id, idle_days, inventory_value, snapshot_date)
-    SELECT 
-        ingredient_id,
-        branch_id,
-        -- fallback to 8 days if updated_at is missing, to trigger the rule (>= 7)
-        GREATEST(EXTRACT(DAY FROM (NOW() - COALESCE(updated_at, NOW() - INTERVAL '8 days')))::INT, 8) as idle_days,      
-        (quantity_gr * unit_cost_gr) as inventory_value,
-        CURRENT_DATE
-    FROM public.inventory
-    WHERE quantity_gr > 0
-    ON CONFLICT (ingredient_id, branch_id, snapshot_date) DO UPDATE
-    SET idle_days = EXCLUDED.idle_days, inventory_value = EXCLUDED.inventory_value;
+    IF public.is_feature_enabled((SELECT restaurant_id FROM public.branches WHERE id = ANY(SELECT branch_id FROM public.inventory LIMIT 1)), 'ENABLE_DAILY_FINANCIAL_SNAPSHOT') THEN
+        INSERT INTO public.inventory_idle_snapshot (ingredient_id, branch_id, idle_days, inventory_value, snapshot_date)
+        SELECT 
+            ingredient_id,
+            branch_id,
+            -- fallback to 8 days if updated_at is missing, to trigger the rule (>= 7)
+            GREATEST(EXTRACT(DAY FROM (NOW() - COALESCE(updated_at, NOW() - INTERVAL '8 days')))::INT, 8) as idle_days,      
+            (quantity_gr * unit_cost_gr) as inventory_value,
+            CURRENT_DATE
+        FROM public.inventory
+        WHERE quantity_gr > 0
+        ON CONFLICT (ingredient_id, branch_id, snapshot_date) DO UPDATE
+        SET idle_days = EXCLUDED.idle_days, inventory_value = EXCLUDED.inventory_value;
+    END IF;
 
 END;
 $$ LANGUAGE plpgsql;

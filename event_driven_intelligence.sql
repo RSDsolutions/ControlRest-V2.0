@@ -205,7 +205,7 @@ BEGIN
         JOIN public.branches b ON rc.branch_id = b.id
         WHERE rc.snapshot_date = CURRENT_DATE AND rec.is_active = TRUE
     LOOP
-        IF r.selling_price > 0 THEN
+        IF r.selling_price > 0 AND public.is_feature_enabled(r.restaurant_id, 'ENABLE_NET_PROFIT_CALCULATION') THEN
             v_actual_margin := (r.selling_price - r.avg_cost_per_unit) / r.selling_price;
             
             IF v_actual_margin < 0.20 THEN
@@ -297,8 +297,8 @@ BEGIN
         JOIN historical_stats hs ON ds.branch_id = hs.branch_id
         JOIN public.branches b ON ds.branch_id = b.id
         LEFT JOIN daily_expenses de ON ds.branch_id = de.branch_id
-        WHERE ds.revenue < (hs.avg_revenue * 0.8) -- 20% drop in revenue
-           OR (COALESCE(de.cost, 0) > (hs.avg_expenses * 1.25) AND hs.avg_expenses > 0) -- 25% spike in expenses
+        WHERE (ds.revenue < (hs.avg_revenue * 0.8) OR (COALESCE(de.cost, 0) > (hs.avg_expenses * 1.25) AND hs.avg_expenses > 0))
+          AND public.is_feature_enabled(r.restaurant_id, 'ENABLE_NET_PROFIT_CALCULATION')
     LOOP
         -- Avoid duplicates
         IF NOT EXISTS (
@@ -359,6 +359,7 @@ BEGIN
         FROM recent_expenses re
         JOIN category_averages ca ON re.branch_id = ca.branch_id AND re.category = ca.category
         WHERE re.amount > ca.avg_amount * 1.25 -- 25% deviation
+          AND public.is_feature_enabled(re.restaurant_id, 'ENABLE_NET_PROFIT_CALCULATION')
     LOOP
         -- Avoid duplicates
         IF NOT EXISTS (
@@ -402,6 +403,7 @@ BEGIN
         )
         SELECT * FROM financial_metrics
         WHERE total_revenue > 0 AND (total_expenses / total_revenue) > 0.50 -- Expenses > 50% of Revenue
+          AND public.is_feature_enabled(restaurant_id, 'ENABLE_NET_PROFIT_CALCULATION')
     LOOP
         IF NOT EXISTS (
             SELECT 1 FROM public.system_events 

@@ -1,5 +1,6 @@
 
 export enum UserRole {
+  SUPERADMIN = 'superadmin',
   ADMIN = 'admin',
   WAITER = 'waiter',
   CASHIER = 'cashier',
@@ -15,8 +16,39 @@ export interface User {
   branchId?: string;
   branchName?: string; // Hydrated
   restaurantId?: string; // New
+  restaurantName?: string;
   isActive?: boolean;
   lastLogin?: string;
+}
+
+export interface Restaurant {
+  id: string;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+}
+
+export interface RestaurantSubscription {
+  id: string;
+  restaurant_id: string;
+  plan_id: string;
+  status: 'active' | 'trial' | 'suspended';
+  starts_at: string;
+  ends_at?: string;
+}
+
+export interface PlanFeature {
+  id: string;
+  plan_id: string;
+  feature_code: string;
+  enabled: boolean;
 }
 
 export interface ActivityLog {

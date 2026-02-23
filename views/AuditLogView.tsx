@@ -5,9 +5,12 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface AuditLogViewProps {
     branches: Branch[];
+    restaurantId?: string | null;
 }
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -46,10 +49,13 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
     'waste_loss': 'Pérdida por Merma'
 };
 
-export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
+export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches, restaurantId }) => {
     const [events, setEvents] = useState<AuditEvent[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const { data: planData } = usePlanFeatures();
+    const isPlanOperativo = !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
     useEffect(() => {
         fetchUsers();
@@ -98,6 +104,10 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         }
         if (selectedUser !== 'all') {
             query = query.eq('user_id', selectedUser);
+        }
+
+        if (restaurantId) {
+            query = query.eq('restaurant_id', restaurantId);
         }
 
         const { data, error } = await query;
@@ -245,6 +255,10 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches }) => {
         if (eventType === 'COGS' || eventType === 'inventory_movement_sale') return 'bg-slate-50 text-slate-600 border-slate-200';
         return 'bg-slate-50 text-slate-500 border-slate-100';
     };
+
+    if (isPlanOperativo) {
+        return <PlanUpgradeFullPage featureName="Auditoría y Seguridad" description="El historial detallado de actividades y la auditoría forense del sistema están disponibles en planes superiores. Protege la integridad de tu información." />;
+    }
 
     return (
         <div className="flex flex-col h-full bg-slate-50 p-8 animate-fade-in max-w-[1400px] mx-auto space-y-8 font-sans">

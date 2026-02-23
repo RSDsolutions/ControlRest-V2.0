@@ -1,6 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { Order, Ingredient, Expense, Plate, WasteRecord } from '../types';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface FinanceViewProps {
    orders: Order[];
@@ -9,10 +11,30 @@ interface FinanceViewProps {
    plates: Plate[];
    wasteRecords: WasteRecord[];
    branchId?: string | 'GLOBAL' | null;
+   restaurantId?: string | null;
 }
 
-const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses, plates, wasteRecords, branchId }) => {
+const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses, plates, wasteRecords, branchId, restaurantId }) => {
    const [currentDate, setCurrentDate] = useState(new Date());
+   const { data: planData, isLoading: featuresLoading } = usePlanFeatures(restaurantId || undefined);
+   const canViewFinancials = isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
+
+   if (featuresLoading) {
+      return (
+         <div className="p-8 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+         </div>
+      );
+   }
+
+   if (!canViewFinancials) {
+      return (
+         <PlanUpgradeFullPage
+            featureName="Análisis Financiero Avanzado"
+            description="El resumen de rentabilidad, cálculo de márgenes netos y punto de equilibrio están disponibles en planes superiores. Optimiza tu salud financiera con datos precisos."
+         />
+      );
+   }
 
    // --- DATA PROCESSING & CALCULATIONS ---
 
@@ -325,54 +347,71 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
             </div>
 
             {/* FINANCIAL HEALTH: Indicadores de Salud */}
-            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
+            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col relative overflow-hidden">
                <div className="w-full flex justify-between items-center mb-10">
                   <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
                      <span className="material-icons-round text-slate-300">security</span> Indicadores de Salud
                   </h3>
                </div>
 
-               <div className="space-y-10 flex-1">
-                  <HealthIndicator
-                     label="Margen de Utilidad Neta"
-                     value={currentData.netMargin}
-                     suffix="%"
-                     status={currentData.netMargin > 20 ? 'good' : currentData.netMargin > 10 ? 'warning' : 'bad'}
-                     target="Objetivo: > 20%"
-                  />
-                  <HealthIndicator
-                     label="Ratio de Nómina / Ventas"
-                     value={currentData.sales > 0 ? (currentData.payroll / currentData.sales) * 100 : 0}
-                     suffix="%"
-                     status={(currentData.payroll / currentData.sales) < 0.35 ? 'good' : (currentData.payroll / currentData.sales) < 0.45 ? 'warning' : 'bad'}
-                     target="Límite: < 35%"
-                     inverse
-                  />
-                  <HealthIndicator
-                     label="Gastos Operativos / Ingresos"
-                     value={currentData.sales > 0 ? (currentData.opExpenses / currentData.sales) * 100 : 0}
-                     suffix="%"
-                     status={(currentData.opExpenses / currentData.sales) < 0.60 ? 'good' : (currentData.opExpenses / currentData.sales) < 0.75 ? 'warning' : 'bad'}
-                     target="Límite: < 60%"
-                     inverse
-                  />
-               </div>
+               {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') ? (
+                  <>
+                     <div className="space-y-10 flex-1">
+                        <HealthIndicator
+                           label="Margen de Utilidad Neta"
+                           value={currentData.netMargin}
+                           suffix="%"
+                           status={currentData.netMargin > 20 ? 'good' : currentData.netMargin > 10 ? 'warning' : 'bad'}
+                           target="Objetivo: > 20%"
+                        />
+                        <HealthIndicator
+                           label="Ratio de Nómina / Ventas"
+                           value={currentData.sales > 0 ? (currentData.payroll / currentData.sales) * 100 : 0}
+                           suffix="%"
+                           status={(currentData.payroll / currentData.sales) < 0.35 ? 'good' : (currentData.payroll / currentData.sales) < 0.45 ? 'warning' : 'bad'}
+                           target="Límite: < 35%"
+                           inverse
+                        />
+                        <HealthIndicator
+                           label="Gastos Operativos / Ingresos"
+                           value={currentData.sales > 0 ? (currentData.opExpenses / currentData.sales) * 100 : 0}
+                           suffix="%"
+                           status={(currentData.opExpenses / currentData.sales) < 0.60 ? 'good' : (currentData.opExpenses / currentData.sales) < 0.75 ? 'warning' : 'bad'}
+                           target="Límite: < 60%"
+                           inverse
+                        />
+                     </div>
 
-               <div className="mt-10 p-8 bg-[#f0f7ff] rounded-3xl border border-blue-100 relative group transition-all hover:bg-blue-100/50">
-                  <div className="absolute top-6 right-6 text-blue-500/10">
-                     <span className="material-icons-round text-5xl">psychology</span>
+                     <div className="mt-10 p-8 bg-[#f0f7ff] rounded-3xl border border-blue-100 relative group transition-all hover:bg-blue-100/50">
+                        <div className="absolute top-6 right-6 text-blue-500/10">
+                           <span className="material-icons-round text-5xl">psychology</span>
+                        </div>
+                        <h4 className="font-black text-[11px] text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                           <span className="material-icons-round text-base">info</span> ANÁLISIS INTELIGENTE
+                        </h4>
+                        <p className="text-xs text-slate-600 leading-relaxed font-bold">
+                           {currentData.netMargin > 20
+                              ? 'Tu estructura financiera es excepcionalmente eficiente. El control de gastos y el costo de platos están en niveles óptimos.'
+                              : currentData.netMargin > 10
+                                 ? 'Tu negocio es autosuficiente, pero existen oportunidades para optimizar la eficiencia operativa.'
+                                 : 'Estructura financiera en riesgo. Requiere revisión inmediata de ingeniería de menú y reducción agresiva de gastos fijos.'}
+                        </p>
+                     </div>
+                  </>
+               ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+                     <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-4">
+                        <span className="material-icons-round text-slate-300 text-3xl">lock</span>
+                     </div>
+                     <h4 className="text-sm font-black text-slate-900 mb-2">Análisis de Salud e Inteligencia</h4>
+                     <p className="text-[11px] text-slate-500 leading-relaxed font-medium mb-6 max-w-[200px]">
+                        La auditoría de salud financiera y sugerencias inteligentes no están disponibles en este plan.
+                     </p>
+                     <button className="text-[10px] font-black text-[#136dec] uppercase tracking-widest hover:underline">
+                        Actualizar para Desbloquear
+                     </button>
                   </div>
-                  <h4 className="font-black text-[11px] text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-                     <span className="material-icons-round text-base">info</span> ANÁLISIS INTELIGENTE
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed font-bold">
-                     {currentData.netMargin > 20
-                        ? 'Tu estructura financiera es excepcionalmente eficiente. El control de gastos y el costo de platos están en niveles óptimos.'
-                        : currentData.netMargin > 10
-                           ? 'Tu negocio es autosuficiente, pero existen oportunidades para optimizar la eficiencia operativa.'
-                           : 'Estructura financiera en riesgo. Requiere revisión inmediata de ingeniería de menú y reducción agresiva de gastos fijos.'}
-                  </p>
-               </div>
+               )}
             </div>
 
             {/* TRENDS: Desempeño Histórico */}

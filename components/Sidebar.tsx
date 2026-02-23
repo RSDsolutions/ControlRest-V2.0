@@ -2,13 +2,16 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { UserRole, Branch } from '../types';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
 
 interface SidebarProps {
-  user: { name: string; role: UserRole };
+  user: { name: string; role: UserRole; restaurantName?: string; restaurantId?: string };
   onLogout: () => void;
   branches?: Branch[];
   currentBranchId?: string | null;
   onBranchChange?: (branchId: string) => void;
+  isSupportMode?: boolean;
+  onExitSupport?: () => void;
 }
 
 interface NavItem {
@@ -22,7 +25,22 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], currentBranchId, onBranchChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], currentBranchId, onBranchChange, isSupportMode, onExitSupport }) => {
+  const { data: planData, isLoading: featuresLoading } = usePlanFeatures(user.restaurantId);
+  const isPlanOperativo = featuresLoading ? false : !isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
+
+  // ─── SUPERADMIN NAV ────────────────────────────────────────────────────────
+  const superadminNav: NavGroup[] = [
+    {
+      groupLabel: 'GLOBAL SaaS',
+      items: [
+        { label: 'Panel Global', icon: 'admin_panel_settings', path: '/saas-admin' },
+        { label: 'Gestión SaaS', icon: 'business_center', path: '/saas-management' },
+        { label: 'Sucursales', icon: 'account_tree', path: '/saas-branches' },
+        { label: 'Suscripciones', icon: 'card_membership', path: '/saas-subscriptions' },
+      ],
+    },
+  ];
 
   // ─── ADMIN NAV ───────────────────────────────────────────────────────────────
   const adminNav: NavGroup[] = [
@@ -132,13 +150,40 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
   ];
 
   const roleNav: Record<UserRole, NavGroup[]> = {
+    [UserRole.SUPERADMIN]: superadminNav,
     [UserRole.ADMIN]: adminNav,
     [UserRole.WAITER]: waiterNav,
     [UserRole.CASHIER]: cashierNav,
     [UserRole.KITCHEN]: kitchenNav,
   };
 
-  const activeGroups = roleNav[user.role] ?? [];
+  let activeGroups = (user.role === UserRole.SUPERADMIN && isSupportMode) ? adminNav : (roleNav[user.role] ?? []);
+
+  // ─── DYNAMIC NAVIGATION FILTERING ──────────────────────────────────────────
+  const restrictedPaths: string[] = [];
+
+  // Hide based on specific feature availability
+  if (!isFeatureEnabled(planData, 'ENABLE_COST_SNAPSHOT_AT_SALE')) restrictedPaths.push('/inventory-batches');
+  if (!isFeatureEnabled(planData, 'ENABLE_DAILY_FINANCIAL_SNAPSHOT')) restrictedPaths.push('/snapshots');
+  if (!isFeatureEnabled(planData, 'ENABLE_ACCOUNTING_PERIOD_LOCK')) restrictedPaths.push('/period-locks');
+  if (!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS')) restrictedPaths.push('/audit');
+
+  // Additional restrictions for Plan Operativo (Plan 1)
+  if (isPlanOperativo && user.role === UserRole.ADMIN) {
+    restrictedPaths.push(
+      '/purchase-requests',
+      '/suppliers',
+      '/supplier-invoices',
+      '/accounts-payable'
+    );
+  }
+
+  if (user.role === UserRole.ADMIN) {
+    activeGroups = activeGroups.map(group => ({
+      ...group,
+      items: group.items.filter(item => !restrictedPaths.includes(item.path))
+    })).filter(group => group.items.length > 0);
+  }
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium rounded-[7px] transition-colors duration-150 ${isActive
@@ -153,14 +198,18 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-[7px] bg-[#136dec] flex items-center justify-center font-bold text-sm shadow-md ring-1 ring-white/20">C</div>
           <div>
-            <span className="text-sm font-semibold tracking-tight text-white">RESTOGESTIÓN</span>
-            <span className="block text-[10px] text-white/40 font-medium">V2.0 ERP</span>
+            <span className="text-sm font-semibold tracking-tight text-white">
+              {user.role === UserRole.SUPERADMIN ? 'RESTOGESTIÓN' : (user.restaurantName || 'RESTOGESTIÓN')}
+            </span>
+            <span className="block text-[10px] text-white/40 font-medium">
+              {user.role === UserRole.SUPERADMIN ? 'V2.0 ERP' : 'RESTOGESTIÓN V2.0'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Branch Switcher */}
-      {user.role === UserRole.ADMIN && branches.length > 0 && onBranchChange && (
+      {/* Branch Switcher - Only for PRO Plan (indexed by ENABLE_AUDIT_LOGS) */}
+      {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') && (user.role === UserRole.ADMIN || isSupportMode) && branches.length > 0 && onBranchChange && (
         <div className="px-3 pt-3 pb-1">
           <label className="text-[10px] text-white/35 font-semibold uppercase tracking-[0.12em] mb-1 block">Sucursal</label>
           <div className="relative">
@@ -198,6 +247,19 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
         ))}
 
       </nav>
+
+      {/* Support Mode Exit */}
+      {isSupportMode && onExitSupport && (
+        <div className="px-3 py-4 border-t border-white/[0.06] bg-amber-500/10">
+          <button
+            onClick={onExitSupport}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-amber-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all"
+          >
+            <span className="material-icons-round text-sm">exit_to_app</span>
+            Salir de Soporte
+          </button>
+        </div>
+      )}
 
       {/* User Footer */}
       <div className="p-2.5 border-t border-white/[0.06]">

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Ingredient, User } from '../types';
 import { supabase } from '../supabaseClient';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface KitchenWasteViewProps {
     ingredients: Ingredient[];
@@ -13,6 +15,8 @@ const KitchenWasteView: React.FC<KitchenWasteViewProps> = ({ ingredients, user, 
     const [reports, setReports] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const { data: planData, isLoading } = usePlanFeatures(restaurantId);
+    const canReportWaste = isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
     // Form state
     const [selectedIngId, setSelectedIngId] = useState('');
@@ -33,6 +37,14 @@ const KitchenWasteView: React.FC<KitchenWasteViewProps> = ({ ingredients, user, 
     useEffect(() => {
         fetchMyReports();
     }, [user.id]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,6 +76,15 @@ const KitchenWasteView: React.FC<KitchenWasteViewProps> = ({ ingredients, user, 
             setLoading(false);
         }
     };
+
+    if (!canReportWaste) {
+        return (
+            <PlanUpgradeFullPage
+                featureName="Control de Merma Pro"
+                description="El reporte y análisis detallado de desperdicios en cocina está disponible en planes superiores. Reduce pérdidas y optimiza tus costos operativos."
+            />
+        );
+    }
 
     return (
         <div className="p-8 space-y-8 animate-fadeIn max-w-[1000px] mx-auto">

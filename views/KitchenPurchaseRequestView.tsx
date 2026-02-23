@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { PurchaseOrder, Ingredient, User } from '../types';
+import { usePlanFeatures, isFeatureEnabled } from '../hooks/usePlanFeatures';
+import PlanUpgradeFullPage from '../components/PlanUpgradeFullPage';
 
 interface Props {
     branchId: string | null;
@@ -21,6 +23,8 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
     const [orders, setOrders] = useState<PurchaseOrder[]>([]);
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [loading, setLoading] = useState(true);
+    const { data: planData, isLoading } = usePlanFeatures(currentUser?.restaurantId);
+    const canRequestSupplies = isFeatureEnabled(planData, 'ENABLE_NET_PROFIT_CALCULATION');
 
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -72,6 +76,15 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
 
     useEffect(() => { fetchOrders(); }, [fetchOrders]);
     useEffect(() => { fetchDependencies(); }, [fetchDependencies]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
 
     const loadOrderItems = async (order: PurchaseOrder) => {
         try {
@@ -143,6 +156,15 @@ const KitchenPurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) 
             setTimeout(() => setMsg(null), 4000);
         }
     };
+
+    if (!canRequestSupplies) {
+        return (
+            <PlanUpgradeFullPage
+                featureName="Solicitudes de Compra desde Cocina"
+                description="La integración directa entre cocina y administración para reposición de stock está disponible en planes superiores. Optimiza tu cadena de suministro."
+            />
+        );
+    }
 
     if (branchId === 'GLOBAL') {
         return (
