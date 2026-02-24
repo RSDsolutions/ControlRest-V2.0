@@ -5,6 +5,7 @@ import { useRealtimeOrders } from '../hooks/useRealtimeOrders';
 import { useCashSession } from '../hooks/useCashSession';
 import { useCloseOrderMutation, useCloseOrderSplitMutation } from '../hooks/useOrderMutations';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { useShiftPayments } from '../hooks/useShiftPayments';
 
 interface CashierViewProps {
    tables: Table[];
@@ -168,14 +169,13 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       }
    };
 
-   // Calculate Shift Stats from loaded orders (approximate if pagination)
-   const currentShiftOrders = useMemo(() =>
-      orders.filter(o => o.shiftId === currentShift?.id && o.status === 'paid'), // Assuming we add shiftId to Order type in frontend or it comes from DB
-      [orders, currentShift]);
+   // Use the new shift payments hook for accurate stats
+   const { stats: shiftStats } = useShiftPayments(currentShift?.id || null);
 
-   const dailyCashSales = currentShiftOrders.filter(o => o.paymentMethod === 'cash').reduce((acc, curr) => acc + curr.total, 0);
-   const dailyCardSales = currentShiftOrders.filter(o => o.paymentMethod === 'card').reduce((acc, curr) => acc + curr.total, 0);
-   const totalSales = dailyCashSales + dailyCardSales;
+   const dailyCashSales = shiftStats.cash;
+   const dailyCardSales = shiftStats.card;
+   const dailyTransferSales = shiftStats.transfer;
+   const totalSales = shiftStats.total;
 
    if (loadingShift) return <div className="p-10 text-center">Cargando estado de caja...</div>;
 
@@ -344,7 +344,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
                   <h3 className="font-bold text-lg text-primary mb-6">Resumen del Turno Actual</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                      <div className="bg-emerald-50 border-2 border-emerald-100 rounded-3xl p-5 shadow-sm">
                         <p className="text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1.5 sm:mb-2">Ventas Efectivo</p>
                         <p className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">${dailyCashSales.toFixed(2)}</p>
@@ -353,7 +353,11 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1.5 sm:mb-2">Ventas Tarjeta</p>
                         <p className="text-2xl sm:text-3xl font-black text-blue-700 font-mono">${dailyCardSales.toFixed(2)}</p>
                      </div>
-                     <div className="bg-primary text-white rounded-3xl p-5 shadow-lg flex flex-col justify-between sm:col-span-2 md:col-span-1">
+                     <div className="bg-purple-50 border-2 border-purple-100 rounded-3xl p-5 shadow-sm">
+                        <p className="text-[9px] sm:text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-1.5 sm:mb-2">Transferencia</p>
+                        <p className="text-2xl sm:text-3xl font-black text-purple-700 font-mono">${dailyTransferSales.toFixed(2)}</p>
+                     </div>
+                     <div className="bg-primary text-white rounded-3xl p-5 shadow-lg flex flex-col justify-between">
                         <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-widest">Total Ventas</p>
                         <p className="text-2xl sm:text-3xl font-black font-mono">${totalSales.toFixed(2)}</p>
                      </div>
