@@ -56,8 +56,8 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
          return d.getMonth() === month && d.getFullYear() === year;
       });
 
-      // 1. Sales
-      const sales = monthOrders.reduce((acc, o) => acc + (o.total || 0), 0);
+      // 1. Sales - ALL paid orders (the snapshots will also count these now)
+      const sales = monthOrders.filter(o => o.status === 'paid').reduce((acc, o) => acc + (o.total || 0), 0);
 
       // 2. COGS (Inventory Cost)
       let cogs = 0;
@@ -270,7 +270,9 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-6">
                   <div>
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Punto de Equilibrio</p>
-                     <h3 className="text-4xl font-heading font-black text-slate-900 tracking-tighter">{formatMoney(currentData.breakEvenPoint)}</h3>
+                     <h3 className="text-4xl font-heading font-black text-slate-900 tracking-tighter">
+                        {formatMoney(currentData.breakEvenPoint)}
+                     </h3>
                      <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-[180px]">Monto necesario para cubrir costos fijos.</p>
                   </div>
                   <div className="text-right">

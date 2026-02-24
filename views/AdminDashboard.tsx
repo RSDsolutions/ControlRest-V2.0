@@ -178,22 +178,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
     const fetchMv = async () => {
       setMvLoading(true);
       try {
-        const [kpiRes, recipesRes] = await Promise.all([
-          supabase
-            .from('mv_monthly_branch_kpis')
-            .select('*')
-            .eq('branch_id', branchId)
-            .eq('month', monthStr)
-            .maybeSingle(),
-          supabase
-            .from('mv_top_recipes_monthly')
-            .select('recipe_name, recipe_category, total_quantity, total_revenue')
-            .eq('branch_id', branchId)
-            .eq('month', monthStr)
-            .order('total_quantity', { ascending: false })
-            .limit(5),
-        ]);
-        if (kpiRes.data) setMonthlyKpis(kpiRes.data);
+        let kpiQuery = supabase.from('mv_monthly_branch_kpis').select('*').eq('month', monthStr);
+        let recipesQuery = supabase.from('mv_top_recipes_monthly').select('recipe_name, recipe_category, total_quantity, total_revenue').eq('month', monthStr).order('total_quantity', { ascending: false }).limit(5);
+
+        if (branchId !== 'GLOBAL') {
+          kpiQuery = kpiQuery.eq('branch_id', branchId);
+          recipesQuery = recipesQuery.eq('branch_id', branchId);
+        }
+
+        const [kpiRes, recipesRes] = await Promise.all([kpiQuery, recipesQuery]);
+
+        if (kpiRes.data) {
+          if (branchId === 'GLOBAL') {
+            const consolidated = kpiRes.data.reduce((acc: any, curr: any) => ({
+              total_sales: Number(acc.total_sales || 0) + Number(curr.total_sales || 0),
+              total_cogs: Number(acc.total_cogs || 0) + Number(curr.total_cogs || 0),
+              total_expenses: Number(acc.total_expenses || 0) + Number(curr.total_expenses || 0),
+              total_waste_cost: Number(acc.total_waste_cost || 0) + Number(curr.total_waste_cost || 0),
+              gross_profit: Number(acc.gross_profit || 0) + Number(curr.gross_profit || 0),
+              net_profit: Number(acc.net_profit || 0) + Number(curr.net_profit || 0),
+              month: monthStr
+            }), {});
+            setMonthlyKpis(consolidated);
+          } else {
+            setMonthlyKpis(kpiRes.data[0] || null);
+          }
+        }
         if (recipesRes.data) setTopRecipes(recipesRes.data);
       } catch (_) { /* fail silently — MV is optional analytics */ }
       finally { setMvLoading(false); }
@@ -599,7 +609,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
                 { label: 'Ingresos Netos', value: formatMoney(sales), icon: 'account_balance', color: 'text-primary' },
                 { label: 'Utilidad Bruta', value: formatMoney(Number(monthlyKpis.gross_profit)), icon: 'trending_up', color: 'text-indigo-600' },
                 { label: 'Utilidad Real', value: formatMoney(Number(monthlyKpis.net_profit)), icon: 'savings', color: Number(monthlyKpis.net_profit) >= 0 ? 'text-status-success' : 'text-status-error' },
-                { label: 'Punto de Equilibrio', value: formatMoney(breakEvenPoint), icon: 'adjust', color: 'text-amber-600' },
+                { label: 'Punto de Equilibrio', value: formatMoney(breakEvenPoint), icon: 'adjust', color: contributionMarginRatio > 0 ? 'text-amber-600' : 'text-slate-400' },
               ].map(k => (
                 <div key={k.label} className="card p-6 border-slate-100 hover:border-primary/20 hover:shadow-brand transition-all">
                   <div className="flex items-center gap-3 mb-4">
