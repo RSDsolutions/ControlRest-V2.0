@@ -318,7 +318,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                                     </td>
                                     <td className="px-6 py-4 text-right font-black text-slate-900 font-mono text-base sm:text-lg">${tTotal.toFixed(2)}</td>
                                     <td className="px-6 py-4 text-right">
-                                       {tOrders.every(o => o.status === 'delivered' || o.status === 'paid') ? (
+                                       {tOrders.every(o => ['delivered', 'paid', 'billing', 'served'].includes(o.status)) ? (
                                           <button
                                              onClick={() => handleStartPayment(table)}
                                              className="px-5 py-2.5 bg-primary text-white rounded-xl text-[11px] sm:text-xs font-bold hover:bg-primary-light transition-all shadow-md group-hover:scale-105 active:scale-95 whitespace-nowrap"
