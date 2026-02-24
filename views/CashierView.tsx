@@ -27,6 +27,15 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    const [processing, setProcessing] = useState(false);
    const [closingSummary, setClosingSummary] = useState<any>(null);
 
+   const [showCloseModal, setShowCloseModal] = useState(false);
+   const [countedStats, setCountedStats] = useState({
+      cash: '',
+      card: '',
+      transfer: '',
+      other: '',
+      notes: ''
+   });
+
    const { session, loading: loadingSession, openSession, closeSession, refreshSession } = useCashSession(branchId || null);
 
    const currentShift = session;
@@ -43,7 +52,17 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
             .in('status', ['open', 'pending', 'preparing', 'ready', 'delivered', 'billing', 'served']);
 
          if (!error && data) {
-            setOrders(data as Order[]);
+            // MAP SNAKE_CASE TO CAMELCASE
+            const formatted = (data as any[]).map(o => ({
+               id: o.id,
+               tableId: o.table_id, // Map table_id to tableId
+               status: o.status,
+               total: parseFloat(o.total || '0'),
+               timestamp: new Date(o.created_at),
+               waiterId: o.waiter_id,
+               branchId: o.branch_id
+            }));
+            setOrders(formatted as Order[]);
          }
          setLoadingOrders(false);
       };
@@ -77,8 +96,8 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       return orders.filter(o => o.tableId === selectedTableId);
    }, [selectedTableId, orders]);
 
-   const tableTotal = tableOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-   const totalPaid = Object.values(splitPayments).reduce((sum: number, val: string) => sum + parseFloat(val || '0'), 0);
+   const tableTotal = tableOrders.reduce((sum: number, o: Order) => sum + (o.total || 0), 0) as number;
+   const totalPaid = Object.values(splitPayments).reduce((sum: number, val: any) => sum + parseFloat(val || '0'), 0) as number;
    const pendingAmount = Math.max(0, tableTotal - totalPaid);
 
    const { stats: shiftStats, isLoading: loadingStats, error: statsError } = useShiftPayments(
@@ -129,6 +148,27 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          alert('Pago procesado correctamente.');
       } catch (err: any) {
          alert('Error: ' + err.message);
+      } finally {
+         setProcessing(false);
+      }
+   };
+
+   const handleCloseSession = async () => {
+      if (!currentShift) return;
+      setProcessing(true);
+      try {
+         await closeSession(
+            parseFloat(countedStats.cash || '0'),
+            parseFloat(countedStats.card || '0'),
+            parseFloat(countedStats.transfer || '0'),
+            parseFloat(countedStats.other || '0'),
+            countedStats.notes || 'Cierre de turno',
+            currentUser?.id || ''
+         );
+         setShowCloseModal(false);
+         alert('Turno cerrado correctamente.');
+      } catch (err: any) {
+         alert('Error al cerrar turno: ' + err.message);
       } finally {
          setProcessing(false);
       }
@@ -326,10 +366,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
                <div className="p-6 bg-slate-50 border-t border-slate-100">
                   <button
-                     onClick={() => {
-                        const confirmClose = window.confirm('¿Está seguro de que desea cerrar el turno de caja?');
-                        if (confirmClose) closeSession(0, 0, 0, 0, 'Cierre de turno', currentUser?.id || '');
-                     }}
+                     onClick={() => setShowCloseModal(true)}
                      className="w-full flex items-center justify-center gap-2 py-3 text-rose-500 font-bold text-xs uppercase tracking-widest hover:bg-rose-50 rounded-xl transition-all"
                   >
                      <span className="material-icons-round text-sm">lock</span>
@@ -338,6 +375,103 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                </div>
             </aside>
          </div>
+
+         {/* MODAL CIERRE DE TURNO */}
+         {showCloseModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+               <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
+                  <header className="bg-rose-500 p-6 text-white text-center">
+                     <span className="material-icons-round text-4xl mb-2">lock</span>
+                     <h2 className="text-xl font-black">Cierre de Turno</h2>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Ingrese los montos contados en caja</p>
+                  </header>
+
+                  <div className="p-6 space-y-4">
+                     <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Efectivo ($)</label>
+                           <input
+                              type="number"
+                              className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-bold"
+                              placeholder="0.00"
+                              value={countedStats.cash}
+                              onChange={(e) => setCountedStats(prev => ({ ...prev, cash: e.target.value }))}
+                           />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tarjeta ($)</label>
+                           <input
+                              type="number"
+                              className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-bold"
+                              placeholder="0.00"
+                              value={countedStats.card}
+                              onChange={(e) => setCountedStats(prev => ({ ...prev, card: e.target.value }))}
+                           />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Transferencia ($)</label>
+                           <input
+                              type="number"
+                              className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-bold"
+                              placeholder="0.00"
+                              value={countedStats.transfer}
+                              onChange={(e) => setCountedStats(prev => ({ ...prev, transfer: e.target.value }))}
+                           />
+                        </div>
+                        <div className="space-y-1">
+                           <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Otros ($)</label>
+                           <input
+                              type="number"
+                              className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-bold"
+                              placeholder="0.00"
+                              value={countedStats.other}
+                              onChange={(e) => setCountedStats(prev => ({ ...prev, other: e.target.value }))}
+                           />
+                        </div>
+                     </div>
+
+                     <div className="space-y-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Notas / Observaciones</label>
+                        <textarea
+                           className="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-semibold"
+                           placeholder="Escriba aquí cualquier observación..."
+                           rows={2}
+                           value={countedStats.notes}
+                           onChange={(e) => setCountedStats(prev => ({ ...prev, notes: e.target.value }))}
+                        />
+                     </div>
+
+                     <div className="bg-slate-900 text-white p-4 rounded-2xl flex justify-between items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Total Contado</span>
+                        <span className="text-xl font-black font-mono">
+                           ${(
+                              parseFloat(countedStats.cash || '0') +
+                              parseFloat(countedStats.card || '0') +
+                              parseFloat(countedStats.transfer || '0') +
+                              parseFloat(countedStats.other || '0')
+                           ).toFixed(2)}
+                        </span>
+                     </div>
+                  </div>
+
+                  <footer className="p-4 bg-slate-50 flex gap-3">
+                     <button
+                        onClick={() => setShowCloseModal(false)}
+                        className="flex-1 py-3 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 rounded-xl transition-all"
+                     >
+                        Cancelar
+                     </button>
+                     <button
+                        onClick={handleCloseSession}
+                        disabled={processing}
+                        className="flex-[2] py-3 bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-200 hover:scale-105 active:scale-95 transition-all"
+                     >
+                        {processing ? 'Cerrando...' : 'Confirmar Cierre'}
+                     </button>
+                  </footer>
+               </div>
+            </div>
+         )}
       </div>
    );
 };
