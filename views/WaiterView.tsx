@@ -309,8 +309,17 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
       if (!selectedTableId) return;
       setIsLoading(true);
       try {
-         const { error } = await supabase.from('tables').update({ status: 'billing' }).eq('id', selectedTableId);
-         if (error) throw error;
+         // Update table status
+         const { error: tableError } = await supabase.from('tables').update({ status: 'billing' }).eq('id', selectedTableId);
+         if (tableError) throw tableError;
+
+         // Update all active orders status to 'billing'
+         const activeOrderIds = tableOrders.map(o => o.id);
+         if (activeOrderIds.length > 0) {
+            const { error: orderError } = await supabase.from('orders').update({ status: 'billing' }).in('id', activeOrderIds);
+            if (orderError) console.error('Error updating orders to billing:', orderError);
+         }
+
          showNotification(`\uD83D\uDCB0 Cuenta solicitada para ${getTableLabel(selectedTableId)}`);
          if (fetchOrders) fetchOrders();
          setViewMode('tables');
