@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserRole, User } from '../types';
 import { supabase } from '../supabaseClient';
 
@@ -10,6 +10,7 @@ interface LoginViewProps {
 }
 
 const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<LoginMode>('select');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -273,7 +274,7 @@ const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                     Acceso Operativo
                   </button>
                   <div className="text-center pt-8 border-t border-slate-50 mt-8">
-                    <button onClick={() => goTo('register')} className="text-xs text-[#136dec] font-black uppercase tracking-widest hover:text-[#0d5cc7] transition-colors flex items-center justify-center gap-2 mx-auto">
+                    <button onClick={() => navigate('/solicitar-demo')} className="text-xs text-[#136dec] font-black uppercase tracking-widest hover:text-[#0d5cc7] transition-colors flex items-center justify-center gap-2 mx-auto">
                       ¿Nuevo Negocio? <span className="underline decoration-2 underline-offset-4">Solicitar DEMO</span>
                     </button>
                   </div>

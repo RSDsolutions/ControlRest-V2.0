@@ -14,6 +14,7 @@ import { queryKeys } from './lib/queryKeys';
 
 import LoginView from './views/LoginView';
 import LandingView from './views/landing/LandingView';
+import DemoRequestView from './views/landing/DemoRequestView';
 import ProblemView from './views/landing/ProblemView';
 import HowItWorksView from './views/landing/HowItWorksView';
 import FeaturesView from './views/landing/FeaturesView';
@@ -724,6 +725,7 @@ const App: React.FC = () => {
           <Route path="/funcionalidades" element={<FeaturesView />} />
           <Route path="/precios" element={<PricingView />} />
           <Route path="/soporte" element={<SupportView />} />
+          <Route path="/solicitar-demo" element={<DemoRequestView />} />
           <Route path="/login" element={<LoginView onLogin={handleLogin} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

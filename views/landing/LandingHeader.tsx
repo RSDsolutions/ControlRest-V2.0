@@ -44,7 +44,7 @@ const LandingHeader: React.FC = () => {
                         <button onClick={() => handleNav('/login')} className="text-slate-300 text-sm font-medium hover:text-white transition-colors">
                             Iniciar Sesión
                         </button>
-                        <button onClick={() => handleNav('/login')} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        <button onClick={() => handleNav('/solicitar-demo')} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2">
                             Agendar Diagnóstico
                             <span className="material-symbols-outlined text-sm">arrow_forward</span>
                         </button>
@@ -86,7 +86,7 @@ const LandingHeader: React.FC = () => {
                                 Iniciar Sesión
                             </button>
                             <button
-                                onClick={() => handleNav('/login')}
+                                onClick={() => handleNav('/solicitar-demo')}
                                 className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
                                 Agendar Diagnóstico
