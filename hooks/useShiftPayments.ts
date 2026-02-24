@@ -20,18 +20,23 @@ export function useShiftPayments(cashSessionId: string | null) {
                 return { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
             }
 
+            console.log('[useShiftPayments] Fetching for session:', cashSessionId);
             const { data, error } = await supabase
                 .from('payments')
-                .select('method, amount')
+                .select('method, amount, cash_session_id')
                 .eq('cash_session_id', cashSessionId);
 
-            if (error) throw error;
+            if (error) {
+                console.error('[useShiftPayments] Error:', error);
+                throw error;
+            }
 
+            console.log(`[useShiftPayments] Found ${data?.length || 0} payments`);
             const stats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
 
             (data || []).forEach(p => {
-                const amount = parseFloat(p.amount || '0');
-                const method = (p.method || '').toLowerCase();
+                const amount = parseFloat(p.amount?.toString() || '0');
+                const method = (p.method || '').toLowerCase().trim();
 
                 if (method === 'cash') stats.cash += amount;
                 else if (method === 'card') stats.card += amount;
@@ -44,13 +49,14 @@ export function useShiftPayments(cashSessionId: string | null) {
             return stats;
         },
         enabled: !!cashSessionId,
-        staleTime: 1000 * 60, // 1 minute
+        staleTime: 5000, // Reduced to 5s to be more reactive if realtime fails
     });
 
     // Realtime invalidation
     useEffect(() => {
         if (!cashSessionId) return;
 
+        console.log('[useShiftPayments] Subscribing to payments for session:', cashSessionId);
         const channel = supabase
             .channel(`rt-shift-payments-${cashSessionId}`)
             .on('postgres_changes', {
@@ -58,7 +64,8 @@ export function useShiftPayments(cashSessionId: string | null) {
                 schema: 'public',
                 table: 'payments',
                 filter: `cash_session_id=eq.${cashSessionId}`
-            }, () => {
+            }, (payload) => {
+                console.log('[useShiftPayments] Realtime change detected:', payload.eventType);
                 queryClient.invalidateQueries({ queryKey: ['shift-payments', cashSessionId] });
             })
             .subscribe();
