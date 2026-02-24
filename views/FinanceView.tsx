@@ -98,7 +98,7 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
       const otherExpenses = opExpensesTotal - payroll - services;
 
       // Fixed vs Variable for Break-even
-      const fixedCosts = monthExpenses.filter(e => e.type === 'fixed' || e.type === 'semi-variable').reduce((acc, e) => acc + Number(e.amount), 0);
+      const fixedCosts = monthExpenses.filter(e => e.type === 'fixed' || e.type === 'semi-variable' || !e.type).reduce((acc, e) => acc + Number(e.amount), 0);
       // Variable costs include COGS + waste + variable expenses
       const variableExpensesOnly = monthExpenses.filter(e => e.type === 'variable').reduce((acc, e) => acc + Number(e.amount), 0);
       const variableCosts = totalCOGS + variableExpensesOnly;
@@ -118,9 +118,10 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
 
       const netMargin = sales > 0 ? (netProfitFinal / sales) * 100 : 0;
 
-      // 8. Break-even
-      const contributionMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0;
-      const breakEvenPoint = contributionMarginRatio > 0 ? fixedCosts / contributionMarginRatio : 0;
+      // 8. Break-even - 70% fallback if no sales yet or negative margin
+      const rawMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0.7;
+      const contributionMarginRatio = rawMarginRatio > 0 ? rawMarginRatio : 0.7;
+      const breakEvenPoint = fixedCosts / contributionMarginRatio;
 
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const breakEvenDays = sales > 0 ? (breakEvenPoint / (sales / daysInMonth)) : 0;
@@ -271,16 +272,29 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                   <div>
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Punto de Equilibrio</p>
                      <h3 className="text-4xl font-heading font-black text-slate-900 tracking-tighter">
-                        {formatMoney(currentData.breakEvenPoint)}
+                        {currentData.sales >= currentData.breakEvenPoint && currentData.breakEvenPoint > 0 ? '¡ALCANZADO!' : formatMoney(currentData.breakEvenPoint)}
                      </h3>
-                     <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-[180px]">Monto necesario para cubrir costos fijos.</p>
+                     <p className="text-[11px] font-bold text-slate-400 mt-2 max-w-[180px]">
+                        {currentData.sales >= currentData.breakEvenPoint && currentData.breakEvenPoint > 0
+                           ? 'Meta operativa superada.'
+                           : `Faltan ${formatMoney(Math.max(0, currentData.breakEvenPoint - currentData.sales))} para cubrir fijos.`}
+                     </p>
                   </div>
                   <div className="text-right">
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Retorno de Punto</p>
                      <div className="flex items-center justify-end gap-1.5">
-                        <h3 className="text-4xl font-heading font-black text-blue-500 tracking-tighter">{currentData.breakEvenDays.toFixed(1)}</h3>
-                        <span className="text-[10px] font-black text-slate-400 uppercase pt-2">Días</span>
+                        {currentData.sales >= currentData.breakEvenPoint && currentData.breakEvenPoint > 0 ? (
+                           <h3 className="text-4xl font-heading font-black text-emerald-500 tracking-tighter">LISTO</h3>
+                        ) : (
+                           <>
+                              <h3 className="text-4xl font-heading font-black text-blue-500 tracking-tighter">{currentData.breakEvenDays.toFixed(1)}</h3>
+                              <span className="text-[10px] font-black text-slate-400 uppercase pt-2">Días</span>
+                           </>
+                        )}
                      </div>
+                     <p className="text-[11px] font-bold text-slate-400 mt-2">
+                        {currentData.sales >= currentData.breakEvenPoint && currentData.breakEvenPoint > 0 ? 'Meta lograda' : 'Tiempo estimado'}
+                     </p>
                   </div>
                </div>
                <div className="mt-auto pt-6 border-t border-slate-50">

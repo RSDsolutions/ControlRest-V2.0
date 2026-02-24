@@ -602,23 +602,37 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
               const sales = Number(monthlyKpis.total_sales);
               const variableCosts = Number(monthlyKpis.total_cogs) + Number(monthlyKpis.total_waste_cost);
               const fixedCosts = Number(monthlyKpis.total_expenses);
-              const contributionMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0;
-              const breakEvenPoint = contributionMarginRatio > 0 ? fixedCosts / contributionMarginRatio : 0;
+
+              // Refined logic: Use 70% target margin fallback if no sales yet or negative margin
+              const rawMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0.7;
+              const contributionMarginRatio = rawMarginRatio > 0 ? rawMarginRatio : 0.7;
+              const breakEvenPoint = fixedCosts / contributionMarginRatio;
+              const isBeReached = sales >= breakEvenPoint && breakEvenPoint > 0;
+              const amountMissing = Math.max(0, breakEvenPoint - sales);
 
               return [
                 { label: 'Ingresos Netos', value: formatMoney(sales), icon: 'account_balance', color: 'text-primary' },
                 { label: 'Utilidad Bruta', value: formatMoney(Number(monthlyKpis.gross_profit)), icon: 'trending_up', color: 'text-indigo-600' },
                 { label: 'Utilidad Real', value: formatMoney(Number(monthlyKpis.net_profit)), icon: 'savings', color: Number(monthlyKpis.net_profit) >= 0 ? 'text-status-success' : 'text-status-error' },
-                { label: 'Punto de Equilibrio', value: formatMoney(breakEvenPoint), icon: 'adjust', color: contributionMarginRatio > 0 ? 'text-amber-600' : 'text-slate-400' },
+                {
+                  label: 'Punto de Equilibrio',
+                  value: isBeReached ? '¡ALCANZADO!' : formatMoney(breakEvenPoint),
+                  subValue: isBeReached ? 'Meta superada' : `Faltante: ${formatMoney(amountMissing)}`,
+                  icon: 'adjust',
+                  color: isBeReached ? 'text-emerald-600' : (sales > 0 ? 'text-amber-600' : 'text-slate-400')
+                },
               ].map(k => (
                 <div key={k.label} className="card p-6 border-slate-100 hover:border-primary/20 hover:shadow-brand transition-all">
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`p-2 rounded-lg ${k.color.replace('text-', 'bg-')}/10`}>
                       <span className={`material-icons-round ${k.color} text-xl`}>{k.icon}</span>
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">{k.label}</p>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">{k.label}</p>
+                      {k.subValue && <p className="text-[9px] font-bold text-slate-500">{k.subValue}</p>}
+                    </div>
                   </div>
-                  <p className="text-2xl font-heading font-extrabold text-brand-black">{k.value}</p>
+                  <p className={`text-2xl font-heading font-extrabold ${k.color}`}>{k.value}</p>
                 </div>
               ));
             })()}
