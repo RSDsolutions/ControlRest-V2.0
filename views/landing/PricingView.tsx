@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
 
 const PricingView: React.FC = () => {
     const navigate = useNavigate();
+    const [isAnnual, setIsAnnual] = useState(false);
 
     useEffect(() => {
         document.documentElement.classList.add('dark');
@@ -11,6 +12,12 @@ const PricingView: React.FC = () => {
             document.documentElement.classList.remove('dark');
         };
     }, []);
+
+    const prices = {
+        operar: isAnnual ? 23 : 29,
+        controlar: isAnnual ? 63 : 79,
+        escalar: isAnnual ? 119 : 149
+    };
 
     return (
         <div className="bg-[#0F172A] text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white overflow-x-hidden min-h-screen">
@@ -25,9 +32,19 @@ const PricingView: React.FC = () => {
                         <p className="text-lg text-text-light max-w-2xl font-normal leading-relaxed">
                             La mayoría de los negocios gastronómicos mueren vendiendo mucho pero ganando poco. ControlRest V2.0 te da visibilidad financiera diaria para transformar flujo de caja en utilidad neta.
                         </p>
-                        <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8">
-                            <button className="px-6 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-glow-sm transition-all">Mensual</button>
-                            <button className="px-6 py-2 rounded-full text-text-light hover:text-white text-sm font-medium transition-all">Anual <span className="text-xs text-primary font-bold ml-1 border border-primary px-1 rounded bg-primary/10">-20%</span></button>
+                        <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8 transition-all">
+                            <button
+                                onClick={() => setIsAnnual(false)}
+                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${!isAnnual ? 'bg-primary text-white shadow-glow-sm' : 'text-text-light hover:text-white'}`}
+                            >
+                                Mensual
+                            </button>
+                            <button
+                                onClick={() => setIsAnnual(true)}
+                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${isAnnual ? 'bg-primary text-white shadow-glow-sm' : 'text-text-light hover:text-white'}`}
+                            >
+                                Anual <span className="text-xs text-primary font-bold ml-1 border border-primary px-1 rounded bg-primary/10">-20%</span>
+                            </button>
                         </div>
                     </div>
                     <div className="max-w-[1200px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
@@ -44,12 +61,15 @@ const PricingView: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-baseline gap-1 mt-2">
-                                    <span className="text-4xl font-black tracking-tight text-white">$29</span>
+                                    <span className="text-4xl font-black tracking-tight text-white">${prices.operar}</span>
                                     <span className="text-base font-medium text-text-muted">/mes</span>
                                 </div>
                             </div>
-                            <button className="w-full h-12 rounded-xl bg-background-dark hover:bg-slate-900 border border-border-dark text-white font-bold text-sm transition-colors mb-8">
-                                Comenzar digitalización
+                            <button
+                                onClick={() => navigate('/solicitar-demo')}
+                                className="w-full h-12 rounded-xl bg-background-dark hover:bg-slate-900 border border-border-dark text-white font-bold text-sm transition-colors mb-8"
+                            >
+                                Solicitar demo
                             </button>
                             <div className="flex flex-col gap-4 border-t border-white/5 pt-8 mt-auto">
                                 <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Alcance operativo:</p>
@@ -87,12 +107,15 @@ const PricingView: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-baseline gap-1 mt-2">
-                                    <span className="text-5xl font-black tracking-tight text-white">$79</span>
+                                    <span className="text-5xl font-black tracking-tight text-white">${prices.controlar}</span>
                                     <span className="text-base font-medium text-text-muted">/mes</span>
                                 </div>
                             </div>
-                            <button className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold text-sm transition-all shadow-glow-sm mb-8">
-                                Obtener rentabilidad real
+                            <button
+                                onClick={() => navigate('/solicitar-demo')}
+                                className="w-full h-12 rounded-xl bg-primary hover:bg-blue-600 text-white font-bold text-sm transition-all shadow-glow-sm mb-8"
+                            >
+                                Solicitar demo
                             </button>
                             <div className="flex flex-col gap-4 border-t border-primary/20 pt-8 mt-auto">
                                 <p className="text-xs font-semibold text-primary uppercase tracking-wider">Control Financiero Total:</p>
@@ -131,11 +154,15 @@ const PricingView: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-baseline gap-1 mt-2">
-                                    <span className="text-4xl font-black tracking-tight text-white">Custom</span>
+                                    <span className="text-4xl font-black tracking-tight text-white">${prices.escalar}</span>
+                                    <span className="text-base font-medium text-text-muted">/mes</span>
                                 </div>
                             </div>
-                            <button className="w-full h-12 rounded-xl bg-white hover:bg-gray-200 text-background-dark font-bold text-sm transition-colors mb-8">
-                                Contactar Ventas
+                            <button
+                                onClick={() => navigate('/solicitar-demo')}
+                                className="w-full h-12 rounded-xl bg-white hover:bg-gray-200 text-background-dark font-bold text-sm transition-colors mb-8"
+                            >
+                                Solicitar demo
                             </button>
                             <div className="flex flex-col gap-4 border-t border-white/5 pt-8 mt-auto">
                                 <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Gestión Corporativa:</p>
@@ -214,8 +241,11 @@ const PricingView: React.FC = () => {
                             </table>
                         </div>
                         <div className="mt-12 flex justify-center">
-                            <button className="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-glow-sm transition-all text-lg">
-                                Empieza a operar con datos reales
+                            <button
+                                onClick={() => navigate('/solicitar-demo')}
+                                className="bg-primary hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-glow-sm transition-all text-lg"
+                            >
+                                Solicitar demo
                             </button>
                         </div>
                     </div>
