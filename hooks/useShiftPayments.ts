@@ -1,5 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
 export interface ShiftStats {
@@ -10,68 +9,72 @@ export interface ShiftStats {
     total: number;
 }
 
+const EMPTY_STATS: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
+
 export function useShiftPayments(cashSessionId: string | null) {
-    const queryClient = useQueryClient();
+    const [stats, setStats] = useState<ShiftStats>(EMPTY_STATS);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const query = useQuery({
-        queryKey: ['shift-payments', cashSessionId],
-        queryFn: async (): Promise<ShiftStats> => {
-            if (!cashSessionId) {
-                return { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
+    const fetchStats = useCallback(async () => {
+        if (!cashSessionId) {
+            setStats(EMPTY_STATS);
+            return;
+        }
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            console.log('[useShiftPayments] Fetching payments for session:', cashSessionId);
+
+            const { data, error: queryError } = await supabase
+                .from('payments')
+                .select('method, amount')
+                .eq('cash_session_id', cashSessionId);
+
+            if (queryError) {
+                console.error('[useShiftPayments] Query error:', queryError);
+                setError(queryError.message);
+                return;
             }
 
-            console.log('[useShiftPayments] Fetching via RPC for session:', cashSessionId);
-            const { data, error } = await supabase
-                .rpc('get_shift_payment_stats', { p_session_id: cashSessionId });
+            console.log('[useShiftPayments] Raw data from DB:', data);
 
-            if (error) {
-                console.error('[useShiftPayments] RPC Error:', error);
-                // Fallback to direct query if RPC fails
-                const { data: fallbackData, error: fallbackError } = await supabase
-                    .from('payments')
-                    .select('method, amount')
-                    .eq('cash_session_id', cashSessionId);
-                if (fallbackError) throw fallbackError;
-                const stats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
-                (fallbackData || []).forEach(p => {
-                    const amount = parseFloat(p.amount?.toString() || '0');
-                    const method = (p.method || '').toLowerCase().trim();
-                    if (method === 'cash') stats.cash += amount;
-                    else if (method === 'card') stats.card += amount;
-                    else if (method === 'transfer') stats.transfer += amount;
-                    else stats.other += amount;
-                    stats.total += amount;
-                });
-                return stats;
-            }
+            const newStats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
 
-            console.log('[useShiftPayments] RPC returned rows:', data?.length || 0);
-            const stats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
+            (data || []).forEach(p => {
+                const amount = parseFloat(p.amount?.toString() || '0');
+                const method = (p.method || '').toLowerCase().trim();
 
-            (data || []).forEach((row: { method: string; total: string }) => {
-                const amount = parseFloat(row.total?.toString() || '0');
-                const method = (row.method || '').toLowerCase().trim();
+                if (method === 'cash') newStats.cash += amount;
+                else if (method === 'card') newStats.card += amount;
+                else if (method === 'transfer') newStats.transfer += amount;
+                else newStats.other += amount;
 
-                if (method === 'cash') stats.cash += amount;
-                else if (method === 'card') stats.card += amount;
-                else if (method === 'transfer') stats.transfer += amount;
-                else stats.other += amount;
-
-                stats.total += amount;
+                newStats.total += amount;
             });
 
-            return stats;
-        },
-        enabled: !!cashSessionId,
-        staleTime: 0, // Always fetch fresh data when session ID changes
-        gcTime: 0,    // Don't cache old results
-    });
+            console.log('[useShiftPayments] Computed stats:', newStats);
+            setStats(newStats);
+        } catch (err: any) {
+            console.error('[useShiftPayments] Unexpected error:', err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [cashSessionId]);
 
-    // Realtime invalidation
+    // Fetch on mount and when session changes
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    // Realtime subscription to auto-refresh when payments change
     useEffect(() => {
         if (!cashSessionId) return;
 
-        console.log('[useShiftPayments] Subscribing to payments for session:', cashSessionId);
+        console.log('[useShiftPayments] Setting up realtime for session:', cashSessionId);
         const channel = supabase
             .channel(`rt-shift-payments-${cashSessionId}`)
             .on('postgres_changes', {
@@ -80,20 +83,20 @@ export function useShiftPayments(cashSessionId: string | null) {
                 table: 'payments',
                 filter: `cash_session_id=eq.${cashSessionId}`
             }, (payload) => {
-                console.log('[useShiftPayments] Realtime change detected:', payload.eventType);
-                queryClient.invalidateQueries({ queryKey: ['shift-payments', cashSessionId] });
+                console.log('[useShiftPayments] Realtime event:', payload.eventType);
+                fetchStats();
             })
             .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [cashSessionId, queryClient]);
+    }, [cashSessionId, fetchStats]);
 
     return {
-        stats: query.data || { cash: 0, card: 0, transfer: 0, other: 0, total: 0 },
-        isLoading: query.isLoading,
-        error: query.error,
-        refresh: () => queryClient.invalidateQueries({ queryKey: ['shift-payments', cashSessionId] })
+        stats,
+        isLoading,
+        error,
+        refresh: fetchStats,
     };
 }

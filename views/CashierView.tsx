@@ -77,11 +77,11 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       return orders.filter(o => o.tableId === selectedTableId);
    }, [selectedTableId, orders]);
 
-   const tableTotal = tableOrders.reduce((sum, o) => sum + o.total, 0);
-   const totalPaid = Object.values(splitPayments).reduce((sum, val) => sum + parseFloat(val || '0'), 0);
+   const tableTotal = tableOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+   const totalPaid = Object.values(splitPayments).reduce((sum: number, val: string) => sum + parseFloat(val || '0'), 0);
    const pendingAmount = Math.max(0, tableTotal - totalPaid);
 
-   const { stats: shiftStats, isLoading: loadingStats } = useShiftPayments(currentShift?.id || null);
+   const { stats: shiftStats, isLoading: loadingStats, error: statsError } = useShiftPayments(currentShift?.id || null);
 
    const confirmPayment = async () => {
       if (pendingAmount > 0.01) {
@@ -97,11 +97,11 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       try {
          const orderIds = tableOrders.map(o => o.id);
          const paymentsPayload = Object.entries(splitPayments)
-            .filter(([_, amount]) => parseFloat(amount || '0') > 0)
+            .filter(([_, amount]) => parseFloat((amount as string) || '0') > 0)
             .map(([method, amount]) => ({
                order_id: orderIds[0],
                method: method.toLowerCase(),
-               amount: parseFloat(amount),
+               amount: parseFloat(amount as string),
                cash_session_id: currentShift.id,
                branch_id: branchId,
                restaurant_id: currentUser?.restaurantId,
@@ -247,7 +247,8 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                   <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-4 text-[9px] font-mono text-slate-400">
                      <span>Branch: {branchId || 'NULL'}</span>
                      <span>Session: {currentShift?.id || 'NULL'}</span>
-                     <span>Stats Loading: {loadingStats ? 'YES' : 'NO'}</span>
+                     <span>Loading: {loadingStats ? 'YES' : 'NO'}</span>
+                     {statsError && <span className="text-rose-400">Error: {String(statsError)}</span>}
                   </div>
                </div>
             </div>
