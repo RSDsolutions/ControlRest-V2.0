@@ -20,23 +20,37 @@ export function useShiftPayments(cashSessionId: string | null) {
                 return { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
             }
 
-            console.log('[useShiftPayments] Fetching for session:', cashSessionId);
+            console.log('[useShiftPayments] Fetching via RPC for session:', cashSessionId);
             const { data, error } = await supabase
-                .from('payments')
-                .select('method, amount, cash_session_id')
-                .eq('cash_session_id', cashSessionId);
+                .rpc('get_shift_payment_stats', { p_session_id: cashSessionId });
 
             if (error) {
-                console.error('[useShiftPayments] Error:', error);
-                throw error;
+                console.error('[useShiftPayments] RPC Error:', error);
+                // Fallback to direct query if RPC fails
+                const { data: fallbackData, error: fallbackError } = await supabase
+                    .from('payments')
+                    .select('method, amount')
+                    .eq('cash_session_id', cashSessionId);
+                if (fallbackError) throw fallbackError;
+                const stats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
+                (fallbackData || []).forEach(p => {
+                    const amount = parseFloat(p.amount?.toString() || '0');
+                    const method = (p.method || '').toLowerCase().trim();
+                    if (method === 'cash') stats.cash += amount;
+                    else if (method === 'card') stats.card += amount;
+                    else if (method === 'transfer') stats.transfer += amount;
+                    else stats.other += amount;
+                    stats.total += amount;
+                });
+                return stats;
             }
 
-            console.log(`[useShiftPayments] Found ${data?.length || 0} payments`);
+            console.log('[useShiftPayments] RPC returned rows:', data?.length || 0);
             const stats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
 
-            (data || []).forEach(p => {
-                const amount = parseFloat(p.amount?.toString() || '0');
-                const method = (p.method || '').toLowerCase().trim();
+            (data || []).forEach((row: { method: string; total: string }) => {
+                const amount = parseFloat(row.total?.toString() || '0');
+                const method = (row.method || '').toLowerCase().trim();
 
                 if (method === 'cash') stats.cash += amount;
                 else if (method === 'card') stats.card += amount;
@@ -49,7 +63,8 @@ export function useShiftPayments(cashSessionId: string | null) {
             return stats;
         },
         enabled: !!cashSessionId,
-        staleTime: 5000, // Reduced to 5s to be more reactive if realtime fails
+        staleTime: 0, // Always fetch fresh data when session ID changes
+        gcTime: 0,    // Don't cache old results
     });
 
     // Realtime invalidation
