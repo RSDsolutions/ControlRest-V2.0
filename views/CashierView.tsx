@@ -81,7 +81,11 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    const totalPaid = Object.values(splitPayments).reduce((sum: number, val: string) => sum + parseFloat(val || '0'), 0);
    const pendingAmount = Math.max(0, tableTotal - totalPaid);
 
-   const { stats: shiftStats, isLoading: loadingStats, error: statsError } = useShiftPayments(currentShift?.id || null);
+   const { stats: shiftStats, isLoading: loadingStats, error: statsError } = useShiftPayments(
+      currentShift?.id || null,
+      currentUser?.restaurantId || null
+   );
+
 
    const confirmPayment = async () => {
       if (pendingAmount > 0.01) {

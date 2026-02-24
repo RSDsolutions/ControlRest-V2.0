@@ -11,13 +11,21 @@ export interface ShiftStats {
 
 const EMPTY_STATS: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
 
-export function useShiftPayments(cashSessionId: string | null) {
+/**
+ * Fetches shift payment stats using a SECURITY DEFINER RPC function.
+ * This bypasses RLS auth.uid() issues by accepting explicit IDs as parameters.
+ * Security is enforced inside the function: the session must belong to the restaurant.
+ */
+export function useShiftPayments(
+    cashSessionId: string | null,
+    restaurantId: string | null
+) {
     const [stats, setStats] = useState<ShiftStats>(EMPTY_STATS);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchStats = useCallback(async () => {
-        if (!cashSessionId) {
+        if (!cashSessionId || !restaurantId) {
             setStats(EMPTY_STATS);
             return;
         }
@@ -26,26 +34,27 @@ export function useShiftPayments(cashSessionId: string | null) {
         setError(null);
 
         try {
-            console.log('[useShiftPayments] Fetching payments for session:', cashSessionId);
+            console.log('[useShiftPayments] Fetching via RPC for session:', cashSessionId, 'restaurant:', restaurantId);
 
-            const { data, error: queryError } = await supabase
-                .from('payments')
-                .select('method, amount')
-                .eq('cash_session_id', cashSessionId);
+            const { data, error: rpcError } = await supabase
+                .rpc('get_session_payment_stats', {
+                    p_session_id: cashSessionId,
+                    p_restaurant_id: restaurantId
+                });
 
-            if (queryError) {
-                console.error('[useShiftPayments] Query error:', queryError);
-                setError(queryError.message);
+            if (rpcError) {
+                console.error('[useShiftPayments] RPC error:', rpcError);
+                setError(rpcError.message);
                 return;
             }
 
-            console.log('[useShiftPayments] Raw data from DB:', data);
+            console.log('[useShiftPayments] RPC returned rows:', data?.length || 0, data);
 
             const newStats: ShiftStats = { cash: 0, card: 0, transfer: 0, other: 0, total: 0 };
 
-            (data || []).forEach(p => {
-                const amount = parseFloat(p.amount?.toString() || '0');
-                const method = (p.method || '').toLowerCase().trim();
+            (data || []).forEach((row: { method: string; total: string | number }) => {
+                const amount = parseFloat(row.total?.toString() || '0');
+                const method = (row.method || '').toLowerCase().trim();
 
                 if (method === 'cash') newStats.cash += amount;
                 else if (method === 'card') newStats.card += amount;
@@ -63,7 +72,7 @@ export function useShiftPayments(cashSessionId: string | null) {
         } finally {
             setIsLoading(false);
         }
-    }, [cashSessionId]);
+    }, [cashSessionId, restaurantId]);
 
     // Fetch on mount and when session changes
     useEffect(() => {
@@ -74,7 +83,6 @@ export function useShiftPayments(cashSessionId: string | null) {
     useEffect(() => {
         if (!cashSessionId) return;
 
-        console.log('[useShiftPayments] Setting up realtime for session:', cashSessionId);
         const channel = supabase
             .channel(`rt-shift-payments-${cashSessionId}`)
             .on('postgres_changes', {
