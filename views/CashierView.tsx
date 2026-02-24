@@ -262,39 +262,39 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    console.log('[CashierView] Render - Orders:', orders.length);
 
    return (
-      <div className="p-8 space-y-8 animate-fadeIn">
-         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Caja y Facturación</h1>
+      <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fadeIn pb-24 xl:pb-0">
+         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div className="space-y-1">
+               <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Caja y Facturación</h1>
                <div className="flex items-center gap-2 mt-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <p className="text-slate-500 text-sm font-bold">Turno Abierto • {new Date(currentShift!.openedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-slate-500 text-xs sm:text-sm font-bold">Turno Abierto • {new Date(currentShift!.openedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                </div>
             </div>
             <button
                onClick={() => setShowClosure(true)}
-               className="px-6 py-3 bg-white border-2 border-primary text-primary rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-primary hover:text-white transition-all shadow-md active:scale-95"
+               className="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-white border-2 border-primary text-primary rounded-2xl font-black text-[12px] sm:text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all shadow-md active:scale-95"
             >
-               <span className="material-icons-round">lock_clock</span> Cerrar Turno
+               <span className="material-icons-round text-base sm:text-lg">lock_clock</span> Cerrar Turno
             </button>
          </header>
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             {/* Listado de Mesas para Cobro */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="xl:col-span-2 space-y-6">
                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
                      <h3 className="font-bold text-lg text-primary">Cuentas por Cobrar</h3>
                      <span className="text-xs font-bold text-slate-400 uppercase">{activeBills.length} Mesas en servicio</span>
                   </div>
-                  <div className="overflow-x-auto">
-                     <table className="w-full text-left">
+                  <div className="overflow-x-auto custom-scrollbar">
+                     <table className="w-full text-left min-w-[700px]">
                         <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                            <tr>
-                              <th className="px-6 py-4">Mesa</th>
-                              <th className="px-6 py-4">Estado Pedido</th>
-                              <th className="px-6 py-4 text-right">Total Pedido</th>
-                              <th className="px-6 py-4 text-right">Acción</th>
+                              <th className="px-6 py-5">Mesa</th>
+                              <th className="px-6 py-5">Estado Pedido</th>
+                              <th className="px-6 py-5 text-right">Total Pedido</th>
+                              <th className="px-6 py-5 text-right">Acción</th>
                            </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -308,25 +308,25 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold shadow-sm border-2 ${table.status === 'billing' ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-primary/5 border-primary/10 text-primary'}`}>
                                              {table.label}
                                           </div>
-                                          <p className="font-bold text-slate-900 text-sm">{tOrders.length} comanda(s)</p>
+                                          <p className="font-bold text-slate-900 text-xs sm:text-sm">{tOrders.length} comanda(s)</p>
                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border-2 ${table.status === 'billing' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] sm:text-[10px] font-black border-2 ${table.status === 'billing' ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                           {table.status === 'billing' ? 'SOLICITÓ CUENTA' : 'EN SERVICIO'}
                                        </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-slate-900 font-mono text-lg">${tTotal.toFixed(2)}</td>
+                                    <td className="px-6 py-4 text-right font-black text-slate-900 font-mono text-base sm:text-lg">${tTotal.toFixed(2)}</td>
                                     <td className="px-6 py-4 text-right">
                                        {tOrders.every(o => o.status === 'delivered' || o.status === 'paid') ? (
                                           <button
                                              onClick={() => handleStartPayment(table)}
-                                             className="px-5 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary-light transition-all shadow-md group-hover:scale-105 active:scale-95"
+                                             className="px-5 py-2.5 bg-primary text-white rounded-xl text-[11px] sm:text-xs font-bold hover:bg-primary-light transition-all shadow-md group-hover:scale-105 active:scale-95 whitespace-nowrap"
                                           >
                                              Cobrar
                                           </button>
                                        ) : (
-                                          <span className="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-bold uppercase tracking-wide cursor-not-allowed" title="Hay pedidos pendientes de entrega">
+                                          <span className="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[9px] sm:text-[10px] font-bold uppercase tracking-wide cursor-not-allowed whitespace-nowrap" title="Hay pedidos pendientes de entrega">
                                              En Servicio
                                           </span>
                                        )}
@@ -344,28 +344,28 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
                   <h3 className="font-bold text-lg text-primary mb-6">Resumen del Turno Actual</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
                      <div className="bg-emerald-50 border-2 border-emerald-100 rounded-3xl p-5 shadow-sm">
-                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-2">Ventas Efectivo</p>
-                        <p className="text-3xl font-black text-emerald-700 font-mono">${dailyCashSales.toFixed(2)}</p>
+                        <p className="text-[9px] sm:text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1.5 sm:mb-2">Ventas Efectivo</p>
+                        <p className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">${dailyCashSales.toFixed(2)}</p>
                      </div>
                      <div className="bg-blue-50 border-2 border-blue-100 rounded-3xl p-5 shadow-sm">
-                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">Ventas Tarjeta</p>
-                        <p className="text-3xl font-black text-blue-700 font-mono">${dailyCardSales.toFixed(2)}</p>
+                        <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1.5 sm:mb-2">Ventas Tarjeta</p>
+                        <p className="text-2xl sm:text-3xl font-black text-blue-700 font-mono">${dailyCardSales.toFixed(2)}</p>
                      </div>
-                     <div className="bg-primary text-white rounded-3xl p-5 shadow-lg flex flex-col justify-between">
-                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Total Ventas</p>
-                        <p className="text-3xl font-black font-mono">${totalSales.toFixed(2)}</p>
+                     <div className="bg-primary text-white rounded-3xl p-5 shadow-lg flex flex-col justify-between sm:col-span-2 md:col-span-1">
+                        <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-widest">Total Ventas</p>
+                        <p className="text-2xl sm:text-3xl font-black font-mono">${totalSales.toFixed(2)}</p>
                      </div>
                   </div>
                </div>
             </div>
 
             {/* Sidebar de Pago */}
-            <aside className="bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-fit sticky top-8">
-               <header className="bg-primary p-8 text-white text-center">
-                  <h3 className="text-2xl font-black">Facturación</h3>
-                  <p className="text-xs text-white/60 mt-2 font-bold uppercase tracking-widest">{processingTableId ? `Mesa ${processingTableId}` : 'ESPERANDO SELECCIÓN'}</p>
+            <aside className="bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden flex flex-col h-fit xl:sticky xl:top-8 order-first xl:order-last">
+               <header className="bg-primary p-6 sm:p-8 text-white text-center">
+                  <h3 className="text-xl sm:text-2xl font-black">Facturación</h3>
+                  <p className="text-[10px] sm:text-xs text-white/60 mt-1 sm:mt-2 font-bold uppercase tracking-widest">{processingTableId ? `Mesa ${processingTableId}` : 'ESPERANDO SELECCIÓN'}</p>
                </header>
 
                <div className="p-8 space-y-8">
@@ -374,22 +374,24 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         <div className="space-y-4 pb-6 border-b-2 border-dashed border-slate-100">
                            <div className="space-y-2">
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Detalle del Pedido</p>
-                              {aggregateItems.map((item, idx) => {
-                                 const plate = plates.find(p => p.id === item.plateId);
-                                 return (
-                                    <div key={idx} className="flex justify-between items-start text-xs">
-                                       <div className="flex-1">
-                                          <p className="font-bold text-slate-700">{item.qty}x {plate?.name || 'Producto'}</p>
-                                          {item.notes && <p className="text-[10px] text-amber-600">📝 {item.notes}</p>}
+                              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                 {aggregateItems.map((item, idx) => {
+                                    const plate = plates.find(p => p.id === item.plateId);
+                                    return (
+                                       <div key={idx} className="flex justify-between items-start text-xs">
+                                          <div className="flex-1">
+                                             <p className="font-bold text-slate-700">{item.qty}x {plate?.name || 'Producto'}</p>
+                                             {item.notes && <p className="text-[10px] text-amber-600">📝 {item.notes}</p>}
+                                          </div>
+                                          <span className="font-bold text-slate-800 ml-2">${((plate?.sellingPrice || 0) * item.qty).toFixed(2)}</span>
                                        </div>
-                                       <span className="font-bold text-slate-800">${((plate?.sellingPrice || 0) * item.qty).toFixed(2)}</span>
-                                    </div>
-                                 );
-                              })}
+                                    );
+                                 })}
+                              </div>
                            </div>
                            <div className="flex justify-between items-end pt-4 border-t border-slate-50">
                               <span className="font-black text-slate-900 text-lg">TOTAL COBRO</span>
-                              <span className="text-4xl font-black text-primary font-mono">${aggregateTotal.toFixed(2)}</span>
+                              <span className="text-3xl sm:text-4xl font-black text-primary font-mono">${aggregateTotal.toFixed(2)}</span>
                            </div>
                         </div>
 
@@ -419,72 +421,73 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          {showClosure && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowClosure(false)}></div>
-               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
-                  <header className="px-6 py-6 md:px-8 md:py-6 text-center bg-slate-50/50 shrink-0 border-b border-slate-100">
-                     <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-inner"><span className="material-icons-round text-2xl md:text-3xl">fact_check</span></div>
-                     <h3 className="text-xl md:text-2xl font-black text-primary">Cierre de Caja</h3>
-                     <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase mt-1 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
+               <div className="relative bg-white w-full sm:max-w-lg overflow-hidden animate-scaleUp h-full sm:h-auto sm:max-h-[90vh] flex flex-col sm:rounded-[40px]">
+                  <header className="px-6 py-8 md:px-8 md:py-10 text-center bg-slate-50/50 shrink-0 border-b border-slate-100">
+                     <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-4xl">fact_check</span></div>
+                     <h3 className="text-2xl md:text-3xl font-black text-primary">Cierre de Caja</h3>
+                     <p className="text-slate-400 font-bold text-[10px] md:text-xs uppercase mt-2 tracking-widest">Confirme el efectivo en caja para cerrar.</p>
                   </header>
-                  <div className="px-6 md:px-8 py-4 md:py-6 space-y-4 overflow-y-auto flex-1">
-                     <div className="grid grid-cols-2 gap-4">
+                  <div className="px-6 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8 overflow-y-auto flex-1">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                         <div>
-                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_efectivo</label>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Efectivo</label>
                            <div className="relative">
                               <input
-                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-slate-800 text-lg outline-none"
                                  value={countedCash} onChange={e => setCountedCash(e.target.value)}
                               />
-                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                              <span className="absolute left-3 top-4 text-slate-400">$</span>
                            </div>
                         </div>
                         <div>
-                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_tarjeta</label>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tarjeta</label>
                            <div className="relative">
                               <input
-                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-slate-800 text-lg outline-none"
                                  value={countedCard} onChange={e => setCountedCard(e.target.value)}
                               />
-                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                              <span className="absolute left-3 top-4 text-slate-400">$</span>
                            </div>
                         </div>
                         <div>
-                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_transferencia</label>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Transferencia</label>
                            <div className="relative">
                               <input
-                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-slate-800 text-lg outline-none"
                                  value={countedTransfer} onChange={e => setCountedTransfer(e.target.value)}
                               />
-                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                              <span className="absolute left-3 top-4 text-slate-400">$</span>
                            </div>
                         </div>
                         <div>
-                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">counted_cash_otro</label>
+                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Otros</label>
                            <div className="relative">
                               <input
-                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-800 outline-none"
+                                 type="number" min="0" step="0.01" className="w-full pl-8 pr-4 py-4 rounded-xl border border-slate-200 font-bold text-slate-800 text-lg outline-none"
                                  value={countedOther} onChange={e => setCountedOther(e.target.value)}
                               />
-                              <span className="absolute left-3 top-3.5 text-slate-400">$</span>
+                              <span className="absolute left-3 top-4 text-slate-400">$</span>
                            </div>
                         </div>
                      </div>
                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">closing_comment</label>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Comentarios de Cierre</label>
                         <textarea
-                           className="w-full px-4 py-3 rounded-xl border border-slate-200 font-medium text-slate-700 outline-none"
-                           rows={2}
+                           className="w-full px-4 py-4 rounded-xl border border-slate-200 font-medium text-slate-700 outline-none"
+                           rows={3}
+                           placeholder="Notas adicionales..."
                            value={closingComment} onChange={e => setClosingComment(e.target.value)}
                         />
                      </div>
                   </div>
-                  <footer className="px-6 py-4 md:px-8 md:py-6 bg-slate-50/80 border-t flex flex-col gap-3 shrink-0">
+                  <footer className="px-6 py-6 md:px-8 md:py-8 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
                      <button
                         onClick={handleCloseShiftCalculation}
-                        className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-lg hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
+                        className="w-full py-5 bg-primary text-white rounded-[24px] font-black text-xl hover:bg-primary-light transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95"
                      >
-                        <span className="material-icons-round">lock</span> → Cerrar Caja
+                        <span className="material-icons-round">lock</span> Cerrar Caja
                      </button>
-                     <button onClick={() => setShowClosure(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">Cancelar</button>
+                     <button onClick={() => setShowClosure(false)} className="py-2 text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Cancelar</button>
                   </footer>
                </div>
             </div>
@@ -494,13 +497,13 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          {showSplitPayment && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                <div className="absolute inset-0 bg-primary/90 backdrop-blur-md" onClick={() => setShowSplitPayment(false)}></div>
-               <div className="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleUp max-h-[90vh] flex flex-col">
-                  <header className="px-6 py-6 md:px-8 md:py-6 text-center bg-accent/90 text-white shrink-0 border-b border-white/10">
-                     <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 shadow-inner"><span className="material-icons-round text-2xl md:text-3xl">payments</span></div>
-                     <h3 className="text-xl md:text-2xl font-black">Pago Dividido</h3>
-                     <p className="text-white/70 font-bold text-[10px] md:text-xs uppercase mt-1 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
+               <div className="relative bg-white w-full sm:max-w-lg overflow-hidden animate-scaleUp h-full sm:h-auto sm:max-h-[90vh] flex flex-col sm:rounded-[40px]">
+                  <header className="px-6 py-8 md:px-8 md:py-10 text-center bg-accent/90 text-white shrink-0 border-b border-white/10">
+                     <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner"><span className="material-icons-round text-3xl md:text-4xl">payments</span></div>
+                     <h3 className="text-2xl md:text-3xl font-black">Pago Dividido</h3>
+                     <p className="text-white/70 font-bold text-[10px] md:text-xs uppercase mt-2 tracking-widest">Mesa {processingTableId} • Total: ${aggregateTotal.toFixed(2)}</p>
                   </header>
-                  <div className="px-6 md:px-8 py-4 md:py-6 space-y-3 md:space-y-4 overflow-y-auto flex-1">
+                  <div className="px-6 md:px-8 py-6 md:py-8 space-y-6 md:space-y-8 overflow-y-auto flex-1">
                      {Object.entries(splitPayments).map(([method, amount]) => (
                         <div key={method}>
                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
@@ -520,22 +523,22 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                            </div>
                         </div>
                      ))}
-                     <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+                     <div className="flex justify-between items-center pt-6 border-t border-slate-100">
                         <span className="font-black text-slate-900 text-lg">Monto Pendiente</span>
-                        <span className={`text-3xl font-black font-mono ${aggregateTotal - (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) > 0.01 ? 'text-red-500' : 'text-emerald-500'}`}>
+                        <span className={`text-4xl font-black font-mono ${aggregateTotal - (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) > 0.01 ? 'text-red-500' : 'text-emerald-500'}`}>
                            ${(aggregateTotal - (Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0)).toFixed(2)}
                         </span>
                      </div>
                   </div>
-                  <footer className="px-6 py-4 md:px-8 md:py-6 bg-slate-50/80 border-t flex flex-col gap-3 shrink-0">
+                  <footer className="px-6 py-6 md:px-8 md:py-8 bg-slate-50/80 border-t flex flex-col gap-4 shrink-0">
                      <button
                         onClick={confirmPayment}
                         disabled={Math.abs((Object.values(splitPayments) as string[]).reduce((a, b) => a + parseFloat(b || '0'), 0) - aggregateTotal) > 0.01}
-                        className="w-full py-5 bg-accent text-white rounded-[24px] font-black text-lg hover:bg-accent-hover transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-5 bg-accent text-white rounded-[24px] font-black text-xl hover:bg-accent-hover transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                      >
                         <span className="material-icons-round">check_circle</span> Confirmar Pago
                      </button>
-                     <button onClick={() => setShowSplitPayment(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest">Cancelar</button>
+                     <button onClick={() => setShowSplitPayment(false)} className="py-2 text-sm font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Cancelar</button>
                   </footer>
                </div>
             </div>

@@ -23,11 +23,11 @@ const LandingHeader: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleNav('/')}>
-                        <div className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded-lg text-white">
-                            <span className="material-symbols-outlined text-[20px]">dataset</span>
+                    <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => handleNav('/')}>
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                            <span className="material-symbols-outlined text-[20px] sm:text-[22px]">dataset</span>
                         </div>
-                        <span className="text-white text-lg font-bold tracking-tight">ControlRest V2.0</span>
+                        <span className="text-white text-base sm:text-lg font-bold tracking-tight">ControlRest V2.0</span>
                     </div>
 
                     {/* Desktop Nav */}
@@ -78,16 +78,16 @@ const LandingHeader: React.FC = () => {
                                 {link.label}
                             </button>
                         ))}
-                        <div className="border-t border-slate-800 mt-3 pt-3 flex flex-col gap-2">
+                        <div className="border-t border-slate-800 mt-3 pt-5 pb-2 flex flex-col gap-3">
                             <button
                                 onClick={() => handleNav('/login')}
-                                className="text-slate-300 hover:text-white text-sm font-medium text-left px-4 py-3 rounded-lg hover:bg-slate-800/50 transition-colors"
+                                className="text-slate-300 hover:text-white text-sm font-medium text-center px-4 py-4 rounded-xl border border-slate-800 hover:bg-slate-800/50 transition-colors"
                             >
                                 Iniciar Sesión
                             </button>
                             <button
                                 onClick={() => handleNav('/solicitar-demo')}
-                                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-4 px-4 rounded-xl transition-colors shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
                             >
                                 Agendar Diagnóstico
                                 <span className="material-symbols-outlined text-sm">arrow_forward</span>

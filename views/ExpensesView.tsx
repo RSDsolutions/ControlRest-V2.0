@@ -149,39 +149,39 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
 
     return (
         <>
-            <div className="min-h-screen bg-slate-50/50 p-6 lg:p-10 space-y-10 animate-fade-in font-sans">
+            <div className="min-h-screen bg-slate-50/50 p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-10 animate-fade-in font-sans pb-24 xl:pb-0">
                 {/* Header Premium */}
                 <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-                            <span className="material-icons-round text-white text-3xl">account_balance</span>
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+                            <span className="material-icons-round text-white text-2xl sm:text-3xl">account_balance</span>
                         </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Gastos Operativos</h1>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5">RESTOGESTIÓN V2.0 • Dashboard de Rentabilidad</p>
+                        <div className="min-w-0">
+                            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">Gastos Operativos</h1>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-0.5 truncate">Dashboard de Rentabilidad</p>
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-                        <div className="bg-slate-100 p-1 rounded-full flex items-center">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                        <div className="bg-slate-100 p-1 rounded-full flex items-center self-start">
                             <button
                                 onClick={() => setActiveTab('dashboard')}
-                                className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+                                className={`px-4 sm:px-6 py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'dashboard' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
                             >
                                 Dashboard
                             </button>
                             <button
                                 onClick={() => setActiveTab('list')}
-                                className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'list' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
+                                className={`px-4 sm:px-6 py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'list' ? 'bg-primary text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}
                             >
                                 Listado
                             </button>
                         </div>
 
-                        <div className="relative group">
+                        <div className="relative group flex items-center">
                             <input
                                 type="month"
-                                className="bg-white border border-slate-200 rounded-2xl px-5 py-2.5 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer hover:border-slate-300"
+                                className="w-full sm:w-auto bg-white border border-slate-200 rounded-2xl px-5 py-2.5 text-xs font-bold text-slate-700 outline-none cursor-pointer"
                                 value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`}
                                 onChange={e => {
                                     const [y, m] = e.target.value.split('-');
@@ -192,21 +192,21 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
 
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="bg-primary text-white hover:bg-primary-dark transition-all px-8 py-3 rounded-2xl shadow-xl shadow-primary/20 font-black text-[11px] uppercase tracking-widest flex items-center gap-2"
+                            className="bg-primary text-white hover:bg-primary-dark transition-all px-6 sm:px-8 py-3 rounded-2xl shadow-xl shadow-primary/20 font-black text-[10px] sm:text-[11px] uppercase tracking-widest flex items-center justify-center gap-2"
                         >
                             <span className="material-icons-round text-base">add</span> Registrar Gasto
                         </button>
 
-                        <button className="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-primary transition-all shadow-sm">
+                        <button className="hidden lg:flex w-12 h-12 bg-white border border-slate-200 rounded-2xl items-center justify-center text-slate-400 hover:text-primary transition-all shadow-sm">
                             <span className="material-icons-round text-xl">dark_mode</span>
                         </button>
                     </div>
                 </header>
 
                 {activeTab === 'dashboard' ? (
-                    <div className="space-y-10">
+                    <div className="space-y-6 sm:space-y-10">
                         {/* KPI High Fidelity */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             <FinancialKPI
                                 label="Total Gastos Op."
                                 value={totalOpExpenses}
@@ -244,8 +244,8 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                             {/* Left Column: Distribution */}
-                            <div className="lg:col-span-4 bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden">
-                                <div className="flex justify-between items-center mb-10">
+                            <div className="lg:col-span-4 bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden">
+                                <div className="flex justify-between items-center mb-6 sm:mb-10">
                                     <h3 className="text-lg font-black text-slate-900 tracking-tight">Distribución de Gastos</h3>
                                     <button className="p-2 hover:bg-slate-50 rounded-full transition-colors">
                                         <span className="material-icons-round text-primary">more_vert</span>
@@ -290,10 +290,10 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                             </div>
 
                             {/* Right Column: Comparison & Analysis */}
-                            <div className="lg:col-span-8 bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col h-full">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Rentabilidad vs Gastos</h3>
-                                    <div className="flex gap-6">
+                            <div className="lg:col-span-8 bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col h-full overflow-hidden">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                                    <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Rentabilidad vs Gastos</h3>
+                                    <div className="flex flex-wrap gap-4">
                                         <LegendItem color="bg-[#2563eb]" label="Ventas" />
                                         <LegendItem color="bg-[#f97316]" label="COGS" />
                                         <LegendItem color="bg-[#f43f5e]" label="Gastos" />
@@ -345,22 +345,22 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl overflow-hidden animate-fade-in">
-                        <table className="w-full text-left">
+                    <div className="bg-white rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl overflow-x-auto custom-scrollbar animate-fade-in">
+                        <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
                                 <tr>
-                                    <th className="px-10 py-6">Fecha</th>
+                                    <th className="px-6 sm:px-10 py-4 sm:py-6">Fecha</th>
                                     {branchId === 'GLOBAL' && <th>Sucursal</th>}
                                     <th>Categoría</th>
                                     <th>Descripción</th>
                                     <th>Método de Pago</th>
-                                    <th className="px-10 py-6 text-right">Monto</th>
+                                    <th className="px-6 sm:px-10 py-4 sm:py-6 text-right">Monto</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {filteredExpenses.map(e => (
                                     <tr key={e.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-10 py-5 text-xs font-bold text-slate-600">{new Date(e.date).toLocaleDateString()}</td>
+                                        <td className="px-6 sm:px-10 py-4 sm:py-5 text-xs font-bold text-slate-600">{new Date(e.date).toLocaleDateString()}</td>
                                         {branchId === 'GLOBAL' && (
                                             <td>
                                                 <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
@@ -379,7 +379,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses = [], orders = [],
                                                 <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">{e.paymentMethod}</span>
                                             </div>
                                         </td>
-                                        <td className="px-10 py-5 text-right font-black text-slate-900 font-heading text-lg">${Number(e.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                                        <td className="px-6 sm:px-10 py-4 sm:py-5 text-right font-black text-slate-900 font-heading text-base sm:text-lg">${Number(e.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                                     </tr>
                                 ))}
                             </tbody>

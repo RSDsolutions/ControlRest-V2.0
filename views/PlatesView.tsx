@@ -417,27 +417,27 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
 
   if (isCreating) {
     return (
-      <div className="p-8 max-w-7xl mx-auto space-y-10 animate-fade-in font-sans pb-32">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+      <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-10 animate-fade-in font-sans pb-32">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
+          <div className="flex-1">
+            <h1 className="text-base sm:text-lg font-semibold text-slate-900 flex items-center gap-2">
               <span className="material-icons-round text-[#136dec] text-xl">restaurant_menu</span>
               {isEditing ? 'Gestión de Receta Maestra' : 'Ingeniería de Producto'}
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">Define el ADN de tu plato: costeo técnico, rentabilidad proyectada y visualización.</p>
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Define el ADN de tu plato: costeo técnico, rentabilidad y visualización.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3 w-full lg:w-auto">
             <button
               onClick={() => { setIsCreating(false); setIsEditing(false); setEditingId(null); }}
-              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
+              className="flex-1 lg:flex-none btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-4 sm:px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold text-xs sm:text-sm"
             >
               Cancelar
             </button>
             <button
               onClick={handleSave}
-              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
+              className="flex-1 lg:flex-none btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-4 sm:px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] text-xs sm:text-sm"
             >
-              {isEditing ? 'Guardar Cambios' : 'Publicar al Menú'}
+              {isEditing ? 'Guardar' : 'Publicar'}
             </button>
           </div>
         </header>
@@ -597,20 +597,20 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
 
   return (
     <>
-      <div className="p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
+      <div className="p-4 sm:p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans pb-24 xl:pb-0">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
           <div>
             <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
               <span className="material-icons-round text-[#136dec] text-xl">menu_book</span>
               Ingeniería de Menú
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">Control de rentabilidad unitaria, auditoría de recetas y gestión de carta inteligente.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Control de rentabilidad, auditoría de recetas y gestión de carta.</p>
           </div>
           <button
             onClick={() => setIsCreating(true)}
-            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
+            className="w-full sm:w-auto btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-6 sm:px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center justify-center gap-2 text-xs sm:text-sm"
           >
-            <span className="material-icons-round text-[18px]">add</span> Crear Nuevo Plato
+            <span className="material-icons-round text-[18px]">add</span> Nuevo Plato
           </button>
         </header>
 
@@ -647,20 +647,20 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                 <div className="p-6 space-y-6">
                   <h3 className="font-heading font-black text-brand-black text-xl tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{plate.name}</h3>
 
-                  <div className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="flex justify-between items-center bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100">
                     <div className="space-y-1">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Rentabilidad</p>
-                      <p className={`text-2xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p>
+                      <p className={`text-xl sm:text-2xl font-black ${margin > 70 ? 'text-emerald-500' : 'text-amber-500'}`}>{margin.toFixed(0)}%</p>
                     </div>
                     <div className="text-right space-y-1">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Precio Carta</p>
-                      <p className="text-2xl font-black text-brand-black">${plate.sellingPrice.toLocaleString('en-US', { minimumFractionDigits: 0 })}</p>
+                      <p className="text-xl sm:text-2xl font-black text-brand-black">${plate.sellingPrice.toLocaleString('en-US', { minimumFractionDigits: 0 })}</p>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center border-t border-slate-50 pt-4">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo Técnico: <span className="text-brand-black font-bold ml-1">${cost.toFixed(2)}</span></p>
-                    <button onClick={() => setSelectedPlate(plate)} className="btn btn-ghost px-3 py-2 text-[10px] group/btn flex items-center gap-1 uppercase tracking-widest">
+                    <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Costo: <span className="text-brand-black font-bold ml-1">${cost.toFixed(2)}</span></p>
+                    <button onClick={() => setSelectedPlate(plate)} className="btn btn-ghost px-2 sm:px-3 py-2 text-[9px] sm:text-[10px] group/btn flex items-center gap-1 uppercase tracking-widest">
                       Gestionar <span className="material-icons-round text-base group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                     </button>
                   </div>
@@ -672,8 +672,8 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
       </div>
 
       {selectedPlate && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
-          <div className="relative bg-white w-full max-w-5xl p-0 flex flex-col md:flex-row h-[85vh] overflow-hidden rounded-2xl border border-slate-200 shadow-2xl animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
+          <div className="relative bg-white w-full sm:max-w-5xl p-0 flex flex-col md:flex-row h-full sm:h-[85vh] overflow-hidden sm:rounded-2xl border border-slate-200 shadow-2xl animate-fade-in">
 
             {/* Left Column: Visual & Commercial Stats */}
             <div className="w-full md:w-[380px] bg-slate-50 border-r border-slate-100 flex flex-col shadow-inner">
@@ -734,13 +734,13 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                   <h3 className="font-heading font-black text-brand-black uppercase tracking-widest text-[11px]">Desglose Técnico de Receta</h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-tight">Vigencia Ficha: 2024.1</p>
                 </div>
-                <button onClick={() => setSelectedPlate(null)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100">
+                <button onClick={() => setSelectedPlate(null)} className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100 shadow-sm sm:shadow-none">
                   <span className="material-icons-round text-xl">close</span>
                 </button>
               </header>
 
-              <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
-                <table className="w-full text-left">
+              <div className="flex-1 overflow-x-auto overflow-y-auto p-0 custom-scrollbar pb-24 sm:pb-0">
+                <table className="w-full text-left min-w-[500px]">
                   <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest sticky top-0 z-10 border-b border-slate-100">
                     <tr>
                       <th className="px-8 py-5">Insumo</th>
@@ -776,19 +776,19 @@ const PlatesView: React.FC<PlatesViewProps> = ({ plates, ingredients, setPlates,
                 </table>
               </div>
 
-              <footer className="p-8 border-t border-slate-100 bg-slate-50 flex justify-between items-center shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+              <footer className="fixed bottom-0 left-0 right-0 sm:relative p-6 sm:p-8 border-t border-slate-100 bg-white sm:bg-slate-50 flex flex-row justify-between items-center shadow-2xl sm:shadow-none z-30">
                 <button
-                  className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold flex items-center gap-2"
+                  className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all px-4 sm:px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold flex items-center gap-2 text-[10px] sm:text-sm"
                   onClick={() => handleEditRequest(selectedPlate)}
                 >
-                  <span className="material-icons-round text-base">edit</span> Editar Receta
+                  <span className="material-icons-round text-base">edit</span> <span className="hidden sm:inline">Editar Receta</span><span className="sm:hidden">Editar</span>
                 </button>
                 {!isPlanOperativo && (
                   <button
-                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2"
+                    className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-4 sm:px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2 text-[10px] sm:text-sm"
                     onClick={() => generatePDF(selectedPlate)}
                   >
-                    <span className="material-icons-round text-base">picture_as_pdf</span> Exportar Ficha Técnica
+                    <span className="material-icons-round text-base">picture_as_pdf</span> <span className="hidden sm:inline">Exportar Ficha</span><span className="sm:hidden">Exportar</span>
                   </button>
                 )}
               </footer>

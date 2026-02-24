@@ -262,22 +262,22 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
 
 
     return (
-        <div className="flex h-screen bg-slate-100 overflow-hidden font-sans">
+        <div className="flex h-screen bg-slate-100 overflow-hidden font-sans pb-16 sm:pb-0">
             {/* MAIN CONTENT AREA */}
             <main className="flex-1 flex flex-col h-full overflow-hidden relative">
                 {/* HEADER */}
-                <header className="bg-white h-20 border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-20 shadow-sm">
+                <header className="bg-white h-auto sm:h-20 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-8 py-4 sm:py-0 shrink-0 z-20 shadow-sm gap-4">
                     <div>
-                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">
-                            {filter === 'history' ? 'Historial de Pedidos' : 'Pedidos en Curso'}
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+                            {filter === 'history' ? 'Historial' : 'Pedidos'}
                         </h2>
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="hidden sm:block text-xs text-slate-500 font-medium">
                             {filter === 'history' ? 'Registro de comandas entregadas' : 'Gestiona la preparación de alimentos en tiempo real'}
                         </p>
                     </div>
 
                     {filter !== 'history' && (
-                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto no-scrollbar">
                             {['all', 'pending', 'preparing', 'ready'].map((f) => {
                                 const count = kitchenOrders.filter(o =>
                                     f === 'all' ? true : o.kitchenStatus === f
@@ -309,7 +309,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                 </header>
 
                 {/* CONTENT */}
-                <div className="flex-1 overflow-x-auto overflow-y-auto p-6 bg-slate-50/50">
+                <div className="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-6 bg-slate-50/50">
                     {filter === 'history' ? (
                         // HISTORY VIEW
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fadeIn">
@@ -389,10 +389,10 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                         </div>
                     ) : (
                         // ACTIVE KANBAN VIEW
-                        <div className="flex gap-6 h-full min-w-max pb-4">
+                        <div className="flex gap-4 sm:gap-6 h-full pb-4 px-2 sm:px-0">
                             {/* PENDING COLUMN */}
                             {(filter === 'all' || filter === 'pending') && (
-                                <div className="w-80 flex flex-col h-full">
+                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-amber-500"></span> PENDIENTES
@@ -409,7 +409,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
 
                             {/* PREPARING COLUMN */}
                             {(filter === 'all' || filter === 'preparing') && (
-                                <div className="w-80 flex flex-col h-full">
+                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span> EN PREPARACIÓN
@@ -426,7 +426,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
 
                             {/* READY COLUMN */}
                             {(filter === 'all' || filter === 'ready') && (
-                                <div className="w-80 flex flex-col h-full">
+                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-emerald-500"></span> LISTOS

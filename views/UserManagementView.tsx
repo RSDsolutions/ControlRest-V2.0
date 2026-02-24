@@ -222,21 +222,21 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
 
     return (
         <>
-            <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans">
-                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans pb-24 lg:pb-8">
+                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
                             <span className="material-icons-round text-primary text-2xl">group</span>
                         </div>
                         <div>
                             <h1 className="text-xl font-bold text-slate-900 tracking-tight">Gestión de Personal</h1>
-                            <p className="text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 • Administra meseros, cajeros y permisos de acceso por sucursal.</p>
+                            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 • Administra meseros, cajeros y permisos de acceso por sucursal.</p>
                         </div>
                     </div>
                     {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') && !isPlan3 && (
                         <button
                             onClick={() => openModal()}
-                            className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center gap-2 text-sm"
+                            className="w-full lg:w-auto btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all px-8 py-4 lg:py-3 rounded-2xl lg:rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] flex items-center justify-center gap-2 text-sm"
                         >
                             <span className="material-icons-round text-[20px]">person_add</span> Nuevo Usuario
                         </button>
@@ -244,22 +244,22 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                 </header>
 
                 {/* Filter Bar */}
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-4 items-center">
-                    <div className="relative flex-1 min-w-[300px]">
+                <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col lg:flex-row gap-4 lg:items-center">
+                    <div className="relative flex-1">
                         <span className="material-icons-round absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
                         <input
                             type="text"
                             placeholder="Buscar por nombre, email o rol..."
-                            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-600 font-medium"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-600 font-medium"
                             value={searchQuery}
                             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         {isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS') && (
                             <select
-                                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                                className="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                                 value={branchFilter}
                                 onChange={(e) => { setBranchFilter(e.target.value); setCurrentPage(1); }}
                             >
@@ -271,7 +271,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                         )}
 
                         <select
-                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                            className="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                             value={roleFilter}
                             onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(1); }}
                         >
@@ -281,118 +281,122 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
                             <option value={UserRole.KITCHEN}>Cocina</option>
                         </select>
 
-                        <button className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-100 transition-all">
+                        <button className="hidden sm:flex p-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-500 hover:bg-slate-100 transition-all items-center justify-center">
                             <span className="material-icons-round text-lg">tune</span>
                         </button>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personal</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rol</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sucursal</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {paginatedUsers.map(u => (
-                                <tr key={u.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-primary font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
-                                                {getInitials(u.name)}
+                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr className="bg-slate-50/50 border-b border-slate-100">
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Personal</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Rol</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Sucursal</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {paginatedUsers.map(u => (
+                                    <tr key={u.id} className="hover:bg-slate-50/50 transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-primary font-bold text-xs shadow-sm group-hover:scale-105 transition-transform">
+                                                    {getInitials(u.name)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-slate-800 tracking-tight">{u.name}</p>
+                                                    <p className="text-[11px] text-slate-400 font-medium">{u.email}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-slate-800 tracking-tight">{u.name}</p>
-                                                <p className="text-[11px] text-slate-400 font-medium">{u.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${u.role === UserRole.WAITER ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                            u.role === UserRole.KITCHEN ? 'bg-slate-50 text-slate-600 border border-slate-200' :
-                                                'bg-blue-50 text-blue-600 border border-blue-100'
-                                            }`}>
-                                            {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-semibold text-slate-500">{u.branchName || 'Sin Asignar'}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`}></span>
-                                            <span className={`text-xs font-bold ${u.isActive ? 'text-slate-600' : 'text-slate-400 line-through decoration-slate-300'}`}>
-                                                {u.isActive ? 'Activo' : 'Inactivo'}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${u.role === UserRole.WAITER ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                                u.role === UserRole.KITCHEN ? 'bg-slate-50 text-slate-600 border border-slate-200' :
+                                                    'bg-blue-50 text-blue-600 border border-blue-100'
+                                                }`}>
+                                                {u.role === UserRole.WAITER ? 'Mesero' : u.role === UserRole.KITCHEN ? 'Cocina' : 'Cajero'}
                                             </span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openModal(u)} className="p-2 text-slate-400 hover:text-primary transition-colors hover:bg-slate-100 rounded-lg">
-                                                <span className="material-icons-round text-lg">edit</span>
-                                            </button>
-                                            <button onClick={() => toggleStatus(u)} className={`p-2 transition-colors rounded-lg ${u.isActive ? 'text-slate-400 hover:text-red-500 hover:bg-red-50' : 'text-emerald-400 hover:text-emerald-500 hover:bg-emerald-50'}`}>
-                                                <span className="material-icons-round text-lg">{u.isActive ? 'block' : 'check_circle'}</span>
-                                            </button>
-                                            {!u.isActive && (
-                                                <button onClick={() => deleteUser(u)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
-                                                    <span className="material-icons-round text-lg">delete_forever</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-semibold text-slate-500">{u.branchName || 'Sin Asignar'}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`}></span>
+                                                <span className={`text-xs font-bold ${u.isActive ? 'text-slate-600' : 'text-slate-400 line-through decoration-slate-300'}`}>
+                                                    {u.isActive ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => openModal(u)} className="p-2 text-slate-400 hover:text-primary transition-colors hover:bg-slate-100 rounded-lg">
+                                                    <span className="material-icons-round text-lg">edit</span>
                                                 </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {paginatedUsers.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center">
-                                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                                            <span className="material-icons-round text-slate-300 text-3xl">person_off</span>
-                                        </div>
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se encontraron empleados</p>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                                <button onClick={() => toggleStatus(u)} className={`p-2 transition-colors rounded-lg ${u.isActive ? 'text-slate-400 hover:text-red-500 hover:bg-red-50' : 'text-emerald-400 hover:text-emerald-500 hover:bg-emerald-50'}`}>
+                                                    <span className="material-icons-round text-lg">{u.isActive ? 'block' : 'check_circle'}</span>
+                                                </button>
+                                                {!u.isActive && (
+                                                    <button onClick={() => deleteUser(u)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                                                        <span className="material-icons-round text-lg">delete_forever</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {paginatedUsers.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-20 text-center">
+                                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                                                <span className="material-icons-round text-slate-300 text-3xl">person_off</span>
+                                            </div>
+                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se encontraron empleados</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
 
                     {/* Pagination Footer */}
-                    <div className="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                    <div className="px-6 py-6 bg-slate-50 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-tight">
                             Mostrando <span className="text-slate-900">{startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredUsers.length)}</span> de <span className="text-slate-900">{filteredUsers.length}</span> empleados
                         </p>
-                        <div className="flex items-center gap-2">
-                            <button
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(p => p - 1)}
-                                className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
-                            >
-                                Anterior
-                            </button>
-                            <div className="flex items-center gap-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(p => p - 1)}
+                                    className="bg-white border border-slate-200 px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                                >
+                                    <span className="material-icons-round text-sm">chevron_left</span> Anterior
+                                </button>
+                                <div className="flex items-center gap-1.5">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`w-10 h-10 flex items-center justify-center rounded-2xl text-xs font-bold transition-all ${currentPage === page ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    onClick={() => setCurrentPage(p => p + 1)}
+                                    className="bg-white border border-slate-200 px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm flex items-center gap-2"
+                                >
+                                    Siguiente <span className="material-icons-round text-sm">chevron_right</span>
+                                </button>
                             </div>
-                            <button
-                                disabled={currentPage === totalPages || totalPages === 0}
-                                onClick={() => setCurrentPage(p => p + 1)}
-                                className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-all shadow-sm"
-                            >
-                                Siguiente
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -400,19 +404,19 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ currentUser, br
 
             {/* Premium Modal Redesign */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-[2px] animate-fade-in">
-                    <div className="relative bg-white w-full max-w-2xl rounded-2xl border border-slate-200 shadow-2xl animate-fade-in flex flex-col max-h-[90vh] overflow-hidden">
-                        <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="relative bg-white w-full max-w-2xl rounded-t-[40px] sm:rounded-[40px] border border-slate-200 shadow-2xl animate-scaleUp flex flex-col max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-8 border-b border-slate-100 bg-slate-50/50">
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                                     {editingUser ? 'Detalles del Usuario' : 'Nuevo Usuario'}
                                 </h3>
-                                <p className="text-xs text-slate-400 mt-1 font-medium">
-                                    Gestión de acceso para RESTOGESTIÓN V2.0
+                                <p className="text-xs text-slate-400 mt-1 font-bold uppercase tracking-widest">
+                                    Gestión de acceso RESTOGESTIÓN V2.0
                                 </p>
                             </div>
-                            <button onClick={closeModal} className="p-2 hover:bg-slate-200/50 rounded-full text-slate-400 transition-colors">
-                                <span className="material-icons-round text-xl">close</span>
+                            <button onClick={closeModal} className="w-12 h-12 flex items-center justify-center hover:bg-slate-200/50 rounded-full text-slate-400 transition-all hover:rotate-90">
+                                <span className="material-icons-round text-2xl">close</span>
                             </button>
                         </div>
 

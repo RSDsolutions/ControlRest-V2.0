@@ -23,10 +23,10 @@ const HowItWorksView: React.FC = () => {
                             <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             Inteligencia Financiera en Tiempo Real
                         </div>
-                        <h1 className="text-4xl lg:text-6xl font-black leading-tight tracking-tight text-white">
+                        <h1 className="text-3xl sm:text-4xl lg:text-6xl font-black leading-tight tracking-tight text-white mb-4">
                             Cada venta debería decirte <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-500">cuánto ganaste</span>
                         </h1>
-                        <p className="text-slate-400 text-lg lg:text-xl font-normal max-w-2xl mx-auto">
+                        <p className="text-slate-400 text-base sm:text-lg lg:text-xl font-normal max-w-2xl mx-auto px-4">
                             No solo registres ingresos. Transforma cada transacción en un evento financiero medible que conecta tu POS con tu P&amp;L instantáneamente.
                         </p>
                     </div>
@@ -69,59 +69,59 @@ const HowItWorksView: React.FC = () => {
                     <div className="bg-[#1E293B]/50 rounded-2xl p-8 lg:p-12 border border-[#3A4B6B] relative overflow-hidden">
                         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl"></div>
                         <h2 className="text-2xl lg:text-3xl font-bold text-white mb-12 text-center">El Flujo de la Verdad Financiera</h2>
-                        <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 relative z-10">
-                            <div className="flex flex-col items-center flow-connector">
-                                <div className="w-16 h-16 rounded-full bg-[#0F172A] border-2 border-blue-500 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(58,134,255,0.3)]">
-                                    <span className="material-symbols-outlined text-blue-500 text-2xl">point_of_sale</span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-y-10 gap-x-4 relative z-10">
+                            <div className="flex flex-col items-center">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#0F172A] border-2 border-blue-500 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(58,134,255,0.3)]">
+                                    <span className="material-symbols-outlined text-blue-500 text-xl sm:text-2xl">point_of_sale</span>
                                 </div>
                                 <div className="text-center">
-                                    <h4 className="text-white font-bold text-sm">Pedido POS</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Ingreso bruto</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center flow-connector">
-                                <div className="w-16 h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
-                                    <span className="material-symbols-outlined text-white text-2xl">restaurant_menu</span>
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="text-white font-bold text-sm">Consumo Receta</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Explosión de insumos</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center flow-connector">
-                                <div className="w-16 h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
-                                    <span className="material-symbols-outlined text-white text-2xl">inventory</span>
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="text-white font-bold text-sm">Lote FIFO</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Selección de stock</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center flow-connector">
-                                <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(58,134,255,0.6)] animate-pulse">
-                                    <span className="material-symbols-outlined text-white text-2xl">camera_alt</span>
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="text-blue-500 font-bold text-sm">Cost Snapshot</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Captura valor real</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center flow-connector">
-                                <div className="w-16 h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
-                                    <span className="material-symbols-outlined text-white text-2xl">ssid_chart</span>
-                                </div>
-                                <div className="text-center">
-                                    <h4 className="text-white font-bold text-sm">Impacto Utilidad</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Cálculo de margen</p>
+                                    <h4 className="text-white font-bold text-[10px] sm:text-sm">Pedido POS</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Ingreso bruto</p>
                                 </div>
                             </div>
                             <div className="flex flex-col items-center">
-                                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(46,204,113,0.3)]">
-                                    <span className="material-symbols-outlined text-emerald-500 text-2xl">account_balance</span>
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
+                                    <span className="material-symbols-outlined text-white text-xl sm:text-2xl">restaurant_menu</span>
                                 </div>
                                 <div className="text-center">
-                                    <h4 className="text-emerald-500 font-bold text-sm">P&amp;L Diario</h4>
-                                    <p className="text-xs text-slate-400 mt-1">Reporte final</p>
+                                    <h4 className="text-white font-bold text-[10px] sm:text-sm">Consumo Receta</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Insumos</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
+                                    <span className="material-symbols-outlined text-white text-xl sm:text-2xl">inventory</span>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="text-white font-bold text-[10px] sm:text-sm">Lote FIFO</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Stock real</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-blue-600 flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(58,134,255,0.6)] animate-pulse">
+                                    <span className="material-symbols-outlined text-white text-xl sm:text-2xl">camera_alt</span>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="text-blue-500 font-bold text-[10px] sm:text-sm">Cost Snapshot</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Valor real</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#0F172A] border border-slate-600 flex items-center justify-center mb-4">
+                                    <span className="material-symbols-outlined text-white text-xl sm:text-2xl">ssid_chart</span>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="text-white font-bold text-[10px] sm:text-sm">Impacto Utilidad</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Cálculo de margen</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(46,204,113,0.3)]">
+                                    <span className="material-symbols-outlined text-emerald-500 text-xl sm:text-2xl">account_balance</span>
+                                </div>
+                                <div className="text-center">
+                                    <h4 className="text-emerald-500 font-bold text-[10px] sm:text-sm">P&amp;L Diario</h4>
+                                    <p className="text-[10px] text-slate-400 mt-1">Reporte final</p>
                                 </div>
                             </div>
                         </div>

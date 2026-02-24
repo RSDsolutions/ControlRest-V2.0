@@ -166,8 +166,8 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
 
   return (
     <>
-      <div className="p-6 space-y-6 animate-fade-in max-w-[1600px] mx-auto font-sans">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
+      <div className="p-4 sm:p-6 space-y-6 animate-fade-in max-w-[1600px] mx-auto font-sans">
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
           <div>
             <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
               <span className="material-icons-round text-[#136dec] text-xl">inventory_2</span>
@@ -175,23 +175,23 @@ const InventoryView: React.FC<InventoryViewProps> = ({ ingredients, setIngredien
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">Gestión avanzada de existencias, trazabilidad por lotes y caducidades.</p>
           </div>
-          <div className="flex bg-slate-100 p-0.5 rounded-[8px] border border-slate-200">
-            <button onClick={() => setActiveTab('stock')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all ${activeTab === 'stock' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Existencias</button>
-            <button onClick={() => setActiveTab('batches')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all ${activeTab === 'batches' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Trazabilidad</button>
-            <button onClick={() => setActiveTab('expr')} className={`px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all ${activeTab === 'expr' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Caducidades</button>
+          <div className="flex bg-slate-100 p-0.5 rounded-[8px] border border-slate-200 w-full lg:w-auto overflow-x-auto no-scrollbar">
+            <button onClick={() => setActiveTab('stock')} className={`flex-1 lg:flex-none px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'stock' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Existencias</button>
+            <button onClick={() => setActiveTab('batches')} className={`flex-1 lg:flex-none px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'batches' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Trazabilidad</button>
+            <button onClick={() => setActiveTab('expr')} className={`flex-1 lg:flex-none px-4 py-1.5 rounded-[6px] font-semibold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === 'expr' ? 'bg-white shadow-sm text-[#136dec]' : 'text-slate-500 hover:text-[#136dec]'}`}>Caducidades</button>
           </div>
         </header>
 
         {activeTab === 'stock' && (
           <div className="animate-fade-in space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <KPIItem label="Valoración de Almacén" value={`$${ingredients.reduce((acc, i) => acc + (i.currentQty * i.unitPrice), 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} sub="Capital Inmovilizado" icon="account_balance_wallet" color="bg-emerald-50 text-emerald-600" />
               <KPIItem label="Items en Quiebre" value={`${ingredients.filter(i => i.currentQty <= i.criticalQty).length} Ítems`} sub="Riesgo Operativo" icon="history_edu" color="bg-red-50 text-red-600" />
               <KPIItem label="Reposición Pendiente" value={`${ingredients.filter(i => i.currentQty <= i.minQty).length} Ítems`} sub="Bajo Nivel Mínimo" icon="pending_actions" color="bg-amber-50 text-amber-600" />
               <KPIItem label="Tipos de Insumos" value={`${new Set(ingredients.map(i => i.category)).size} Categorías`} sub="Diversidad de Stock" icon="category" color="bg-primary/5 text-primary" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {ingredients.map(ing => (
                 <InventoryCard key={ing.id} ingredient={ing} onViewDetails={(i) => { setSelectedIng(i); setEditQty(i.currentQty.toString()); }} />
               ))}

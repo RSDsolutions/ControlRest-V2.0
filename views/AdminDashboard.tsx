@@ -202,34 +202,40 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
   }, [branchId]);
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in max-w-[1400px] mx-auto">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-0.5">
-            <span className="material-icons-round text-[#136dec] text-xl">dashboard</span>
-            Panel de Control {branchName && <span className="text-slate-300 font-normal text-base ml-1">— {branchName}</span>}
-          </h1>
-          <p className="text-xs text-slate-400">{currentTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })} · {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+    <div className="p-4 sm:p-6 space-y-6 animate-fade-in max-w-[1400px] mx-auto">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
+            <span className="material-icons-round text-xl">dashboard</span>
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 flex flex-wrap items-center gap-1.5 leading-tight">
+              Panel de Control {branchName && <span className="text-slate-400 font-normal ml-0.5">— {branchName}</span>}
+            </h1>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">
+              {currentTime.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} · {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${pendingOrders > 5 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className={`flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] sm:text-xs font-bold ${pendingOrders > 5 ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
             <span className="material-icons-round text-[14px]">restaurant</span>
             {pendingOrders > 0 ? `${pendingOrders} Pendientes` : 'Sin Pedidos'}
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#136dec] rounded-full text-xs font-semibold">
+          <div className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#136dec] rounded-full text-[10px] sm:text-xs font-bold border border-blue-100">
             <span className="material-icons-round text-[14px]">table_restaurant</span>
-            Mesas: {activeTables}/{tables.length}
+            {activeTables}/{tables.length} Mesas
           </div>
         </div>
       </header>
 
       {/* 1. KPIs SUPERIORES */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-        <KPIBox label="Ventas de Hoy" value={formatMoney(totalSalesToday)} sub={`Vs ${formatMoney(totalSalesYesterday)} ayer`} icon="payments" color="text-primary" />
-        <KPIBox label="Órdenes Totales" value={todayOrders.length} sub="Transacciones hoy" icon="receipt_long" color="text-primary-light" />
-        <KPIBox label="Ticket Promedio" value={formatMoney(ticketAvg)} sub="Por consumo" icon="analytics" color="text-indigo-600" />
-        <KPIBox label="Mesas Activas" value={`${activeTables}`} sub={`de ${tables.length} habilitadas`} icon="table_bar" color="text-amber-600" />
-        <KPIBox label="Efectivo Estimado" value={formatMoney(cashFlow.cash)} sub="Flujo de caja" icon="point_of_sale" color="text-status-success" />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-5">
+        <KPIBox label="Ventas Hoy" value={formatMoney(totalSalesToday)} sub={`Vs ${formatMoney(totalSalesYesterday)}`} icon="payments" color="text-primary" />
+        <KPIBox label="Órdenes" value={todayOrders.length} sub="Transacciones" icon="receipt_long" color="text-primary-light" />
+        <KPIBox label="Ticket Prom." value={formatMoney(ticketAvg)} sub="Por consumo" icon="analytics" color="text-indigo-600" />
+        <KPIBox label="Mesas Act." value={`${activeTables}`} sub={`de ${tables.length}`} icon="table_bar" color="text-amber-600" />
+        <KPIBox label="Efectivo Est." value={formatMoney(cashFlow.cash)} sub="Flujo de caja" icon="point_of_sale" color="text-status-success" className="col-span-2 lg:col-span-1" />
       </div>
 
       {isPlanOperativo ? (
@@ -305,7 +311,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
                 Datos en Tiempo Real
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {plateMargins.slice(0, 6).map((pm, i) => (
                 <div key={i} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:shadow-xl transition-all group">
                   <div className="flex justify-between items-start mb-4">
@@ -374,16 +380,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
               {todayOrders.slice(0, 15).map(o => (
                 <div key={o.id} className={`p-4 rounded-brand border flex items-center justify-between transition-all group ${o.status === 'preparing' ? 'bg-primary/5 border-primary/20 shadow-sm' : 'bg-white border-slate-100 hover:border-primary/30 hover:shadow-md'}`}>
                   <div className="flex items-center gap-5">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-lg ${o.status === 'preparing' ? 'bg-primary animate-pulse' : o.status === 'open' ? 'bg-slate-700' : 'bg-status-success'}`}>
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shrink-0 ${o.status === 'preparing' ? 'bg-primary animate-pulse' : o.status === 'open' ? 'bg-slate-700' : 'bg-status-success'}`}>
                       {o.tableId.substring(0, 2)}
                     </div>
-                    <div>
-                      <h4 className="font-bold text-brand-black group-hover:text-primary transition-colors">Mesa {o.tableId}</h4>
-                      <p className="text-xs text-slate-500 font-semibold">{o.items.length} productos • {o.waiterName || 'Sin mesero'}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-brand-black group-hover:text-primary transition-colors truncate">Mesa {o.tableId}</h4>
+                      <p className="text-[10px] sm:text-xs text-slate-500 font-semibold truncate">{o.items.length} prod. • {o.waiterName || 'Sin mesero'}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-black text-brand-black text-lg">{formatMoney(o.total)}</p>
+                  <div className="text-right shrink-0">
+                    <p className="font-black text-brand-black text-base sm:text-lg">{formatMoney(o.total)}</p>
                     <div className="flex items-center justify-end gap-1 mt-1">
                       <span className="material-icons-round text-[14px] text-slate-300">schedule</span>
                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
@@ -403,7 +409,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <div className="card shadow-brand p-6 border-l-4 border-l-primary">
               <h3 className="font-heading font-bold text-brand-black mb-5 flex items-center gap-2">
                 <span className="material-icons-round text-primary">analytics</span>
@@ -461,7 +467,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
       )}
 
       {/* 6. COLUMNA INFERIOR */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         <div className="card shadow-brand p-6">
           <h3 className="font-heading font-bold text-brand-black mb-6 flex items-center gap-2">
             <span className="material-icons-round text-primary/40">groups</span>

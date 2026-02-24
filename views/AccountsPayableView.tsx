@@ -99,67 +99,74 @@ const AccountsPayableView: React.FC<AccountsPayableViewProps> = ({ currentUser, 
     };
 
     return (
-        <div className="p-6 space-y-6 animate-fadeIn max-w-[1200px] mx-auto pb-20">
-            <header>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <span className="material-icons-round text-amber-600">account_balance_wallet</span> Cuentas por Pagar
-                </h1>
-                <p className="text-slate-500 font-medium">Gestión de deudas con proveedores y liquidación de facturas a crédito.</p>
+        <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 animate-fadeIn max-w-[1200px] mx-auto pb-20 font-sans">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 shadow-sm shrink-0">
+                        <span className="material-icons-round text-xl sm:text-2xl">account_balance_wallet</span>
+                    </div>
+                    <div>
+                        <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">Cuentas por Pagar</h1>
+                        <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Gestión de deudas y liquidaciones.</p>
+                    </div>
+                </div>
             </header>
 
             {/* Payables Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Estado</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Proveedor</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Factura #</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Monto</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Vencimiento</th>
-                            <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {payables.map(p => (
-                            <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 animate-pulse'}`}>
-                                        {p.status === 'PAID' ? 'Pagado' : 'Pendiente'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 font-bold text-slate-700">{p.supplier_name}</td>
-                                <td className="px-6 py-4 font-mono text-sm text-indigo-600">{p.invoice_number}</td>
-                                <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
-                                <td className={`px-6 py-4 text-sm font-bold ${new Date(p.due_date) < new Date() && p.status === 'PENDING' ? 'text-rose-500' : 'text-slate-500'}`}>
-                                    {new Date(p.due_date).toLocaleDateString()}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {p.status === 'PENDING' ? (
-                                        <button
-                                            onClick={() => openPaymentModal(p)}
-                                            className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg text-xs font-black flex items-center gap-1 transition-all"
-                                        >
-                                            <span className="material-icons-round text-sm">payments</span> Liquidar
-                                        </button>
-                                    ) : (
-                                        <span className="text-emerald-500 flex items-center gap-1 text-xs font-bold">
-                                            <span className="material-icons-round text-sm">check_circle</span> Saldado
-                                        </span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                        {payables.length === 0 && (
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[800px]">
+                        <thead className="bg-slate-50 border-b border-slate-100">
                             <tr>
-                                <td colSpan={6} className="py-20 text-center text-slate-400">
-                                    <span className="material-icons-round text-5xl block mb-2 opacity-20">credit_score</span>
-                                    <p className="font-bold">No hay cuentas por pagar registradas.</p>
-                                </td>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Estado</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Proveedor</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Factura #</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Monto</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Vencimiento</th>
+                                <th className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Acciones</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {payables.map(p => (
+                                <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${p.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 animate-pulse'}`}>
+                                            {p.status === 'PAID' ? 'Pagado' : 'Pendiente'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 font-bold text-slate-700">{p.supplier_name}</td>
+                                    <td className="px-6 py-4 font-mono text-sm text-indigo-600">{p.invoice_number}</td>
+                                    <td className="px-6 py-4 font-black text-slate-900">${p.amount.toLocaleString()}</td>
+                                    <td className={`px-6 py-4 text-sm font-bold ${new Date(p.due_date) < new Date() && p.status === 'PENDING' ? 'text-rose-500' : 'text-slate-500'}`}>
+                                        {new Date(p.due_date).toLocaleDateString()}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {p.status === 'PENDING' ? (
+                                            <button
+                                                onClick={() => openPaymentModal(p)}
+                                                className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg text-xs font-black flex items-center gap-1 transition-all"
+                                            >
+                                                <span className="material-icons-round text-sm">payments</span> Liquidar
+                                            </button>
+                                        ) : (
+                                            <span className="text-emerald-500 flex items-center gap-1 text-xs font-bold">
+                                                <span className="material-icons-round text-sm">check_circle</span> Saldado
+                                            </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                            {payables.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="py-20 text-center text-slate-400">
+                                        <span className="material-icons-round text-5xl block mb-2 opacity-20">credit_score</span>
+                                        <p className="font-bold">No hay cuentas por pagar registradas.</p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Payment Modal */}

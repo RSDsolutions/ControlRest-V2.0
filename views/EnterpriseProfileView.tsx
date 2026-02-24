@@ -161,33 +161,36 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 p-8 animate-fade-in max-w-[1400px] mx-auto space-y-8 font-sans">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans pb-24 lg:pb-8">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
                         <span className="material-icons-round text-primary text-2xl">settings</span>
                     </div>
                     <div>
                         <h1 className="text-xl font-bold text-slate-900 tracking-tight">Perfil Empresarial</h1>
-                        <p className="text-xs text-slate-400 mt-0.5 font-medium">Gestiona tu perfil y datos de la empresa en RESTOGESTIÓN V2.0.</p>
+                        <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 font-medium">Gestiona tu perfil y datos de la empresa en RESTOGESTIÓN V2.0.</p>
                     </div>
                 </div>
             </header>
 
             {/* Nav Tabs */}
-            <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200 w-fit">
-                <button
-                    onClick={() => setActiveTab('profile')}
-                    className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2.5 ${activeTab === 'profile' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
-                >
-                    <span className="material-icons-round text-[18px]">person</span> Mi Perfil
-                </button>
-                <button
-                    onClick={() => setActiveTab('company')}
-                    className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2.5 ${activeTab === 'company' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
-                >
-                    <span className="material-icons-round text-[18px]">business</span> Empresa
-                </button>
+            {/* Nav Tabs - Scrollable on mobile */}
+            <div className="overflow-x-auto custom-scrollbar pb-2 sm:pb-0">
+                <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200 w-max sm:w-fit min-w-full sm:min-w-0">
+                    <button
+                        onClick={() => setActiveTab('profile')}
+                        className={`flex-1 sm:flex-none px-6 sm:px-8 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 whitespace-nowrap ${activeTab === 'profile' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
+                    >
+                        <span className="material-icons-round text-[18px]">person</span> Mi Perfil
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('company')}
+                        className={`flex-1 sm:flex-none px-6 sm:px-8 py-2.5 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2.5 whitespace-nowrap ${activeTab === 'company' ? 'bg-white shadow-lg text-primary scale-105' : 'text-slate-500 hover:text-primary'}`}
+                    >
+                        <span className="material-icons-round text-[18px]">business</span> Empresa
+                    </button>
+                </div>
             </div>
 
             <main className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
@@ -195,7 +198,7 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                 <div className="space-y-8">
                     {activeTab === 'profile' ? (
                         <>
-                            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                            <section className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6 sm:space-y-8">
                                 <h2 className="text-lg font-bold text-slate-800 tracking-tight">Información Personal</h2>
                                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -208,13 +211,15 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                                             <input type="text" value={currentUser?.email || ''} disabled className="w-full px-5 py-3.5 bg-slate-50/50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-400 cursor-not-allowed italic" />
                                         </div>
                                     </div>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3 rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center gap-2 text-sm"
-                                    >
-                                        <span className="material-icons-round text-[20px]">check_circle</span> Actualizar Datos
-                                    </button>
+                                    <div className="flex justify-end pt-4">
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="w-full sm:w-auto btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3.5 rounded-2xl sm:rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center justify-center gap-2 text-sm"
+                                        >
+                                            <span className="material-icons-round text-[20px]">check_circle</span> Actualizar Datos
+                                        </button>
+                                    </div>
                                 </form>
                             </section>
 
@@ -246,11 +251,11 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                             </section>
                         </>
                     ) : (
-                        <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-8">
+                        <section className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6 sm:space-y-8">
                             <h2 className="text-lg font-bold text-slate-800 tracking-tight">Datos Corporativos</h2>
                             <form onSubmit={handleSaveCompany} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Razón Social / Nombre Empresa</label>
                                         <input type="text" required value={companyForm.businessName} onChange={e => setCompanyForm({ ...companyForm, businessName: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" placeholder="Ej. Gastronomía S.A." />
                                     </div>
@@ -270,14 +275,16 @@ const EnterpriseProfileView: React.FC<EnterpriseProfileViewProps> = ({ currentUs
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Email Corporativo</label>
                                         <input type="email" value={companyForm.email} onChange={e => setCompanyForm({ ...companyForm, email: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
                                     </div>
-                                    <div className="col-span-2 space-y-2">
+                                    <div className="md:col-span-2 space-y-2">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Dirección Matriz</label>
                                         <input type="text" value={companyForm.mainAddress} onChange={e => setCompanyForm({ ...companyForm, mainAddress: e.target.value })} className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-sm" />
                                     </div>
                                 </div>
-                                <button type="submit" disabled={loading} className="btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3 rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center gap-2 text-sm">
-                                    <span className="material-icons-round text-[20px]">save</span> {loading ? 'Guardando...' : 'Guardar Información'}
-                                </button>
+                                <div className="flex justify-end pt-4">
+                                    <button type="submit" disabled={loading} className="w-full sm:w-auto btn bg-primary text-white hover:bg-primary/90 transition-all px-10 py-3.5 rounded-2xl sm:rounded-full shadow-lg shadow-primary/20 font-bold border border-primary flex items-center justify-center gap-2 text-sm">
+                                        <span className="material-icons-round text-[20px]">save</span> {loading ? 'Guardando...' : 'Guardar Información'}
+                                    </button>
+                                </div>
                             </form>
                         </section>
                     )}

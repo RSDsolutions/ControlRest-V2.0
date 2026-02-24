@@ -311,7 +311,7 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
 
   return (
     <>
-      <div className="p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
+      <div className="p-4 sm:p-6 space-y-5 animate-fade-in max-w-[1700px] mx-auto font-sans">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-[8px] shadow-card border border-slate-200">
           <div>
             <h1 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -320,23 +320,23 @@ const IngredientsView: React.FC<IngredientsViewProps> = ({ ingredients, setIngre
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">Control de inventario técnico, costeo promedio ponderado y trazabilidad de lotes.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <button
               onClick={() => setShowNewIngModal(true)}
-              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all flex items-center gap-2 px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold"
+              className="btn bg-white border border-slate-200 text-[#136dec] hover:bg-slate-50 transition-all flex items-center justify-center gap-2 px-6 sm:px-10 py-3 rounded-full shadow-lg shadow-slate-100 font-bold w-full sm:w-auto text-sm sm:text-base"
             >
               <span className="material-icons-round text-[18px]">add</span> Nuevo Insumo
             </button>
             <button
               onClick={() => { setSelectedIngId(ingredients[0]?.id || null); setShowPurchaseModal(true); }}
-              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center gap-2 px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec]"
+              className="btn bg-[#136dec] text-white hover:bg-[#0d5cc7] transition-all flex items-center justify-center gap-2 px-6 sm:px-10 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-[#136dec] w-full sm:w-auto text-sm sm:text-base"
             >
               <span className="material-icons-round text-[18px]">shopping_cart</span> Registrar Compra
             </button>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
           <KPIItem label="Catálogo Activo" value={ingredients.length} sub="Items registrados" icon="inventory_2" color="bg-slate-500" />
           <KPIItem label="Stock Bajo" value={ingredients.filter(i => i.currentQty <= i.minQty).length} sub="Requieren reposición" icon="warning" color="bg-amber-500" />
           <KPIItem label="Nivel Crítico" value={ingredients.filter(i => i.currentQty <= i.criticalQty).length} sub="Riesgo de quiebre" icon="dangerous" color="bg-red-500" />

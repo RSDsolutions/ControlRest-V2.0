@@ -171,41 +171,41 @@ const BranchesConfigView: React.FC<BranchesConfigViewProps> = ({ currentUser, br
     return (
         <>
             <div className="p-8 space-y-8 animate-fade-in max-w-[1400px] mx-auto font-sans">
-                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm">
-                            <span className="material-icons-round text-2xl">storefront</span>
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm shrink-0">
+                            <span className="material-icons-round text-xl sm:text-2xl">storefront</span>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Configuración de Sucursales</h1>
-                            <p className="text-sm text-slate-500 font-medium">RESTOGESTIÓN V2.0 • Gestiona las ubicaciones físicas de tu negocio y sus estados.</p>
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-tight">Configuración de Sucursales</h1>
+                            <p className="text-[10px] sm:text-sm text-slate-500 font-medium">RESTOGESTIÓN V2.0 • Gestiona ubicaciones y estados.</p>
                         </div>
                     </div>
                     {!isPlan3 && (
                         <button
                             onClick={() => openModal()}
-                            className="btn bg-primary text-white hover:bg-primary-dark transition-all px-8 py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-primary flex items-center gap-2"
+                            className="w-full md:w-auto btn bg-primary text-white hover:bg-primary-dark transition-all px-6 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg shadow-blue-100 font-bold border border-primary flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
                             <span className="material-icons-round text-[18px]">add</span> Nueva Sucursal
                         </button>
                     )}
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
                     {branches.map(branch => {
                         const stats = branchStats[branch.id] || { users: 0, tables: 0 };
                         return (
                             <div key={branch.id} className="card p-8 group relative overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 border-slate-100">
                                 <div className="flex justify-between items-start mb-6">
-                                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                                        <span className="material-icons-round text-2xl">store</span>
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                                        <span className="material-icons-round text-xl sm:text-2xl">store</span>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${branch.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                                        <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest border ${branch.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
                                             {branch.isActive ? '● Operativa' : '○ Inactiva'}
                                         </span>
                                         {branch.isMain && (
-                                            <span className="px-3 py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                            <span className="px-2 py-1 sm:px-3 sm:py-1 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-widest">
                                                 Matriz Principal
                                             </span>
                                         )}

@@ -262,26 +262,26 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches, restaurant
 
     return (
         <div className="flex flex-col h-full bg-slate-50 p-8 animate-fade-in max-w-[1400px] mx-auto space-y-8 font-sans">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <span className="material-icons-round text-primary text-2xl">shield</span>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                        <span className="material-icons-round text-primary text-xl sm:text-2xl">shield</span>
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Auditoría Financiera</h1>
-                        <p className="text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 — Exportación y revisión forense de bitácoras del sistema ERP</p>
+                        <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight leading-tight">Auditoría Financiera</h1>
+                        <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 font-medium">RESTOGESTIÓN V2.0 — Bitácoras ERP</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full md:w-auto">
                     <button
                         onClick={generateAuditReportPdf}
-                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all px-6 py-2.5 rounded-xl shadow-sm font-bold flex items-center gap-2 text-sm"
+                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all px-4 sm:px-6 py-2.5 rounded-xl shadow-sm font-bold flex items-center justify-center gap-2 text-xs sm:text-sm"
                     >
-                        <span className="material-icons-round text-[18px]">picture_as_pdf</span> Exportar PDF
+                        <span className="material-icons-round text-[18px]">picture_as_pdf</span> PDF
                     </button>
                     <button
                         onClick={generateAuditReportCsv}
-                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all px-6 py-2.5 rounded-xl shadow-sm font-bold flex items-center gap-2 text-sm"
+                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all px-4 sm:px-6 py-2.5 rounded-xl shadow-sm font-bold flex items-center justify-center gap-2 text-xs sm:text-sm"
                     >
                         <span className="material-icons-round text-[18px]">file_download</span> CSV
                     </button>
@@ -289,7 +289,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches, restaurant
             </header>
 
             {/* Filters */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Fecha Inicio</label>
                     <div className="relative">
@@ -351,8 +351,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches, restaurant
                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest">No se encontraron eventos</p>
                     </div>
                 ) : (
-                    <div className="flex-1 overflow-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha / Hora</th>
@@ -370,6 +370,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ branches, restaurant
                                             key={event.id}
                                             onClick={() => setSelectedEvent(event)}
                                             className="hover:bg-slate-50/50 transition-colors cursor-pointer group"
+                                            Tracy-test-id={`audit-row-${event.id}`}
                                         >
                                             <td className="px-6 py-5 whitespace-nowrap">
                                                 <div className="font-bold text-slate-800 tracking-tight leading-none mb-1">

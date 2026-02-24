@@ -33,21 +33,21 @@ const LandingView: React.FC = () => {
                             Nuevo: Control de Utilidad en Tiempo Real
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-[1.1]">
+                        <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white mb-6 leading-[1.1]">
                             Tu restaurante vende.<br />
                             <span className="text-slate-400">Pero... ¿realmente está ganando dinero?</span>
                         </h1>
 
-                        <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-base sm:text-lg md:text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed px-4">
                             La inflación de insumos y la volatilidad de costos devoran tus márgenes silenciosamente. Deja de operar a ciegas y <span className="text-white font-medium">toma el control financiero real de tu operación.</span>
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 mb-20">
-                            <button onClick={() => navigate('/login')} className="bg-blue-600 hover:bg-blue-700 text-white text-base font-bold h-12 px-8 rounded-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
+                        <div className="flex flex-col sm:flex-row gap-4 mb-20 px-4 w-full sm:w-auto">
+                            <button onClick={() => navigate('/login')} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
                                 <span className="material-symbols-outlined text-[20px]">calendar_month</span>
                                 Agendar Diagnóstico Financiero
                             </button>
-                            <button onClick={() => navigate('/login')} className="bg-[#1E293B] border border-slate-700 hover:border-slate-500 text-white text-base font-bold h-12 px-8 rounded-lg transition-colors flex items-center justify-center gap-2">
+                            <button onClick={() => navigate('/login')} className="w-full sm:w-auto bg-[#1E293B] border border-slate-700 hover:border-slate-500 text-white text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-colors flex items-center justify-center gap-2">
                                 <span className="material-symbols-outlined text-[20px]">play_circle</span>
                                 Ver Demo Interactiva
                             </button>
@@ -136,19 +136,19 @@ const LandingView: React.FC = () => {
                 </section>
 
                 {/* Sell != Profitable Section */}
-                <section className="py-24 bg-[#111827] border-y border-slate-800">
+                <section className="py-20 sm:py-24 bg-[#111827] border-y border-slate-800">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                            <div>
-                                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                            <div className="text-center lg:text-left">
+                                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-6">
                                     Vender no significa ser rentable.
                                 </h2>
-                                <p className="text-lg text-slate-400 leading-relaxed mb-10">
+                                <p className="text-base sm:text-lg text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto lg:mx-0">
                                     Muchos restaurantes cierran teniendo ventas récord. ¿La causa? Fugas invisibles que drenan la utilidad neta antes de que llegue a tu banco.
                                 </p>
-                                <div className="flex items-center gap-4 text-sm font-bold text-slate-500 uppercase tracking-widest">
-                                    <span className="w-16 h-[2px] bg-slate-700"></span>
-                                    <span>Diagnóstico Común</span>
+                                <div className="flex items-center justify-center lg:justify-start gap-4 text-sm font-bold text-slate-500 uppercase tracking-widest">
+                                    <span className="w-12 sm:w-16 h-[2px] bg-slate-700"></span>
+                                    <span className="text-[10px] sm:text-sm">Diagnóstico Común</span>
                                 </div>
                             </div>
 
@@ -269,42 +269,42 @@ const LandingView: React.FC = () => {
 
                         <div className="relative">
                             <div className="hidden md:block absolute top-[40px] left-[10%] w-[80%] h-[2px] bg-slate-800 -z-10"></div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                                 {/* Step 1 */}
-                                <div className="flex flex-col items-center group">
+                                <div className="flex flex-col items-center group text-center">
                                     <div className="w-20 h-20 rounded-full bg-[#1E293B] border-[3px] border-slate-700 group-hover:border-blue-500 flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors mb-6 relative">
                                         <span className="material-symbols-outlined text-3xl">point_of_sale</span>
                                         <div className="absolute top-0 right-0 w-6 h-6 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-xs font-bold text-white translate-x-1/4 -translate-y-1/4">1</div>
                                     </div>
                                     <h3 className="text-white font-bold mb-2">Venta POS</h3>
-                                    <p className="text-sm text-slate-400 px-4">El mesero ingresa la comanda. Se registra el ingreso bruto.</p>
+                                    <p className="text-xs sm:text-sm text-slate-400 px-4">El mesero ingresa la comanda. Se registra el ingreso bruto.</p>
                                 </div>
                                 {/* Step 2 */}
-                                <div className="flex flex-col items-center group">
+                                <div className="flex flex-col items-center group text-center">
                                     <div className="w-20 h-20 rounded-full bg-[#1E293B] border-[3px] border-slate-700 group-hover:border-blue-500 flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors mb-6 relative">
                                         <span className="material-symbols-outlined text-3xl">sync_alt</span>
                                         <div className="absolute top-0 right-0 w-6 h-6 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-xs font-bold text-white translate-x-1/4 -translate-y-1/4">2</div>
                                     </div>
                                     <h3 className="text-white font-bold mb-2">Cruce de Datos</h3>
-                                    <p className="text-sm text-slate-400 px-4">El ERP descuenta inventario, cruza último costo de compra y mermas al mes.</p>
+                                    <p className="text-xs sm:text-sm text-slate-400 px-4">El ERP descuenta inventario, cruza último costo de compra y mermas al mes.</p>
                                 </div>
                                 {/* Step 3 */}
-                                <div className="flex flex-col items-center group">
+                                <div className="flex flex-col items-center group text-center">
                                     <div className="w-20 h-20 rounded-full bg-[#1E293B] border-[3px] border-slate-700 group-hover:border-blue-500 flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors mb-6 relative">
                                         <span className="material-symbols-outlined text-3xl">receipt_long</span>
                                         <div className="absolute top-0 right-0 w-6 h-6 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-xs font-bold text-white translate-x-1/4 -translate-y-1/4">3</div>
                                     </div>
                                     <h3 className="text-white font-bold mb-2">Asignación de Gastos</h3>
-                                    <p className="text-sm text-slate-400 px-4">Se prorratean gastos fijos (renta, servicios) y variables al momento.</p>
+                                    <p className="text-xs sm:text-sm text-slate-400 px-4">Se prorratean gastos fijos (renta, servicios) y variables al momento.</p>
                                 </div>
                                 {/* Step 4 */}
-                                <div className="flex flex-col items-center group">
+                                <div className="flex flex-col items-center group text-center">
                                     <div className="w-20 h-20 rounded-full bg-[#1E293B] border-[3px] border-[#10B981] flex items-center justify-center text-[#10B981] shadow-[0_0_20px_rgba(16,185,129,0.2)] mb-6 relative">
                                         <span className="material-symbols-outlined text-3xl">savings</span>
                                         <div className="absolute top-0 right-0 w-6 h-6 bg-slate-800 border border-slate-600 rounded-full flex items-center justify-center text-xs font-bold text-white translate-x-1/4 -translate-y-1/4">4</div>
                                     </div>
                                     <h3 className="text-white font-bold mb-2">Impacto en Utilidad</h3>
-                                    <p className="text-sm text-slate-400 px-4">Ves la Utilidad Neta (dinero real que genera tu negocio) lista para analizar.</p>
+                                    <p className="text-xs sm:text-sm text-slate-400 px-4">Ves la Utilidad Neta (dinero real que genera tu negocio) lista para analizar.</p>
                                 </div>
                             </div>
                         </div>

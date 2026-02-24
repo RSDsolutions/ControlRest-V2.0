@@ -200,24 +200,24 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
    // if (currentData.netMargin < 10) ... handled by traffic light, specific alert maybe?
 
    return (
-      <div className="p-8 space-y-10 animate-fade-in max-w-[1600px] mx-auto pb-24 font-sans bg-slate-50/30">
+      <div className="p-4 sm:p-8 space-y-6 sm:space-y-10 animate-fade-in max-w-[1600px] mx-auto pb-24 font-sans bg-slate-50/30">
          {/* HEADER */}
-         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-4">
-               <div className="w-12 h-12 bg-[#136dec] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                  <span className="material-icons-round text-white text-2xl">bar_chart</span>
+               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#136dec] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <span className="material-icons-round text-white text-lg sm:text-2xl">bar_chart</span>
                </div>
                <div>
-                  <h1 className="text-2xl font-black text-slate-900 tracking-tight">Tablero Financiero</h1>
-                  <p className="text-sm font-medium text-slate-400">Análisis de rentabilidad y salud financiera del periodo.</p>
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Tablero Financiero</h1>
+                  <p className="text-xs sm:text-sm font-medium text-slate-400">Análisis de rentabilidad y salud financiera.</p>
                </div>
             </div>
-            <div className="flex items-center gap-4">
-               <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+               <div className="flex-1 sm:flex-none flex items-center gap-3 bg-white px-4 sm:px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
                   <span className="material-icons-round text-slate-400">calendar_today</span>
                   <input
                      type="month"
-                     className="bg-transparent border-none outline-none text-sm font-bold text-slate-700 cursor-pointer"
+                     className="bg-transparent border-none outline-none text-sm font-bold text-slate-700 cursor-pointer w-full"
                      value={`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`}
                      onChange={e => {
                         const [y, m] = e.target.value.split('-');
@@ -225,7 +225,7 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
                      }}
                   />
                </div>
-               <button className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-600 hover:text-blue-600 transition-colors">
+               <button className="hidden sm:flex w-12 h-12 bg-white rounded-full items-center justify-center shadow-sm border border-slate-100 text-slate-600 hover:text-blue-600 transition-colors">
                   <span className="material-icons-round">dark_mode</span>
                </button>
             </div>
@@ -252,7 +252,7 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
          )}
 
          {/* MAIN KPIs */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             <KPICard label="Ingresos Totales" value={currentData.sales} prev={prevData.sales} color="text-slate-900" icon="trending_up" iconBg="bg-slate-900 text-white" />
             <KPICard label="Costos Mercancía (COGS)" value={currentData.cogs} prev={prevData.cogs} inverse color="text-[#f59e0b]" icon="shopping_basket" iconBg="bg-[#fef3c7] text-[#f59e0b]" />
             <KPICard label="Gastos Operativos" value={currentData.opExpenses} prev={prevData.opExpenses} inverse color="text-[#f43f5e]" icon="account_balance" iconBg="bg-[#fff1f2] text-[#f43f5e]" />
@@ -266,8 +266,8 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
             <div className="lg:col-span-4">
                <KPICard label="Utilidad Neta del Periodo" value={currentData.netProfit} prev={prevData.netProfit} color="text-white" bg="bg-[#0f172a]" isDark icon="stars" isBig />
             </div>
-            <div className="lg:col-span-4 bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col justify-between h-full">
-               <div className="flex justify-between items-start mb-6">
+            <div className="lg:col-span-4 bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col justify-between h-full">
+               <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-6">
                   <div>
                      <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.2em] mb-3">Punto de Equilibrio</p>
                      <h3 className="text-4xl font-heading font-black text-slate-900 tracking-tighter">{formatMoney(currentData.breakEvenPoint)}</h3>
@@ -298,9 +298,9 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
 
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* DISTRIBUTION: Estructura de Costos */}
-            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col items-center">
-               <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col items-center">
+               <div className="w-full flex justify-between items-center mb-6 sm:mb-10">
+                  <h3 className="font-heading font-black text-lg sm:text-xl text-slate-900 tracking-tight flex items-center gap-2">
                      <span className="material-icons-round text-slate-300">donut_large</span> Estructura de Costos
                   </h3>
                </div>
@@ -347,9 +347,9 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
             </div>
 
             {/* FINANCIAL HEALTH: Indicadores de Salud */}
-            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col relative overflow-hidden">
-               <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col relative overflow-hidden">
+               <div className="w-full flex justify-between items-center mb-6 sm:mb-10">
+                  <h3 className="font-heading font-black text-lg sm:text-xl text-slate-900 tracking-tight flex items-center gap-2">
                      <span className="material-icons-round text-slate-300">security</span> Indicadores de Salud
                   </h3>
                </div>
@@ -415,9 +415,9 @@ const FinanceView: React.FC<FinanceViewProps> = ({ orders, ingredients, expenses
             </div>
 
             {/* TRENDS: Desempeño Histórico */}
-            <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
-               <div className="w-full flex justify-between items-center mb-10">
-                  <h3 className="font-heading font-black text-xl text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="bg-white p-6 sm:p-10 rounded-[28px] sm:rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col">
+               <div className="w-full flex justify-between items-center mb-6 sm:mb-10">
+                  <h3 className="font-heading font-black text-lg sm:text-xl text-slate-900 tracking-tight flex items-center gap-2">
                      <span className="material-icons-round text-slate-300">insights</span> Desempeño Histórico
                   </h3>
                </div>
@@ -464,19 +464,19 @@ const KPICard = ({ label, value, prev, color, inverse, bg = "bg-white", isDark, 
    const formatMoney = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
    return (
-      <div className={`p-10 rounded-[40px] border shadow-xl transition-all duration-300 hover:-translate-y-1 ${isDark ? 'bg-[#0f172a] border-slate-800 shadow-slate-900/40' : 'bg-white border-slate-100 shadow-slate-200/40'
+      <div className={`p-4 sm:p-10 rounded-[28px] sm:rounded-[40px] border shadow-xl transition-all duration-300 hover:-translate-y-1 ${isDark ? 'bg-[#0f172a] border-slate-800 shadow-slate-900/40' : 'bg-white border-slate-100 shadow-slate-200/40'
          } ${isBig ? 'h-full flex flex-col justify-center' : ''}`}>
-         <div className="flex justify-between items-start mb-8">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${iconBg || (isDark ? 'bg-white/10 text-white' : 'bg-slate-100')}`}>
-               <span className="material-icons-round text-2xl">{icon}</span>
+         <div className="flex justify-between items-start mb-4 sm:mb-8">
+            <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shadow-sm ${iconBg || (isDark ? 'bg-white/10 text-white' : 'bg-slate-100')}`}>
+               <span className="material-icons-round text-xl sm:text-2xl">{icon}</span>
             </div>
             {prev !== undefined && (
                <TrendIndicatorWrapper curr={value} prev={prev} inverse={inverse} isDark={isDark} />
             )}
          </div>
-         <div className="space-y-2">
-            <p className={`text-[11px] uppercase font-black tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{label}</p>
-            <h3 className={`text-4xl font-heading font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>
+         <div className="space-y-1 sm:space-y-2">
+            <p className={`text-[9px] sm:text-[11px] uppercase font-black tracking-[0.2em] ${isDark ? 'text-white/40' : 'text-slate-400'}`}>{label}</p>
+            <h3 className={`text-xl sm:text-4xl font-heading font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>
                {value < 0 ? '-' : ''}${Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </h3>
             {prev !== undefined && (
@@ -554,16 +554,16 @@ const HealthIndicator = ({ label, value, suffix, status, target }: any) => {
    };
 
    return (
-      <div className="flex items-center justify-between group">
-         <div className="flex items-center gap-5">
-            <div className={`w-1.5 h-12 rounded-full ${barColors[status as keyof typeof barColors]}`}></div>
+      <div className="flex items-center justify-between group gap-4">
+         <div className="flex items-center gap-3 sm:gap-5">
+            <div className={`w-1 h-10 sm:w-1.5 sm:h-12 rounded-full ${barColors[status as keyof typeof barColors]}`}></div>
             <div>
-               <h4 className="text-base font-black text-slate-900 tracking-tight">{label}</h4>
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">{target}</p>
+               <h4 className="text-sm sm:text-base font-black text-slate-900 tracking-tight line-clamp-1">{label}</h4>
+               <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">{target}</p>
             </div>
          </div>
-         <div className="text-right">
-            <span className={`text-4xl font-heading font-black tracking-tighter ${textColors[status as keyof typeof textColors]}`}>
+         <div className="text-right shrink-0">
+            <span className={`text-2xl sm:text-4xl font-heading font-black tracking-tighter ${textColors[status as keyof typeof textColors]}`}>
                {value < 0 ? '' : '+'}{value.toFixed(1)}{suffix}
             </span>
          </div>

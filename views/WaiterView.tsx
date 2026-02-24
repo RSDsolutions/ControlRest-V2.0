@@ -331,7 +331,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
    const renderTablesView = () => {
       console.log('[WaiterView] Rendering Tables View - Orders:', orders.length);
       return (
-         <div className="flex-1 overflow-y-auto bg-bg-main animate-fadeIn text-slate-900">
+         <div className="flex-1 overflow-y-auto bg-bg-main animate-fadeIn text-slate-900 pb-20 sm:pb-0">
             {/* Offline banner */}
             {!isOnline && (
                <div className="bg-amber-500 text-white px-6 py-2 flex items-center gap-2 text-sm font-bold">
@@ -340,28 +340,28 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                </div>
             )}
             {/* Top bar */}
-            <div className="bg-white border-b border-slate-200 px-6 py-4">
-               <div className="flex items-center justify-between">
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 sticky top-0 z-30">
+               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                      <span className="material-icons-round text-3xl text-primary">table_restaurant</span>
                      <div>
-                        <h1 className="text-2xl font-black text-slate-900">Mis Mesas</h1>
-                        <p className="text-xs text-slate-500">Vista de mesas activas</p>
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-900">Mis Mesas</h1>
+                        <p className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-widest font-bold">Vista de mesas activas</p>
                      </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
                      {/* View toggle */}
-                     <button onClick={() => setTableViewType('grid')} className={`p-2 rounded-lg ${tableViewType === 'grid' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                     <button onClick={() => setTableViewType('grid')} className={`p-2 rounded-lg shrink-0 ${tableViewType === 'grid' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                         <span className="material-icons-round text-lg">grid_view</span>
                      </button>
-                     <button onClick={() => setTableViewType('list')} className={`p-2 rounded-lg ${tableViewType === 'list' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                     <button onClick={() => setTableViewType('list')} className={`p-2 rounded-lg shrink-0 ${tableViewType === 'list' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                         <span className="material-icons-round text-lg">view_list</span>
                      </button>
-                     <div className="w-px h-8 bg-slate-200 mx-2"></div>
-                     <button onClick={() => setViewMode('history')} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-bold text-slate-600 transition-all">
+                     <div className="w-px h-8 bg-slate-200 mx-2 shrink-0"></div>
+                     <button onClick={() => setViewMode('history')} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-600 transition-all shrink-0">
                         <span className="material-icons-round text-lg">history</span> Historial
                      </button>
-                     <button onClick={() => setViewMode('summary')} className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-sm font-bold text-primary transition-all">
+                     <button onClick={() => setViewMode('summary')} className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-xs font-bold text-primary transition-all shrink-0">
                         <span className="material-icons-round text-lg">analytics</span> Resumen
                      </button>
                   </div>
@@ -383,17 +383,17 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
 
             {/* Ready orders notification bar */}
             {readyOrders.length > 0 && (
-               <div className="mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3 animate-pulse">
+               <div className="mx-4 sm:mx-6 mt-4 p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3 animate-pulse">
                   <span className="material-icons-round text-purple-600 text-xl">notifications_active</span>
-                  <p className="text-sm font-bold text-purple-800">
-                     {readyOrders.length} pedido(s) listo(s) para servir:
+                  <p className="text-xs sm:text-sm font-bold text-purple-800">
+                     {readyOrders.length} listo(s):
                      {[...new Set(readyOrders.map(o => getTableLabel(o.tableId)))].map(label => ` Mesa ${label}`).join(',')}
                   </p>
                </div>
             )}
 
             {/* Tables Grid / List */}
-            <div className={`p-6 ${tableViewType === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4' : 'space-y-2'}`}>
+            <div className={`p-4 sm:p-6 ${tableViewType === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4' : 'space-y-3'}`}>
                {tables.map(table => {
                   const status = getStatusForTable(table);
                   const cfg = getTableStatusConfig(status);
@@ -470,33 +470,33 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
 
    // \u2500\u2500\u2500 ORDER VIEW \u2500\u2500\u2500
    const renderOrderView = () => (
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden animate-fadeIn text-slate-900">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden animate-fadeIn text-slate-900 pb-16 sm:pb-0">
          {/* Menu */}
          <section className="flex-1 bg-slate-50 flex flex-col overflow-hidden">
-            <header className="bg-white px-4 py-3 border-b border-slate-200 space-y-3">
+            <header className="bg-white px-3 sm:px-4 py-3 border-b border-slate-200 space-y-3 sticky top-0 z-30">
                <div className="flex items-center gap-3">
                   <button onClick={() => { setViewMode('tables'); setSelectedTableId(null); setCart([]); }}
                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all">
-                     <span className="material-icons-round">arrow_back</span>
+                     <span className="material-icons-round text-lg">arrow_back</span>
                   </button>
-                  <div className="flex-1">
-                     <h2 className="font-black text-slate-800 text-lg">{getTableLabel(selectedTableId || '')}</h2>
-                     <p className="text-xs text-slate-400">{tableOrders.length > 0 ? `${tableOrders.length} comanda(s) activas` : 'Nuevo pedido'}</p>
+                  <div className="flex-1 min-w-0">
+                     <h2 className="font-black text-slate-800 text-base sm:text-lg truncate">{getTableLabel(selectedTableId || '')}</h2>
+                     <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold truncate">{tableOrders.length > 0 ? `${tableOrders.length} comanda(s) activas` : 'Nuevo pedido'}</p>
                   </div>
                   {tableOrders.length > 0 && (
-                     <div className="flex gap-1.5">
+                     <div className="flex gap-1 overflow-x-auto no-scrollbar">
                         {['pending', 'preparing', 'ready'].map(s => {
                            const count = tableOrders.filter(o => o.status === s).length;
                            if (count === 0) return null;
                            return (
-                              <div key={s} className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase flex items-center gap-1 ${s === 'pending' ? 'bg-amber-100 text-amber-700' :
+                              <div key={s} className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase flex items-center gap-1 shrink-0 ${s === 'pending' ? 'bg-amber-100 text-amber-700' :
                                  s === 'preparing' ? 'bg-blue-100 text-blue-700' :
                                     'bg-emerald-100 text-emerald-700'
                                  }`}>
-                                 <span className="material-icons-round text-xs">
+                                 <span className="material-icons-round text-[12px]">
                                     {s === 'pending' ? 'schedule' : s === 'preparing' ? 'local_fire_department' : 'check_circle'}
                                  </span>
-                                 {count} {s === 'pending' ? 'Pend' : s === 'preparing' ? 'Prep' : 'Listo'}
+                                 {count}
                               </div>
                            );
                         })}
@@ -504,21 +504,24 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                   )}
                </div>
 
-               {/* Search */}
-               <div className="relative">
-                  <span className="material-icons-round absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
-                  <input type="text" placeholder="Buscar plato..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                     className="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/30" />
-               </div>
+               {/* Search & Categories Container */}
+               <div className="flex flex-col sm:flex-row gap-2">
+                  {/* Search */}
+                  <div className="relative flex-1">
+                     <span className="material-icons-round absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                     <input type="text" placeholder="Buscar plato..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/30" />
+                  </div>
 
-               {/* Categories */}
-               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                  {categories.map(cat => (
-                     <button key={cat} onClick={() => setSelectedCategory(cat)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                        {cat}
-                     </button>
-                  ))}
+                  {/* Categories */}
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                     {categories.map(cat => (
+                        <button key={cat} onClick={() => setSelectedCategory(cat)}
+                           className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                           {cat}
+                        </button>
+                     ))}
+                  </div>
                </div>
             </header>
 
@@ -567,7 +570,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          </section>
 
          {/* Cart / Order Panel */}
-         <section className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0">
+         <section className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0 h-[60vh] lg:h-full">
             <header className="p-4 border-b border-slate-100 bg-slate-50/50">
                <div className="flex items-center justify-between">
                   <div>

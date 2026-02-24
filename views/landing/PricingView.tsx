@@ -25,11 +25,11 @@ const PricingView: React.FC = () => {
             <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
                 <LandingHeader />
                 <main className="flex-1 flex flex-col items-center px-4 md:px-10 py-12 lg:py-20">
-                    <div className="max-w-[960px] w-full flex flex-col items-center text-center gap-6 mb-16">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-white max-w-5xl">
+                    <div className="max-w-[960px] w-full flex flex-col items-center text-center gap-6 mb-12 sm:mb-16">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-white max-w-5xl px-2">
                             No todos los restaurantes necesitan más ventas. <span className="text-primary block mt-2">Necesitan más control.</span>
                         </h1>
-                        <p className="text-lg text-text-light max-w-2xl font-normal leading-relaxed">
+                        <p className="text-base sm:text-lg text-text-light max-w-2xl font-normal leading-relaxed px-4">
                             La mayoría de los negocios gastronómicos mueren vendiendo mucho pero ganando poco. ControlRest V2.0 te da visibilidad financiera diaria para transformar flujo de caja en utilidad neta.
                         </p>
                         <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8 transition-all">
@@ -198,44 +198,44 @@ const PricingView: React.FC = () => {
                         </div>
                         <div className="overflow-x-auto rounded-xl border border-border-dark bg-card-dark">
                             <table className="w-full text-left text-sm text-text-light">
-                                <thead className="bg-background-dark/50 text-xs uppercase text-white font-bold border-b border-border-dark">
+                                <thead className="bg-background-dark/50 text-[10px] sm:text-xs uppercase text-white font-bold border-b border-border-dark">
                                     <tr>
-                                        <th className="px-6 py-4 w-1/3" scope="col">Dimensión</th>
-                                        <th className="px-6 py-4 w-1/5 text-center text-text-muted" scope="col">Operar</th>
-                                        <th className="px-6 py-4 w-1/5 text-center text-primary" scope="col">Controlar</th>
-                                        <th className="px-6 py-4 w-1/5 text-center text-white" scope="col">Escalar</th>
+                                        <th className="px-4 sm:px-6 py-4 w-1/3" scope="col">Dimensión</th>
+                                        <th className="px-4 sm:px-6 py-4 w-1/5 text-center text-text-muted" scope="col">Operar</th>
+                                        <th className="px-4 sm:px-6 py-4 w-1/5 text-center text-primary" scope="col">Controlar</th>
+                                        <th className="px-4 sm:px-6 py-4 w-1/5 text-center text-white" scope="col">Escalar</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border-dark">
+                                <tbody className="divide-y divide-border-dark text-[11px] sm:text-sm">
                                     <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Visibilidad de Margen</td>
-                                        <td className="px-6 py-4 text-center">Teórico</td>
-                                        <td className="px-6 py-4 text-center font-bold text-primary">Real (FIFO)</td>
-                                        <td className="px-6 py-4 text-center">Consolidado</td>
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-white">Visibilidad de Margen</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Teórico</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center font-bold text-primary">Real (FIFO)</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Consolidado</td>
                                     </tr>
                                     <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Impacto Financiero</td>
-                                        <td className="px-6 py-4 text-center">Solo Ventas</td>
-                                        <td className="px-6 py-4 text-center font-bold text-primary">Utilidad Neta</td>
-                                        <td className="px-6 py-4 text-center">EBITDA</td>
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-white">Impacto Financiero</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Solo Ventas</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center font-bold text-primary">Utilidad Neta</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">EBITDA</td>
                                     </tr>
                                     <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Detección de Merma</td>
-                                        <td className="px-6 py-4 text-center text-text-muted">Manual</td>
-                                        <td className="px-6 py-4 text-center font-bold text-primary">Automática</td>
-                                        <td className="px-6 py-4 text-center">Predictiva</td>
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-white">Detección de Merma</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center text-text-muted">Manual</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center font-bold text-primary">Automática</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Predictiva</td>
                                     </tr>
                                     <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Consolidación</td>
-                                        <td className="px-6 py-4 text-center text-text-muted">-</td>
-                                        <td className="px-6 py-4 text-center text-text-muted">-</td>
-                                        <td className="px-6 py-4 text-center text-success font-bold">Multi-Razón Social</td>
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-white">Consolidación</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center text-text-muted">-</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center text-text-muted">-</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center text-success font-bold">Corporativo</td>
                                     </tr>
                                     <tr className="hover:bg-white/5 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Control de Stock</td>
-                                        <td className="px-6 py-4 text-center">Básico</td>
-                                        <td className="px-6 py-4 text-center font-bold text-primary">Receta vs Real</td>
-                                        <td className="px-6 py-4 text-center">Centralizado</td>
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-white">Control de Stock</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Básico</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center font-bold text-primary">Receta vs Real</td>
+                                        <td className="px-4 sm:px-6 py-4 text-center">Centralizado</td>
                                     </tr>
                                 </tbody>
                             </table>
