@@ -117,7 +117,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
       }
    };
 
-   const activeBills = tables.filter(t => (t.status === 'billing' || t.status === 'occupied') && orders.some(o => !o.optimistic && o.tableId === (t.id || t.label) && o.status !== 'paid'));
+   const activeBills = tables.filter(t => (t.status === 'billing' || t.status === 'occupied') && orders.some(o => !o.optimistic && o.tableId === (t.id || t.label) && ['open', 'pending', 'preparing', 'ready', 'delivered', 'billing', 'served'].includes(o.status)));
 
    const handleStartPayment = (t: Table) => {
       setProcessingTableId(t.id || t.label);
@@ -125,7 +125,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    };
 
    const selectedTable = tables.find(t => (t.id || t.label) === processingTableId);
-   const tableOrders = orders.filter(o => !o.optimistic && o.tableId === (selectedTable?.id || selectedTable?.label) && o.status !== 'paid');
+   const tableOrders = orders.filter(o => !o.optimistic && o.tableId === (selectedTable?.id || selectedTable?.label) && ['open', 'pending', 'preparing', 'ready', 'delivered', 'billing', 'served'].includes(o.status));
 
    // Aggregate items and total
    const aggregateItems = tableOrders.flatMap(o => o.items);
@@ -299,7 +299,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                            {activeBills.map(table => {
-                              const tOrders = orders.filter(o => o.tableId === (table.id || table.label) && o.status !== 'paid');
+                              const tOrders = orders.filter(o => o.tableId === (table.id || table.label) && ['open', 'pending', 'preparing', 'ready', 'delivered', 'billing', 'served'].includes(o.status));
                               const tTotal = tOrders.reduce((acc, o) => acc + o.total, 0);
                               return (
                                  <tr key={table.id} className="hover:bg-slate-50 transition-all group">
