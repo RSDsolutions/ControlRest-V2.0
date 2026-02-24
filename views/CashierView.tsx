@@ -137,7 +137,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
          for (const id of orderIds) {
             const { error: oError } = await supabase
                .from('orders')
-               .update({ status: 'paid', paid_at: new Date().toISOString(), cashier_id: currentUser?.id })
+               .update({ status: 'paid', paid_at: new Date().toISOString() })
                .eq('id', id);
             if (oError) throw oError;
          }

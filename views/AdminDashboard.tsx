@@ -588,22 +588,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ ingredients, plates, ta
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-            {[
-              { label: 'Ingresos Netos', value: formatMoney(Number(monthlyKpis.total_sales)), icon: 'account_balance', color: 'text-primary' },
-              { label: 'Utilidad Bruta', value: formatMoney(Number(monthlyKpis.gross_profit)), icon: 'trending_up', color: 'text-indigo-600' },
-              { label: 'Utilidad Real', value: formatMoney(Number(monthlyKpis.net_profit)), icon: 'savings', color: Number(monthlyKpis.net_profit) >= 0 ? 'text-status-success' : 'text-status-error' },
-              { label: 'Margen de Beneficio', value: `${Number(monthlyKpis.profit_margin).toFixed(1)}%`, icon: 'donut_large', color: Number(monthlyKpis.profit_margin) >= 20 ? 'text-status-success' : 'text-amber-500' },
-            ].map(k => (
-              <div key={k.label} className="card p-6 border-slate-100 hover:border-primary/20 hover:shadow-brand transition-all">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg ${k.color.replace('text-', 'bg-')}/10`}>
-                    <span className={`material-icons-round ${k.color} text-xl`}>{k.icon}</span>
+            {(() => {
+              const sales = Number(monthlyKpis.total_sales);
+              const variableCosts = Number(monthlyKpis.total_cogs) + Number(monthlyKpis.total_waste_cost);
+              const fixedCosts = Number(monthlyKpis.total_expenses);
+              const contributionMarginRatio = sales > 0 ? (sales - variableCosts) / sales : 0;
+              const breakEvenPoint = contributionMarginRatio > 0 ? fixedCosts / contributionMarginRatio : 0;
+
+              return [
+                { label: 'Ingresos Netos', value: formatMoney(sales), icon: 'account_balance', color: 'text-primary' },
+                { label: 'Utilidad Bruta', value: formatMoney(Number(monthlyKpis.gross_profit)), icon: 'trending_up', color: 'text-indigo-600' },
+                { label: 'Utilidad Real', value: formatMoney(Number(monthlyKpis.net_profit)), icon: 'savings', color: Number(monthlyKpis.net_profit) >= 0 ? 'text-status-success' : 'text-status-error' },
+                { label: 'Punto de Equilibrio', value: formatMoney(breakEvenPoint), icon: 'adjust', color: 'text-amber-600' },
+              ].map(k => (
+                <div key={k.label} className="card p-6 border-slate-100 hover:border-primary/20 hover:shadow-brand transition-all">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`p-2 rounded-lg ${k.color.replace('text-', 'bg-')}/10`}>
+                      <span className={`material-icons-round ${k.color} text-xl`}>{k.icon}</span>
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">{k.label}</p>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">{k.label}</p>
+                  <p className="text-2xl font-heading font-extrabold text-brand-black">{k.value}</p>
                 </div>
-                <p className="text-2xl font-heading font-extrabold text-brand-black">{k.value}</p>
-              </div>
-            ))}
+              ));
+            })()}
           </div>
         </div>
       )}
