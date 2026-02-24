@@ -608,7 +608,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                                     order.status === 'pending' ? '\u23F3 Pendiente' :
                                        order.status === 'preparing' ? '\uD83D\uDD25 Preparando' :
                                           order.status === 'ready' ? '\u2705 \u00A1Servir!' :
-                                             order.status === 'served' ? '\uD83D\uDDB4 Servido' :
+                                             (order.status === 'delivered' || order.status === 'served') ? '\uD83D\uDDB4 Servido' :
                                                 order.status
                                  }
                               </span>
@@ -711,7 +711,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                      <span className="material-icons-round">{isOnline ? 'local_fire_department' : 'wifi_off'}</span>
                      {isLoading ? 'Guardando...' : !isOnline ? (tableOrders.length > 0 ? 'Guardar Adicional (Offline)' : 'Guardar Offline') : (tableOrders.length > 0 ? 'Enviar Adicional a Cocina' : 'Enviar a Cocina')}
                   </button>
-               ) : tableOrders.length > 0 && tableOrders.every(o => o.status === 'served') && (
+               ) : tableOrders.length > 0 && tableOrders.every(o => ['delivered', 'served'].includes(o.status)) && (
                   <button disabled={isLoading} onClick={handleRequestBill}
                      className="w-full py-3.5 rounded-2xl bg-pink-600 text-white font-black text-base hover:bg-pink-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-pink-600/20">
                      <span className="material-icons-round">point_of_sale</span>
