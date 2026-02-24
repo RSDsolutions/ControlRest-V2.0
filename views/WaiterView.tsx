@@ -526,16 +526,16 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
             </header>
 
             {/* Plates grid */}
-            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4 auto-rows-max">
                {filteredPlates.map(plate => {
                   const inCart = cart.find(i => i.plateId === plate.id);
                   const stock = getPlateStock(plate);
 
                   return (
-                     <div key={plate.id} onClick={() => stock > 0 ? addToCart(plate) : showNotification(`\u26A0\uFE0F ${plate.name} agotado`)}
-                        className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-primary group cursor-pointer transform active:scale-95 relative flex flex-col h-full ${stock <= 0 ? 'opacity-60 grayscale' : ''}`}>
+                     <div key={plate.id} onClick={() => stock > 0 ? addToCart(plate) : showNotification(`⚠️ ${plate.name} agotado`)}
+                        className={`bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all border-2 border-transparent hover:border-primary group cursor-pointer transform active:scale-95 relative flex flex-col ${stock <= 0 ? 'opacity-60 grayscale' : ''}`}>
                         {/* Image Container */}
-                        <div className="h-32 relative overflow-hidden shrink-0">
+                        <div className="h-24 sm:h-32 relative overflow-hidden shrink-0 bg-slate-100">
                            <img src={plate.image} alt={plate.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
 
                            {/* Badge Quantity */}
@@ -553,14 +553,14 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                         </div>
 
                         {/* Content: Title, Desc, Price */}
-                        <div className="p-3 flex flex-col flex-grow">
-                           <h4 className="font-bold text-slate-800 text-sm mb-1">{plate.name}</h4>
-                           <p className="text-[10px] text-slate-500 leading-tight mb-3 line-clamp-2">
+                        <div className="p-2 sm:p-3 flex flex-col flex-grow min-h-0">
+                           <h4 className="font-bold text-slate-800 text-xs sm:text-sm mb-1 line-clamp-1">{plate.name}</h4>
+                           <p className="hidden sm:block text-[10px] text-slate-500 leading-tight mb-3 line-clamp-2">
                               {plate.description || 'Delicioso plato preparado al momento.'}
                            </p>
-                           <div className="mt-auto flex justify-between items-center w-full">
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{plate.category}</span>
-                              <span className="font-black text-lg text-primary bg-primary/5 px-2 py-0.5 rounded-lg">${plate.sellingPrice.toFixed(2)}</span>
+                           <div className="mt-1 sm:mt-auto flex justify-between items-center w-full">
+                              <span className="hidden sm:inline text-[10px] text-slate-400 font-bold uppercase tracking-wider">{plate.category}</span>
+                              <span className="font-black text-sm sm:text-lg text-primary bg-primary/5 px-1.5 sm:px-2 py-0.5 rounded-lg">${plate.sellingPrice.toFixed(2)}</span>
                            </div>
                         </div>
                      </div>
@@ -570,7 +570,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          </section>
 
          {/* Cart / Order Panel */}
-         <section className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0 h-[60vh] lg:h-full">
+         <section className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0 h-[45vh] lg:h-full">
             <header className="p-4 border-b border-slate-100 bg-slate-50/50">
                <div className="flex items-center justify-between">
                   <div>
