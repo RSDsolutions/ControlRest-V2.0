@@ -225,13 +225,13 @@ const SupportView: React.FC = () => {
                             <ul className="space-y-2">
                                 <li className="flex items-center gap-2 text-[#9CA3AF] text-sm">
                                     <span className="material-symbols-outlined text-xs">mail</span>
-                                    soporte@controlrest.com
+                                    soporte@restogestion.com
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <div className="w-full text-center py-6">
-                        <p className="text-[#566583] text-xs">© 2023 ControlRest Inc. Todos los derechos reservados.</p>
+                        <p className="text-[#566583] text-xs">© 2023 RestoGestión Inc. Todos los derechos reservados.</p>
                     </div>
                 </div>
             </main>

@@ -30,7 +30,7 @@ const PricingView: React.FC = () => {
                             No todos los restaurantes necesitan más ventas. <span className="text-primary block mt-2">Necesitan más control.</span>
                         </h1>
                         <p className="text-base sm:text-lg text-text-light max-w-2xl font-normal leading-relaxed px-4">
-                            La mayoría de los negocios gastronómicos mueren vendiendo mucho pero ganando poco. ControlRest V2.0 te da visibilidad financiera diaria para transformar flujo de caja en utilidad neta.
+                            La mayoría de los negocios gastronómicos mueren vendiendo mucho pero ganando poco. RestoGestión V2.0 te da visibilidad financiera diaria para transformar flujo de caja en utilidad neta.
                         </p>
                         <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8 transition-all">
                             <button
@@ -290,10 +290,10 @@ const PricingView: React.FC = () => {
                                     <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
                                 </svg>
                             </div>
-                            <span className="font-bold text-sm">ControlRest V2.0</span>
+                            <span className="font-bold text-sm">RestoGestión V2.0</span>
                         </div>
                         <div className="text-xs text-text-muted">
-                            © 2024 ControlRest Inc. Datos financieros seguros.
+                            © 2024 RestoGestión Inc. Datos financieros seguros.
                         </div>
                         <div className="flex gap-4">
                             <a className="text-text-muted hover:text-primary transition-colors" href="#">

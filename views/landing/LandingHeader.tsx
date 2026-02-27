@@ -27,7 +27,7 @@ const LandingHeader: React.FC = () => {
                         <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
                             <span className="material-symbols-outlined text-[20px] sm:text-[22px]">dataset</span>
                         </div>
-                        <span className="text-white text-base sm:text-lg font-bold tracking-tight">ControlRest V2.0</span>
+                        <span className="text-white text-base sm:text-lg font-bold tracking-tight">RestoGestión V2.0</span>
                     </div>
 
                     {/* Desktop Nav */}

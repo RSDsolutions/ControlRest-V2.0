@@ -142,7 +142,7 @@ const ProblemView: React.FC = () => {
                                 La contabilidad tradicional suele reportar una "Utilidad Ficticia" basada en costos teóricos. Sin embargo, la realidad operativa (mermas, robos, inflación) crea una brecha financiera significativa.
                             </p>
                             <p>
-                                ControlRest V2.0 audita cada movimiento para revelar tu "Rentabilidad Real", eliminando la incertidumbre de los reportes financieros mensuales.
+                                RestoGestión V2.0 audita cada movimiento para revelar tu "Rentabilidad Real", eliminando la incertidumbre de los reportes financieros mensuales.
                             </p>
                         </div>
                     </div>
@@ -242,7 +242,7 @@ const ProblemView: React.FC = () => {
                         </div>
                         <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Recupera el control de tus márgenes</h2>
                         <p className="text-slate-400 mb-10 max-w-xl mx-auto">
-                            Implementa ControlRest V2.0 y transforma tu operación en un sistema financiero blindado.
+                            Implementa RestoGestión V2.0 y transforma tu operación en un sistema financiero blindado.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-lg mx-auto">
                             <button className="w-full sm:w-auto bg-primary-blue hover:bg-blue-600 text-white font-bold py-4 px-8 uppercase tracking-wider text-sm border border-blue-400 transition-all hover:shadow-[0_0_20px_rgba(58,134,255,0.3)]">
@@ -262,7 +262,7 @@ const ProblemView: React.FC = () => {
                     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500">
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined text-sm">terminal</span>
-                            <span className="font-bold">ControlRest V2.0 SYSTEMS</span>
+                            <span className="font-bold">RestoGestión V2.0 SYSTEMS</span>
                         </div>
                         <div className="flex gap-6 uppercase tracking-wider">
                             <a className="hover:text-primary-blue" href="#">Privacidad</a>

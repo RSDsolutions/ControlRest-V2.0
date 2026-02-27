@@ -64,7 +64,7 @@ const LandingView: React.FC = () => {
                                     <div className="w-3 h-3 rounded-full bg-slate-600"></div>
                                     <div className="w-3 h-3 rounded-full bg-slate-600"></div>
                                 </div>
-                                <div className="flex-1 text-center text-xs text-slate-500 font-mono">dashboard.controlrest.com/financial_overview</div>
+                                <div className="flex-1 text-center text-xs text-slate-500 font-mono">dashboard.restogestion.com/financial_overview</div>
                             </div>
 
                             {/* Dashboard Content */}
@@ -405,7 +405,7 @@ const LandingView: React.FC = () => {
                                 <div className="w-6 h-6 flex items-center justify-center bg-slate-700 rounded text-white">
                                     <span className="material-symbols-outlined text-[16px]">dataset</span>
                                 </div>
-                                <span className="text-white font-bold">ControlRest</span>
+                                <span className="text-white font-bold">RestoGestión</span>
                             </div>
                             <p className="text-slate-500 text-sm">
                                 El ERP financiero líder para el sector gastronómico en Latinoamérica.
@@ -440,7 +440,7 @@ const LandingView: React.FC = () => {
                     </div>
                     <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-slate-600 text-xs text-center md:text-left">
-                            © {new Date().getFullYear()} ControlRest Inc. Todos los derechos reservados.
+                            © {new Date().getFullYear()} RestoGestión Inc. Todos los derechos reservados.
                         </p>
                     </div>
                 </div>

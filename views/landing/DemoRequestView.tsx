@@ -286,7 +286,7 @@ const DemoRequestView: React.FC = () => {
             </div>
 
             <div className="text-center mt-12 mb-20 text-slate-500 text-[10px] font-black uppercase tracking-[0.4em]">
-                RSD SOLUTIONS &copy; 2026 - ControlRest V2.0 Enterprise
+                RSD SOLUTIONS &copy; 2026 - RestoGestión V2.0 Enterprise
             </div>
         </div>
     );
