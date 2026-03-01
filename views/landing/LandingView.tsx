@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
+import LandingFooter from './LandingFooter';
 
 const LandingView: React.FC = () => {
     const navigate = useNavigate();
@@ -43,13 +44,19 @@ const LandingView: React.FC = () => {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-20 px-4 w-full sm:w-auto">
-                            <button onClick={() => navigate('/login')} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
-                                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-                                Agendar Diagnóstico Financiero
+                            <button
+                                onClick={() => navigate('/como-funciona')}
+                                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">insights</span>
+                                Descubrir cuánto gano realmente
                             </button>
-                            <button onClick={() => navigate('/login')} className="w-full sm:w-auto bg-[#1E293B] border border-slate-700 hover:border-slate-500 text-white text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-colors flex items-center justify-center gap-2">
-                                <span className="material-symbols-outlined text-[20px]">play_circle</span>
-                                Ver Demo Interactiva
+                            <button
+                                onClick={() => navigate('/solicitar-demo')}
+                                className="w-full sm:w-auto bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-sm sm:text-base font-bold h-14 sm:h-12 px-8 rounded-xl sm:rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">event</span>
+                                Agendar demo
                             </button>
                         </div>
                     </div>
@@ -261,10 +268,10 @@ const LandingView: React.FC = () => {
                     </div>
                 </section>
 
-                {/* El ERP como Conector */}
-                <section className="py-24 bg-[#111827] border-y border-slate-800">
+                {/* Cómo RestoGestion calcula tu utilidad real */}
+                <section id="utilidad-real" className="py-24 bg-[#111827] border-y border-slate-800 scroll-mt-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <h2 className="text-3xl md:text-4xl font-black text-white mb-4">La Solución: El ERP como conector de verdad</h2>
+                        <h2 className="text-3xl md:text-4xl font-black text-white mb-4">Cómo RestoGestion calcula tu utilidad real</h2>
                         <p className="text-slate-400 mb-20 max-w-2xl mx-auto">Un flujo único que conecta tus ventas con tu impacto financiero real, al instante.</p>
 
                         <div className="relative">
@@ -383,13 +390,18 @@ const LandingView: React.FC = () => {
                             Únete a los directores financieros gastronómicos que han dejado de adivinar y han empezado a gestionar con datos.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button onClick={() => navigate('/login')} className="bg-blue-600 hover:bg-blue-700 text-white text-base font-bold h-12 px-8 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
+                            <button onClick={() => navigate('/solicitar-demo')} className="bg-blue-600 hover:bg-blue-700 text-white text-base font-bold h-12 px-8 rounded-lg transition-all shadow-lg flex items-center justify-center gap-2">
                                 <span className="material-symbols-outlined">calendar_month</span>
                                 Agendar Demo Personalizada
                             </button>
-                            <button onClick={() => navigate('/login')} className="bg-[#1E293B] border border-slate-700 hover:border-white text-white text-base font-bold h-12 px-8 rounded-lg transition-colors flex items-center justify-center">
+                            <a
+                                href="https://wa.link/44jhjq"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-[#1E293B] border border-slate-700 hover:border-white text-white text-base font-bold h-12 px-8 rounded-lg transition-colors flex items-center justify-center"
+                            >
                                 Hablar con un experto
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </section>
@@ -397,54 +409,7 @@ const LandingView: React.FC = () => {
             </main>
 
             {/* Footer */}
-            <footer className="bg-[#0B1120] border-t border-slate-800 pt-16 pb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                        <div className="col-span-1 md:col-span-1">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-6 h-6 flex items-center justify-center bg-slate-700 rounded text-white">
-                                    <span className="material-symbols-outlined text-[16px]">dataset</span>
-                                </div>
-                                <span className="text-white font-bold">RestoGestión</span>
-                            </div>
-                            <p className="text-slate-500 text-sm">
-                                El ERP financiero líder para el sector gastronómico en Latinoamérica.
-                            </p>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4">Producto</h4>
-                            <ul className="space-y-2 text-sm text-slate-500">
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Características</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Integraciones</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Precios</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Novedades</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4">Recursos</h4>
-                            <ul className="space-y-2 text-sm text-slate-500">
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Blog Financiero</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Casos de Éxito</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Calculadora de Food Cost</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Ayuda</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4">Legal</h4>
-                            <ul className="space-y-2 text-sm text-slate-500">
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Privacidad</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Términos</a></li>
-                                <li><a className="hover:text-blue-500 transition-colors" href="#">Seguridad</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-slate-600 text-xs text-center md:text-left">
-                            © {new Date().getFullYear()} RestoGestión Inc. Todos los derechos reservados.
-                        </p>
-                    </div>
-                </div>
-            </footer>
+            <LandingFooter />
         </div>
     );
 };

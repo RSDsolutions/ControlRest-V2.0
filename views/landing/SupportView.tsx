@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
+import LandingFooter from './LandingFooter';
 
 const SupportView: React.FC = () => {
     const navigate = useNavigate();
@@ -16,8 +17,8 @@ const SupportView: React.FC = () => {
         <div className="bg-[#0F172A] text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white overflow-x-hidden min-h-screen">
 
             <LandingHeader />
-            <main className="flex-1 flex flex-col items-center w-full">
-                <div className="w-full max-w-[1280px] px-4 md:px-10 py-6">
+            <main className="flex-1 flex flex-col items-center w-full pt-20">
+                <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-wrap gap-2 mb-8">
                         <a className="text-[#92a4c8] hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Inicio</a>
                         <span className="text-[#92a4c8] text-sm font-medium leading-normal">/</span>
@@ -109,12 +110,6 @@ const SupportView: React.FC = () => {
                                     </span>
                                     <span className="text-xs font-medium text-green-400">Auditoría Activa • Respuesta: Prioritaria</span>
                                 </div>
-                                <div className="space-y-3 mt-auto">
-                                    <button className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
-                                        <span className="material-symbols-outlined text-sm">fact_check</span>
-                                        Solicitar revisión operativa
-                                    </button>
-                                </div>
                             </div>
                         </div>
                         <div className="flex flex-col bg-[#1a2233] border border-[#374151] rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-300 group">
@@ -135,12 +130,6 @@ const SupportView: React.FC = () => {
                                         <div className="bg-purple-500 h-2 rounded-full" style={{ "width": "40%" }}></div>
                                     </div>
                                     <p className="text-[10px] text-[#9CA3AF] mt-2">Siguiente: Validación de recetas base</p>
-                                </div>
-                                <div className="space-y-3 mt-auto">
-                                    <button className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-slate-900 font-bold py-3 px-4 rounded-lg transition-colors">
-                                        <span className="material-symbols-outlined text-sm">calendar_month</span>
-                                        Agendar sesión de implementación
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -185,56 +174,26 @@ const SupportView: React.FC = () => {
                                 Comienza hoy mismo el proceso de transformación operativa de tu restaurante.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <button className="w-full sm:w-auto min-w-[200px] h-14 bg-primary hover:bg-blue-600 text-white text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all hover:scale-105 flex items-center justify-center gap-2">
+                                <button
+                                    onClick={() => navigate('/solicitar-demo')}
+                                    className="w-full sm:w-auto min-w-[200px] h-14 bg-primary hover:bg-blue-600 text-white text-base font-bold rounded-lg shadow-lg shadow-primary/20 transition-all hover:scale-105 flex items-center justify-center gap-2"
+                                >
                                     <span className="material-symbols-outlined">start</span>
-                                    Iniciar Implementación
+                                    Solicitar DEMO
                                 </button>
-                                <button className="w-full sm:w-auto min-w-[200px] h-14 bg-transparent hover:bg-white/5 border-2 border-[#374151] text-white text-base font-bold rounded-lg transition-all hover:border-white flex items-center justify-center gap-2">
+                                <button
+                                    onClick={() => window.open('https://api.whatsapp.com/send?phone=593984918811&text=Hola%20%F0%9F%91%8B%20Estoy%20interesado%20en%20implementar%20un%20sistema%20para%20controlar%20en%20tiempo%20real%20los%20costos%2C%20inventario%20y%20utilidad%20de%20mi%20restaurante.%0A%0AQuisiera%20saber%20c%C3%B3mo%20funciona%20RestoGesti%C3%B3n%20y%20si%20puede%20adaptarse%20a%20mi%20operaci%C3%B3n%20actual.', '_blank')}
+                                    className="w-full sm:w-auto min-w-[200px] h-14 bg-transparent hover:bg-white/5 border-2 border-[#374151] text-white text-base font-bold rounded-lg transition-all hover:border-white flex items-center justify-center gap-2"
+                                >
                                     <span className="material-symbols-outlined">support_agent</span>
                                     Hablar con un consultor
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 w-full border-t border-[#242f47] mt-16 pt-10 pb-6">
-                        <div>
-                            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Producto</h4>
-                            <ul className="space-y-2">
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Novedades V2.0</a></li>
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Seguridad</a></li>
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Integraciones</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Recursos</h4>
-                            <ul className="space-y-2">
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Blog Financiero</a></li>
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Comunidad</a></li>
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Webinars</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
-                            <ul className="space-y-2">
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Privacidad</a></li>
-                                <li><a className="text-[#9CA3AF] hover:text-primary text-sm transition-colors" href="#">Términos</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">Contacto</h4>
-                            <ul className="space-y-2">
-                                <li className="flex items-center gap-2 text-[#9CA3AF] text-sm">
-                                    <span className="material-symbols-outlined text-xs">mail</span>
-                                    soporte@restogestion.com
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="w-full text-center py-6">
-                        <p className="text-[#566583] text-xs">© 2023 RestoGestión Inc. Todos los derechos reservados.</p>
-                    </div>
                 </div>
             </main>
+            <LandingFooter />
 
 
         </div>

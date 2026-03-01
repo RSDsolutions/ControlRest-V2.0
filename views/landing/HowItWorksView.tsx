@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
+import LandingFooter from './LandingFooter';
 
 const HowItWorksView: React.FC = () => {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ const HowItWorksView: React.FC = () => {
         <div className="bg-[#0F172A] text-slate-100 font-sans antialiased selection:bg-blue-600 selection:text-white overflow-x-hidden min-h-screen">
 
             <LandingHeader />
-            <main className="flex-1 flex flex-col items-center w-full px-4 py-8 lg:py-16">
+            <main className="flex-1 flex flex-col items-center w-full px-4 pt-32 pb-8 lg:pb-16 lg:pt-40">
                 <div className="max-w-[1200px] w-full flex flex-col gap-16 lg:gap-24">
                     <div className="text-center space-y-6 max-w-4xl mx-auto">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/30 text-blue-500 text-xs font-semibold uppercase tracking-wider mb-2">
@@ -27,7 +28,7 @@ const HowItWorksView: React.FC = () => {
                             Cada venta debería decirte <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-500">cuánto ganaste</span>
                         </h1>
                         <p className="text-slate-400 text-base sm:text-lg lg:text-xl font-normal max-w-2xl mx-auto px-4">
-                            No solo registres ingresos. Transforma cada transacción en un evento financiero medible que conecta tu POS con tu P&amp;L instantáneamente.
+                            No solo registres ingresos. Transforma cada transacción en un evento financiero medible que conecta tu POS con tu P&L instantáneamente.
                         </p>
                     </div>
                     <div className="space-y-8">
@@ -214,16 +215,20 @@ const HowItWorksView: React.FC = () => {
                         <h2 className="text-3xl lg:text-4xl font-bold text-white max-w-2xl">
                             Deja de medir ventas. <br /><span className="text-emerald-500">Empieza a medir ganancias.</span>
                         </h2>
-                        <button className="flex items-center gap-3 bg-blue-600 hover:bg-blue-600/90 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_10px_20px_rgba(58,134,255,0.3)] transition-all transform hover:scale-105 border border-blue-500/50">
+                        <button
+                            onClick={() => navigate('/solicitar-demo')}
+                            className="flex items-center gap-3 bg-blue-600 hover:bg-blue-600/90 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_10px_20px_rgba(58,134,255,0.3)] transition-all transform hover:scale-105 border border-blue-500/50"
+                        >
                             Solicitar demo financiera
                             <span className="material-symbols-outlined">arrow_forward</span>
                         </button>
-                        <p className="text-sm text-slate-400">Sin tarjeta de crédito requerida • Implementación en 48h</p>
+                        <p className="text-sm text-slate-400">Soporte asistido en la iniciación</p>
                     </div>
                 </div>
             </main>
 
 
+            <LandingFooter />
         </div>
     );
 };
