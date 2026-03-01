@@ -1,6 +1,130 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import LandingFooter from './LandingFooter';
+
+const COUNTRIES = [
+    {
+        name: 'Ecuador',
+        code: '+593',
+        cities: [
+            'Quito', 'Guayaquil', 'Cuenca', 'Santo Domingo', 'Machala', 'Durán', 'Manta', 'Portoviejo', 'Loja', 'Ambato',
+            'Esmeraldas', 'Quevedo', 'Riobamba', 'Milagro', 'Ibarra', 'La Libertad', 'Babahoyo', 'Sangolquí', 'Daule',
+            'Latacunga', 'Tulcán', 'Chone', 'Pasaje', 'Santa Rosa', 'Nueva Loja', 'Huaquillas', 'El Carmen', 'Montecristi',
+            'Samborondón', 'Puerto Baquerizo Moreno', 'Santa Elena', 'Salinas', 'Otavalo', 'Azogues', 'Guaranda', 'Tena',
+            'Puyo', 'Macas', 'Zamora'
+        ]
+    },
+    {
+        name: 'Colombia',
+        code: '+57',
+        cities: ['Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Bucaramanga', 'Pereira', 'Santa Marta', 'Ibagué']
+    },
+    {
+        name: 'Perú',
+        code: '+51',
+        cities: ['Lima', 'Arequipa', 'Trujillo', 'Chiclayo', 'Piura', 'Iquitos', 'Cusco', 'Chimbote', 'Huancayo', 'Tacna']
+    },
+    {
+        name: 'México',
+        code: '+52',
+        cities: ['CDMX', 'Guadalajara', 'Monterrey', 'Puebla', 'Tijuana', 'León', 'Juárez', 'Zapopan', 'Mérida', 'San Luis Potosí']
+    },
+    {
+        name: 'Chile',
+        code: '+56',
+        cities: ['Santiago', 'Puente Alto', 'Antofagasta', 'Viña del Mar', 'Valparaíso', 'Talcahuano', 'San Bernardo', 'Temuco', 'Iquique', 'Concepción']
+    },
+    {
+        name: 'Argentina',
+        code: '+54',
+        cities: ['Buenos Aires', 'Córdoba', 'Rosario', 'Mendoza', 'Tucumán', 'La Plata', 'Mar del Plata', 'Salta', 'Santa Fe', 'San Juan']
+    }
+];
+
+interface CustomSelectProps {
+    label: string;
+    value: string;
+    options: string[] | { label: string; value: string }[];
+    onChange: (value: string) => void;
+    placeholder?: string;
+    required?: boolean;
+    icon?: string;
+}
+
+const CustomSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange, placeholder = "Selecciona una opción", required, icon }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const displayValue = React.useMemo(() => {
+        if (!value) return placeholder;
+        const option = options.find(opt =>
+            typeof opt === 'string' ? opt === value : opt.value === value
+        );
+        return typeof option === 'string' ? option : option?.label || value;
+    }, [value, options, placeholder]);
+
+    return (
+        <div className="space-y-2 relative" ref={containerRef}>
+            <label className="text-slate-300 text-sm font-semibold ml-1">{label}</label>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full h-14 bg-slate-900/50 border rounded-2xl px-5 flex items-center justify-between transition-all group ${isOpen ? 'border-blue-600 ring-2 ring-blue-600/20' : 'border-slate-700/50 hover:border-slate-600'
+                    }`}
+            >
+                <div className="flex items-center gap-3">
+                    {icon && <span className="material-symbols-outlined text-slate-500 text-xl">{icon}</span>}
+                    <span className={`text-sm ${value ? 'text-white font-medium' : 'text-slate-500'}`}>
+                        {displayValue}
+                    </span>
+                </div>
+                <span className={`material-symbols-outlined text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`}>
+                    expand_more
+                </span>
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-[100] mt-2 w-full bg-[#1e293b] border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 backdrop-blur-xl">
+                    <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                        {options.length === 0 ? (
+                            <div className="p-4 text-center text-slate-500 text-sm italic">Sin opciones disponibles</div>
+                        ) : (
+                            options.map((opt, idx) => {
+                                const optVal = typeof opt === 'string' ? opt : opt.value;
+                                const optLabel = typeof opt === 'string' ? opt : opt.label;
+                                return (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => {
+                                            onChange(optVal);
+                                            setIsOpen(false);
+                                        }}
+                                        className={`w-full text-left px-5 py-4 text-sm transition-colors hover:bg-blue-600/10 hover:text-white border-b border-slate-800/50 last:border-0 ${value === optVal ? 'bg-blue-600 text-white font-bold' : 'text-slate-300'
+                                            }`}
+                                    >
+                                        {optLabel}
+                                    </button>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const DemoRequestView: React.FC = () => {
     const navigate = useNavigate();
@@ -12,6 +136,8 @@ const DemoRequestView: React.FC = () => {
         restaurant_name: '',
         contact_name: '',
         email: '',
+        country: 'Ecuador',
+        phone_code: '+593',
         phone: '',
         city: '',
         number_of_branches: '',
@@ -21,7 +147,8 @@ const DemoRequestView: React.FC = () => {
         has_recipe_costing: false,
         uses_pos: false,
         main_problem: '',
-        requested_plan_interest: ''
+        requested_plan_interest: '',
+        preferred_contact_method: 'WhatsApp'
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -32,6 +159,20 @@ const DemoRequestView: React.FC = () => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+    };
+
+    const handleCustomChange = (name: string, value: string) => {
+        setFormData(prev => {
+            const updates: any = { [name]: value };
+
+            if (name === 'country') {
+                const countryData = COUNTRIES.find(c => c.name === value);
+                updates.phone_code = countryData?.code || '';
+                updates.city = ''; // Reset city when country changes
+            }
+
+            return { ...prev, ...updates };
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -137,18 +278,39 @@ const DemoRequestView: React.FC = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-slate-300 text-sm font-semibold ml-1">Teléfono</label>
-                                    <input
-                                        type="tel" required name="phone" value={formData.phone} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all"
-                                        placeholder="+X XXX XXX XXXX"
+                                    <div className="flex gap-2">
+                                        <div className="w-24">
+                                            <button
+                                                type="button"
+                                                className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-3 text-white text-sm font-bold flex items-center justify-center cursor-default"
+                                            >
+                                                {formData.phone_code}
+                                            </button>
+                                        </div>
+                                        <input
+                                            type="tel" required name="phone" value={formData.phone} onChange={handleChange}
+                                            className="flex-1 h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all font-medium"
+                                            placeholder="XXX XXX XXXX"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <CustomSelect
+                                        label="País"
+                                        value={formData.country}
+                                        options={COUNTRIES.map(c => c.name)}
+                                        onChange={(v) => handleCustomChange('country', v)}
+                                        icon="public"
                                     />
                                 </div>
-                                <div className="space-y-2 sm:col-span-2">
-                                    <label className="text-slate-300 text-sm font-semibold ml-1">Ciudad</label>
-                                    <input
-                                        type="text" required name="city" value={formData.city} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all"
-                                        placeholder="Ciudad y país"
+                                <div className="space-y-2">
+                                    <CustomSelect
+                                        label="Ciudad"
+                                        value={formData.city}
+                                        options={COUNTRIES.find(c => c.name === formData.country)?.cities || []}
+                                        onChange={(v) => handleCustomChange('city', v)}
+                                        placeholder="Selecciona tu ciudad"
+                                        icon="location_on"
                                     />
                                 </div>
                             </div>
@@ -161,43 +323,31 @@ const DemoRequestView: React.FC = () => {
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-slate-300 text-sm font-semibold ml-1">Número de sucursales</label>
-                                    <select
-                                        required name="number_of_branches" value={formData.number_of_branches} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all appearance-none"
-                                    >
-                                        <option value="" disabled>Selecciona una opción</option>
-                                        <option value="1">1</option>
-                                        <option value="2-3">2-3</option>
-                                        <option value="4-10">4-10</option>
-                                        <option value="Más de 10">Más de 10</option>
-                                    </select>
+                                    <CustomSelect
+                                        label="Número de sucursales"
+                                        value={formData.number_of_branches}
+                                        options={['1', '2-3', '4-10', 'Más de 10']}
+                                        onChange={(v) => handleCustomChange('number_of_branches', v)}
+                                        icon="storefront"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-slate-300 text-sm font-semibold ml-1">Ventas mensuales aprox.</label>
-                                    <select
-                                        required name="monthly_sales_range" value={formData.monthly_sales_range} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all appearance-none"
-                                    >
-                                        <option value="" disabled>Selecciona un rango</option>
-                                        <option value="Menos de $5.000">Menos de $5.000</option>
-                                        <option value="$5.000 - $20.000">$5.000 - $20.000</option>
-                                        <option value="$20.000 - $50.000">$20.000 - $50.000</option>
-                                        <option value="Más de $50.000">Más de $50.000</option>
-                                    </select>
+                                    <CustomSelect
+                                        label="Ventas mensuales aprox."
+                                        value={formData.monthly_sales_range}
+                                        options={['Menos de $5.000', '$5.000 - $20.000', '$20.000 - $50.000', 'Más de $50.000']}
+                                        onChange={(v) => handleCustomChange('monthly_sales_range', v)}
+                                        icon="payments"
+                                    />
                                 </div>
                                 <div className="space-y-2 sm:col-span-2">
-                                    <label className="text-slate-300 text-sm font-semibold ml-1">¿Cómo llevas actualmente tu control financiero?</label>
-                                    <select
-                                        required name="current_control_method" value={formData.current_control_method} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all appearance-none"
-                                    >
-                                        <option value="" disabled>Selecciona una opción</option>
-                                        <option value="Excel">Excel</option>
-                                        <option value="Sistema POS">Sistema POS</option>
-                                        <option value="Manual">Manual</option>
-                                        <option value="Otro Software">Otro Software</option>
-                                    </select>
+                                    <CustomSelect
+                                        label="¿Cómo llevas actualmente tu control financiero?"
+                                        value={formData.current_control_method}
+                                        options={['Excel', 'Sistema POS', 'Manual', 'Otro Software']}
+                                        onChange={(v) => handleCustomChange('current_control_method', v)}
+                                        icon="tune"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -230,17 +380,25 @@ const DemoRequestView: React.FC = () => {
                                     <span className="text-slate-300 text-sm font-bold">Uso de POS</span>
                                 </label>
                                 <div className="space-y-2">
-                                    <label className="text-slate-300 text-sm font-semibold ml-1">Plan de interés</label>
-                                    <select
-                                        required name="requested_plan_interest" value={formData.requested_plan_interest} onChange={handleChange}
-                                        className="w-full h-14 bg-slate-900/50 border border-slate-700/50 rounded-2xl px-5 text-white focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all appearance-none"
-                                    >
-                                        <option value="" disabled>Selecciona interés</option>
-                                        <option value="Operar">Operar</option>
-                                        <option value="Controlar">Controlar</option>
-                                        <option value="Escalar">Escalar</option>
-                                        <option value="No estoy seguro">No estoy seguro</option>
-                                    </select>
+                                    <CustomSelect
+                                        label="Plan de interés"
+                                        value={formData.requested_plan_interest}
+                                        options={['Operar', 'Controlar', 'Escalar', 'No estoy seguro']}
+                                        onChange={(v) => handleCustomChange('requested_plan_interest', v)}
+                                        icon="star"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <CustomSelect
+                                        label="Preferencia de atención"
+                                        value={formData.preferred_contact_method}
+                                        options={[
+                                            { label: 'WhatsApp', value: 'WhatsApp' },
+                                            { label: 'Correo Electrónico', value: 'Email' }
+                                        ]}
+                                        onChange={(v) => handleCustomChange('preferred_contact_method', v)}
+                                        icon="chat"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -285,9 +443,8 @@ const DemoRequestView: React.FC = () => {
                 </div>
             </div>
 
-            <div className="text-center mt-12 mb-20 text-slate-500 text-[10px] font-black uppercase tracking-[0.4em]">
-                RSD SOLUTIONS &copy; 2026 - RestoGestión V2.0 Enterprise
-            </div>
+
+            <LandingFooter />
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
+import LandingFooter from './LandingFooter';
 
 const FeaturesView: React.FC = () => {
     const navigate = useNavigate();
@@ -31,12 +32,6 @@ const FeaturesView: React.FC = () => {
                             <p className="mx-auto max-w-2xl text-lg leading-8 text-slate-400 mb-10 font-light">
                                 Transforma tu restaurante en una operación financiera predecible. Controla el margen real plato por plato, turno por turno.
                             </p>
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <button className="h-12 px-8 rounded-sm bg-primary text-white font-bold hover:bg-blue-600 transition-all border border-transparent flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[20px]">analytics</span>
-                                    Ver cómo impacta cada venta
-                                </button>
-                            </div>
                         </div>
                     </section>
                     <section className="py-16 bg-surface-dark border-y border-white/5">
@@ -247,56 +242,17 @@ const FeaturesView: React.FC = () => {
                                 Deja de operar a ciegas. Empieza a tomar decisiones basadas en datos financieros operativos reales.
                             </p>
                             <div className="mt-10 flex items-center justify-center gap-x-6">
-                                <button className="rounded-sm bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border border-white/10">
+                                <button
+                                    onClick={() => navigate('/solicitar-demo')}
+                                    className="rounded-sm bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all border border-white/10"
+                                >
                                     Solicitar Demo Financiera
                                 </button>
                             </div>
                         </div>
                     </section>
                 </main>
-                <footer className="bg-background-dark border-t border-white/10 pt-16 pb-8">
-                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Producto</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><a className="hover:text-primary" href="#">Funcionalidades</a></li>
-                                    <li><a className="hover:text-primary" href="#">Integraciones</a></li>
-                                    <li><a className="hover:text-primary" href="#">Actualizaciones</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Recursos</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><a className="hover:text-primary" href="#">Blog Financiero</a></li>
-                                    <li><a className="hover:text-primary" href="#">Casos de Éxito</a></li>
-                                    <li><a className="hover:text-primary" href="#">Webinars</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Compañía</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><a className="hover:text-primary" href="#">Sobre Nosotros</a></li>
-                                    <li><a className="hover:text-primary" href="#">Carreras</a></li>
-                                    <li><a className="hover:text-primary" href="#">Contacto</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-bold mb-4">Legal</h4>
-                                <ul className="space-y-2 text-sm text-slate-400">
-                                    <li><a className="hover:text-primary" href="#">Privacidad</a></li>
-                                    <li><a className="hover:text-primary" href="#">Términos</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                            <p className="text-xs text-slate-500">© 2024 RestoGestión Inc. ERP Financiero para Gastronomía.</p>
-                            <div className="flex gap-4">
-                                <a className="text-slate-500 hover:text-white transition-colors" href="#"><span className="sr-only">LinkedIn</span><svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg></a>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
+                <LandingFooter />
             </div>
 
 

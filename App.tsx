@@ -20,6 +20,10 @@ import HowItWorksView from './views/landing/HowItWorksView';
 import FeaturesView from './views/landing/FeaturesView';
 import PricingView from './views/landing/PricingView';
 import SupportView from './views/landing/SupportView';
+import TermsView from './views/landing/TermsView';
+import ArchitectureView from './views/landing/ArchitectureView';
+import ResultsView from './views/landing/ResultsView';
+import PrivacyView from './views/landing/PrivacyView';
 import AdminDashboard from './views/AdminDashboard';
 import IngredientsView from './views/IngredientsView';
 import InventoryView from './views/InventoryView';
@@ -55,6 +59,7 @@ import SaasSubscriptionsView from './views/SaasSubscriptionsView';
 // Components
 import Sidebar from './components/Sidebar';
 import MobileNavbar from './components/MobileNavbar';
+import ScrollToTop from './components/ScrollToTop';
 
 // Access Control
 interface RoleGuardProps {
@@ -720,13 +725,18 @@ const App: React.FC = () => {
   if (!user) {
     return (
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingView />} />
           <Route path="/problema" element={<ProblemView />} />
           <Route path="/como-funciona" element={<HowItWorksView />} />
           <Route path="/funcionalidades" element={<FeaturesView />} />
+          <Route path="/terminos" element={<TermsView />} />
           <Route path="/precios" element={<PricingView />} />
           <Route path="/soporte" element={<SupportView />} />
+          <Route path="/arquitectura" element={<ArchitectureView />} />
+          <Route path="/resultados" element={<ResultsView />} />
+          <Route path="/privacidad" element={<PrivacyView />} />
           <Route path="/solicitar-demo" element={<DemoRequestView />} />
           <Route path="/login" element={<LoginView onLogin={handleLogin} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -738,6 +748,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="flex h-screen overflow-hidden bg-bg-main relative">
         <Sidebar
           user={user}

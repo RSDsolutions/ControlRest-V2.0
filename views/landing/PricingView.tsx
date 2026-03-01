@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LandingHeader from './LandingHeader';
+import LandingFooter from './LandingFooter';
 
 const PricingView: React.FC = () => {
     const navigate = useNavigate();
@@ -32,7 +33,7 @@ const PricingView: React.FC = () => {
                         <p className="text-base sm:text-lg text-text-light max-w-2xl font-normal leading-relaxed px-4">
                             La mayoría de los negocios gastronómicos mueren vendiendo mucho pero ganando poco. RestoGestión V2.0 te da visibilidad financiera diaria para transformar flujo de caja en utilidad neta.
                         </p>
-                        <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8 transition-all">
+                        <div className="flex items-center p-1 bg-card-dark rounded-full border border-border-dark mt-8 transition-all relative">
                             <button
                                 onClick={() => setIsAnnual(false)}
                                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${!isAnnual ? 'bg-primary text-white shadow-glow-sm' : 'text-text-light hover:text-white'}`}
@@ -41,9 +42,9 @@ const PricingView: React.FC = () => {
                             </button>
                             <button
                                 onClick={() => setIsAnnual(true)}
-                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${isAnnual ? 'bg-primary text-white shadow-glow-sm' : 'text-text-light hover:text-white'}`}
+                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${isAnnual ? 'bg-primary text-white shadow-glow-sm' : 'text-text-light hover:text-white'}`}
                             >
-                                Anual <span className="text-xs text-primary font-bold ml-1 border border-primary px-1 rounded bg-primary/10">-20%</span>
+                                Anual <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded leading-none ${isAnnual ? 'bg-white/20 text-white' : 'bg-primary/20 text-primary border border-primary/10'}`}>-20%</span>
                             </button>
                         </div>
                     </div>
@@ -160,7 +161,7 @@ const PricingView: React.FC = () => {
                             </div>
                             <button
                                 onClick={() => navigate('/solicitar-demo')}
-                                className="w-full h-12 rounded-xl bg-white hover:bg-gray-200 text-background-dark font-bold text-sm transition-colors mb-8"
+                                className="w-full h-12 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-white font-bold text-sm transition-all shadow-glow-sm mb-8"
                             >
                                 Solicitar demo
                             </button>
@@ -249,60 +250,105 @@ const PricingView: React.FC = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="w-full max-w-[800px] mt-24 mb-10">
-                        <h2 className="text-2xl font-bold text-white mb-8 text-center">Preguntas Frecuentes sobre Control</h2>
-                        <div className="flex flex-col gap-4">
-                            <details className="group rounded-xl border border-border-dark bg-card-dark p-4 transition-all">
-                                <summary className="flex cursor-pointer items-center justify-between font-medium text-white">
-                                    <span>¿Qué significa "FIFO Snapshot"?</span>
-                                    <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-                                </summary>
-                                <p className="mt-3 text-sm text-text-light leading-relaxed">
-                                    FIFO (First In, First Out) significa que costeamos tus platos usando el precio real del lote de insumos que se consumió. El "Snapshot" es una foto exacta del valor de tu inventario en cualquier momento, permitiéndote saber exactamente cuánto dinero tienes parado en la cocina.
-                                </p>
-                            </details>
-                            <details className="group rounded-xl border border-border-dark bg-card-dark p-4 transition-all">
-                                <summary className="flex cursor-pointer items-center justify-between font-medium text-white">
-                                    <span>¿Por qué el plan OPERAR no incluye utilidad real?</span>
-                                    <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-                                </summary>
-                                <p className="mt-3 text-sm text-text-light leading-relaxed">
-                                    Para calcular utilidad real necesitamos trazabilidad de inventario y recetas. El plan OPERAR está diseñado para negocios que recién empiezan a digitalizarse y solo necesitan conectar el POS para ver ventas y cuadrar caja, sin la complejidad operativa de llevar inventarios estrictos.
-                                </p>
-                            </details>
-                            <details className="group rounded-xl border border-border-dark bg-card-dark p-4 transition-all">
-                                <summary className="flex cursor-pointer items-center justify-between font-medium text-white">
-                                    <span>¿Cuánto tiempo toma implementar el nivel CONTROLAR?</span>
-                                    <span className="material-symbols-outlined transition-transform group-open:rotate-180">expand_more</span>
-                                </summary>
-                                <p className="mt-3 text-sm text-text-light leading-relaxed">
-                                    Depende de la calidad de tus recetas actuales. Si tienes recetas estándar, la carga inicial toma entre 3 a 5 días. Nuestro equipo de onboarding te asiste en la carga masiva de ingredientes y configuración de fichas técnicas.
-                                </p>
-                            </details>
+                    <div className="w-full max-w-[850px] mt-32 mb-24 px-4 relative">
+                        {/* Background Glows for the section */}
+                        <div className="absolute -top-24 -left-24 size-96 bg-primary/5 blur-[100px] rounded-full pointer-events-none"></div>
+                        <div className="absolute -bottom-24 -right-24 size-96 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+                        <div className="text-center mb-16 relative">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">
+                                <span className="material-symbols-outlined text-sm">quiz</span> FAQ TÉCNICA
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-6">
+                                Resolvemos tus <span className="text-primary">dudas</span>
+                            </h2>
+                            <div className="h-1 w-24 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full"></div>
+                            <p className="text-text-light mt-8 text-lg max-w-xl mx-auto leading-relaxed">
+                                Entiende cómo nuestra arquitectura transforma la operación de tu restaurante en rentabilidad real.
+                            </p>
+                        </div>
+
+                        <div className="grid gap-5 relative">
+                            {[
+                                {
+                                    q: "¿El sistema requiere conocimientos contables para su uso?",
+                                    a: "No. RestoGestión está diseñado para transformar eventos operativos en indicadores financieros automáticamente. El sistema habla el lenguaje de tu negocio, no el de un auditor, eliminando la necesidad de cálculos manuales o conciliaciones externas complejas."
+                                },
+                                {
+                                    q: "¿Qué tipo de información financiera puedo visualizar?",
+                                    a: (
+                                        <div className="space-y-4">
+                                            <p>Obtén una radiografía completa de tu rentabilidad en tiempo real con indicadores diseñados para la toma de decisiones:</p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                                {[
+                                                    { label: "Utilidad neta real", icon: "payments" },
+                                                    { label: "Margen por producto", icon: "analytics" },
+                                                    { label: "Costo de alimentos (%)", icon: "restaurant_menu" },
+                                                    { label: "Flujo de caja operativo", icon: "account_balance" },
+                                                    { label: "Punto de equilibrio", icon: "show_chart" },
+                                                    { label: "Rendimiento por sucursal", icon: "location_on" }
+                                                ].map((item, idx) => (
+                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 group/item hover:border-primary/30 transition-all">
+                                                        <span className="material-symbols-outlined text-primary text-lg group-hover/item:scale-110 transition-transform">{item.icon}</span>
+                                                        <span className="text-sm text-text-light font-medium">{item.label}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )
+                                },
+                                {
+                                    q: "¿Qué ocurre si existe merma o desperdicio de inventario?",
+                                    a: "Contamos con un módulo de mermas inteligente. Al registrar cualquier desperdicio, el sistema recalcula instantáneamente el costo operativo y la utilidad proyectada, permitiéndote identificar patrones de pérdida y ajustar la operación antes de que afecte tu margen final."
+                                },
+                                {
+                                    q: "¿Puedo analizar el rendimiento de cada sucursal de forma independiente?",
+                                    a: "Sí. Nuestra arquitectura multi-compañía permite visualizar indicadores financieros por unidad operativa o consolidar resultados corporativos. Ideal para dueños que necesitan comparar la eficiencia entre locales en un solo panel."
+                                },
+                                {
+                                    q: "¿Qué tan segura es la información registrada en el sistema?",
+                                    a: "Utilizamos infraestructura en la nube con encriptación de grado bancario. Contamos con trazabilidad completa de acciones (quién hizo qué y cuándo), respaldos automáticos diarios y control de accesos granular por roles."
+                                },
+                                {
+                                    q: "¿El cálculo de utilidad se realiza al cierre del mes?",
+                                    a: "No. En RestoGestión la utilidad es dinámica. Cada venta, cada compra y cada gasto registrado impacta tu P&L al instante. Deja de esperar al contador 15 días después del cierre para saber si ganaste dinero."
+                                },
+                                {
+                                    q: "¿Puedo comenzar sin cargar todo mi inventario desde el inicio?",
+                                    a: "Totalmente. Nuestro método de implementación 'Pareto 80/20' recomienda empezar por tus 20 insumos de mayor impacto. Esto te permite generar valor financiero y control de costos desde la primera semana sin abrumar a tu equipo."
+                                },
+                                {
+                                    q: "¿RestoGestión está diseñado para restaurantes pequeños?",
+                                    a: "El sistema es modular. Servimos tanto a locales independientes que necesitan orden básico y digitalización de caja, como a grandes cadenas que requieren auditoría financiera profunda y control de inventarios multi-etapa."
+                                },
+                                {
+                                    q: "¿Cómo impacta RestoGestión en la toma de decisiones operativas?",
+                                    a: "Cambiamos el enfoque: de perseguir ventas a proteger márgenes. El sistema te alerta sobre variaciones de precios de proveedores, platos con baja rentabilidad y fugas de efectivo en tiempo real, dándote el poder de actuar de inmediato."
+                                },
+                                {
+                                    q: "¿Qué significa \"FIFO Snapshot\"?",
+                                    a: "Es nuestra tecnología de valoración de inventario. FIFO (First In, First Out) garantiza que el costo de tus platos refleje el precio real pagado por los lotes consumidos. El 'Snapshot' es la valoración monetaria de tu inventario actual en stock."
+                                }
+                            ].map((item, index) => (
+                                <details key={index} className="group rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-sm hover:bg-slate-900/80 transition-all duration-500 overflow-hidden hover:border-primary/40 hover:shadow-[0_0_20px_rgba(59,130,246,0.05)]">
+                                    <summary className="flex cursor-pointer items-center justify-between p-6 font-bold text-white list-none select-none">
+                                        <span className="text-lg md:text-xl pr-6 font-semibold tracking-tight leading-tight group-hover:text-primary transition-colors">{item.q}</span>
+                                        <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center group-open:bg-primary group-open:shadow-glow-sm transition-all duration-300 border border-white/10">
+                                            <span className="material-symbols-outlined text-2xl transition-transform duration-500 group-open:after:rotate-180 text-white/70 group-open:text-white">add</span>
+                                        </div>
+                                    </summary>
+                                    <div className="px-7 pb-7 pt-0 text-text-light leading-relaxed animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <div className="h-px w-full bg-gradient-to-r from-primary/30 to-transparent mb-6"></div>
+                                        <div className="text-sm md:text-base opacity-90">
+                                            {typeof item.a === 'string' ? <p>{item.a}</p> : item.a}
+                                        </div>
+                                    </div>
+                                </details>
+                            ))}
                         </div>
                     </div>
                 </main>
-                <footer className="border-t border-border-dark py-12 px-10 bg-background-dark">
-                    <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div className="flex items-center gap-3 text-white">
-                            <div className="size-6 text-primary">
-                                <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
-                                </svg>
-                            </div>
-                            <span className="font-bold text-sm">RestoGestión V2.0</span>
-                        </div>
-                        <div className="text-xs text-text-muted">
-                            © 2024 RestoGestión Inc. Datos financieros seguros.
-                        </div>
-                        <div className="flex gap-4">
-                            <a className="text-text-muted hover:text-primary transition-colors" href="#">
-                                <span className="sr-only">LinkedIn</span>
-                                <svg aria-hidden="true" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path clip-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill-rule="evenodd"></path></svg>
-                            </a>
-                        </div>
-                    </div>
-                </footer>
+                <LandingFooter />
             </div>
 
 
