@@ -180,10 +180,29 @@ const DemoRequestView: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
+        // Calculate score
+        let score = 0;
+        if (['2-3'].includes(formData.number_of_branches)) score += 10;
+        if (['4-10', 'Más de 10'].includes(formData.number_of_branches)) score += 15;
+        if (formData.main_problem.toLowerCase().includes('urgent')) score += 5;
+
+        const genericDomains = ['gmail.com', 'hotmail.com', 'yahoo.com', 'outlook.com', 'live.com', 'icloud.com'];
+        const domain = formData.email.split('@')[1]?.toLowerCase();
+        if (domain && !genericDomains.includes(domain)) {
+            score += 5;
+        }
+
+        const { country, phone_code, preferred_contact_method, phone, ...submitData } = formData;
+        const payload = {
+            ...submitData,
+            phone: `${phone_code} ${phone}`,
+            score
+        };
+
         try {
             const { error: insertError } = await supabase
                 .from('demo_requests')
-                .insert([formData]);
+                .insert([payload]);
 
             if (insertError) throw insertError;
 

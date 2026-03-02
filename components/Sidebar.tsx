@@ -37,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
       groupLabel: 'GLOBAL SaaS',
       items: [
         { label: 'Panel Global', icon: 'admin_panel_settings', path: '/saas-admin' },
+        { label: 'Leads (CRM)', icon: 'group_add', path: '/saas-leads' },
         { label: 'Gestión SaaS', icon: 'business_center', path: '/saas-management' },
         { label: 'Sucursales', icon: 'account_tree', path: '/saas-branches' },
         { label: 'Suscripciones', icon: 'card_membership', path: '/saas-subscriptions' },
