@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const WHATSAPP_LINK = 'https://wa.me/593984685478?text=Hola%2C%20vi%20su%20anuncio%20y%20quiero%20una%20demo%20de%20RestoGesti%C3%B3n%20para%20mi%20restaurante.';
+const WHATSAPP_LINK = 'https://wa.me/593984918811?text=Hola%2C%20vi%20su%20anuncio%20y%20quiero%20una%20demo%20de%20RestoGesti%C3%B3n%20para%20mi%20restaurante.';
 
 const EmpiezaHoyView: React.FC = () => {
     useEffect(() => {
