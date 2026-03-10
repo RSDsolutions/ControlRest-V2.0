@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const WHATSAPP_LINK = 'https://wa.me/593984918811?text=Hola%2C%20vi%20su%20anuncio%20y%20quiero%20una%20demo%20de%20RestoGesti%C3%B3n%20para%20mi%20restaurante.';
 
 const EmpiezaHoyView: React.FC = () => {
+    const navigate = useNavigate();
     useEffect(() => {
         document.documentElement.classList.add('dark');
         window.scrollTo(0, 0);
@@ -352,6 +354,14 @@ const EmpiezaHoyView: React.FC = () => {
                             Setup inmediato
                         </span>
                     </div>
+
+                    <button
+                        onClick={() => navigate('/')}
+                        className="mt-8 inline-flex items-center gap-2 bg-[#1E293B] border border-slate-700 hover:border-white text-white text-base font-bold px-8 py-4 rounded-2xl transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-xl">language</span>
+                        Conocer más de RestoGestión
+                    </button>
                 </div>
             </section>
 
