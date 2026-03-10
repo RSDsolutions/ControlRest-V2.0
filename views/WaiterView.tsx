@@ -31,6 +31,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
    const [viewMode, setViewMode] = useState<ViewMode>('tables');
    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
    const [cart, setCart] = useState<OrderItem[]>([]);
+   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
    const [searchTerm, setSearchTerm] = useState('');
    const [selectedCategory, setSelectedCategory] = useState('Todos');
    const [isLoading, setIsLoading] = useState(false);
@@ -158,6 +159,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          setViewMode('order');
       }
       setCart([]);
+      setIsMobileCartOpen(false);
    };
 
    const addToCart = (plate: Plate) => {
@@ -253,6 +255,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
          }
 
          setCart([]);
+         setIsMobileCartOpen(false);
       } catch (err) {
          console.error(err);
          showNotification('\u274C Error al enviar pedido');
@@ -535,7 +538,7 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
             </header>
 
             {/* Plates grid */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4 auto-rows-max">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2 sm:gap-4 auto-rows-max pb-24 lg:pb-4">
                {filteredPlates.map(plate => {
                   const inCart = cart.find(i => i.plateId === plate.id);
                   const stock = getPlateStock(plate);
@@ -568,8 +571,8 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                               {plate.description || 'Delicioso plato preparado al momento.'}
                            </p>
                            <div className="mt-1 sm:mt-auto flex justify-between items-center w-full">
-                              <span className="hidden sm:inline text-[10px] text-slate-400 font-bold uppercase tracking-wider">{plate.category}</span>
-                              <span className="font-black text-sm sm:text-lg text-primary bg-primary/5 px-1.5 sm:px-2 py-0.5 rounded-lg">${plate.sellingPrice.toFixed(2)}</span>
+                               <span className="hidden sm:inline text-[10px] text-slate-400 font-bold uppercase tracking-wider">{plate.category}</span>
+                               <span className="font-black text-sm sm:text-lg text-primary bg-primary/5 px-1.5 sm:px-2 py-0.5 rounded-lg">${plate.sellingPrice.toFixed(2)}</span>
                            </div>
                         </div>
                      </div>
@@ -578,13 +581,30 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
             </div>
          </section>
 
+         {/* Backdrop for mobile cart */}
+         {isMobileCartOpen && (
+             <div 
+                 className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+                 onClick={() => setIsMobileCartOpen(false)}
+             />
+         )}
+
          {/* Cart / Order Panel */}
-         <section className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col shadow-2xl z-20 shrink-0 h-[45vh] lg:h-full">
+         <section className={`
+             fixed bottom-0 left-0 right-0 z-50 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-in-out flex flex-col rounded-t-3xl overflow-hidden
+             lg:static lg:rounded-none lg:w-96 lg:border-l lg:border-slate-200 lg:shadow-2xl lg:h-full lg:transform-none lg:z-20 lg:shrink-0
+             ${isMobileCartOpen ? 'h-[85vh] translate-y-0' : 'translate-y-full lg:translate-y-0'}
+         `}>
             <header className="p-4 border-b border-slate-100 bg-slate-50/50">
                <div className="flex items-center justify-between">
-                  <div>
-                     <h3 className="font-black text-slate-900 text-lg">Pedido</h3>
-                     <p className="text-xs text-slate-400">{getTableLabel(selectedTableId || '')}</p>
+                  <div className="flex items-center gap-3">
+                     <button onClick={() => setIsMobileCartOpen(false)} className="lg:hidden p-1 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+                        <span className="material-icons-round text-xl">keyboard_arrow_down</span>
+                     </button>
+                     <div>
+                        <h3 className="font-black text-slate-900 text-lg">Pedido</h3>
+                        <p className="text-xs text-slate-400">{getTableLabel(selectedTableId || '')}</p>
+                     </div>
                   </div>
                   {cart.length > 0 && (
                      <button onClick={() => setCart([])} className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-all">
@@ -729,6 +749,38 @@ const WaiterView: React.FC<WaiterViewProps> = ({ tables, plates, setTables, bran
                )}
             </footer>
          </section>
+
+         {/* Compact Bottom Bar (Mobile Only) */}
+         {(!isMobileCartOpen && (cart.length > 0 || tableOrders.length > 0)) && (
+             <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 z-40">
+                 <button 
+                     onClick={() => setIsMobileCartOpen(true)}
+                     className="w-full bg-slate-900 text-white rounded-2xl p-4 shadow-xl flex items-center justify-between hover:bg-slate-800 transition-colors"
+                 >
+                     <div className="flex items-center gap-3">
+                         <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center relative">
+                             <span className="material-icons-round text-white">receipt_long</span>
+                             {cart.reduce((sum, item) => sum + item.qty, 0) > 0 && (
+                                 <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900">
+                                     {cart.reduce((sum, item) => sum + item.qty, 0)}
+                                 </span>
+                             )}
+                         </div>
+                         <div className="text-left flex flex-col items-start leading-tight">
+                             <span className="font-bold">Ver Pedido</span>
+                             {tableOrders.length > 0 && (
+                                 <span className="text-[10px] text-slate-300">{tableOrders.length} comanda(s) activas</span>
+                             )}
+                         </div>
+                     </div>
+                     <div className="text-right">
+                         <span className="font-black text-lg">
+                             ${(tableOrders.reduce((acc, o) => acc + o.total, 0) + calculateTotal(cart)).toFixed(2)}
+                         </span>
+                     </div>
+                 </button>
+             </div>
+         )}
       </div>
    );
 
