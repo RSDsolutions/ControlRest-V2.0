@@ -24,6 +24,7 @@ import TermsView from './views/landing/TermsView';
 import ArchitectureView from './views/landing/ArchitectureView';
 import ResultsView from './views/landing/ResultsView';
 import PrivacyView from './views/landing/PrivacyView';
+import EmpiezaHoyView from './views/landing/EmpiezaHoyView';
 import AdminDashboard from './views/AdminDashboard';
 import IngredientsView from './views/IngredientsView';
 import InventoryView from './views/InventoryView';
@@ -740,6 +741,7 @@ const App: React.FC = () => {
           <Route path="/resultados" element={<ResultsView />} />
           <Route path="/privacidad" element={<PrivacyView />} />
           <Route path="/solicitar-demo" element={<DemoRequestView />} />
+          <Route path="/empieza-hoy" element={<EmpiezaHoyView />} />
           <Route path="/login" element={<LoginView onLogin={handleLogin} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
