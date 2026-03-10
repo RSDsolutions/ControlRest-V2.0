@@ -35,7 +35,17 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({ user, chil
                     return;
                 }
 
-                const endsAt = new Date(data.ends_at).getTime();
+                // If subscription is not active, block access
+                if (data.status !== 'active') {
+                    if (active) setDaysRemaining(-999);
+                    return;
+                }
+
+                // If ends_at is null, it means unlimited/perpetual subscription
+                if (!data.ends_at) {
+                    if (active) setDaysRemaining(null);
+                    return;
+                }
 
                 // Use a date reset to midnight to correctly compute full days
                 const now = new Date();
