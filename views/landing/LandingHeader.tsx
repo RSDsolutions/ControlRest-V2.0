@@ -35,10 +35,8 @@ const LandingHeader: React.FC = () => {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => handleNav('/')}>
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                            <span className="material-symbols-outlined text-[20px] sm:text-[22px]">dataset</span>
-                        </div>
-                        <span className="text-white text-base sm:text-lg font-bold tracking-tight">RestoGestión V2.0</span>
+                        <img src="/logo-rg.png" alt="RestoGestión" className="h-8 sm:h-9 w-auto group-hover:scale-110 transition-transform" />
+                        <span className="text-white text-base sm:text-lg font-bold tracking-tight">RestoGestión</span>
                     </div>
 
                     {/* Desktop Nav */}

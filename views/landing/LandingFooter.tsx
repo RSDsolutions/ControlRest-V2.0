@@ -8,9 +8,7 @@ const LandingFooter: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                     <div className="col-span-1 md:col-span-1">
                         <Link to="/" className="flex items-center gap-2 mb-4 group">
-                            <div className="w-6 h-6 flex items-center justify-center bg-blue-600 rounded text-white group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-[16px]">dataset</span>
-                            </div>
+                            <img src="/logo-rg.png" alt="RestoGestión" className="h-6 w-auto group-hover:scale-110 transition-transform" />
                             <span className="text-white font-bold">RestoGestión</span>
                         </Link>
                         <p className="text-slate-500 text-sm">

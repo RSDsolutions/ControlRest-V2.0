@@ -27,9 +27,7 @@ const EmpiezaHoyView: React.FC = () => {
                 {/* Minimal header — logo only */}
                 <header className="flex items-center px-6 sm:px-10 pt-6 sm:pt-8">
                     <div className="flex items-center gap-2.5 group">
-                        <div className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded-lg text-white shadow-lg shadow-blue-600/30">
-                            <span className="material-symbols-outlined text-[18px]">dataset</span>
-                        </div>
+                        <img src="/logo-rg.png" alt="RestoGestión" className="h-8 w-auto" />
                         <span className="text-white font-black text-lg tracking-tight">RestoGestión</span>
                     </div>
                 </header>
@@ -370,9 +368,7 @@ const EmpiezaHoyView: React.FC = () => {
             <footer className="bg-[#0B1120] border-t border-slate-800 py-8">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 flex items-center justify-center bg-blue-600 rounded text-white">
-                            <span className="material-symbols-outlined text-[12px]">dataset</span>
-                        </div>
+                        <img src="/logo-rg.png" alt="RestoGestión" className="h-5 w-auto" />
                         <span className="text-white font-bold text-sm">RestoGestión</span>
                     </div>
                     <p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest text-center">
