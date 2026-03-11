@@ -58,8 +58,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
       items: [
         { label: 'Mesas', icon: 'table_restaurant', path: '/tables' },
         { label: 'Pedidos', icon: 'receipt_long', path: '/orders-history' },
-        { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
-        { label: 'Caja', icon: 'point_of_sale', path: '/cashier' },
       ],
     },
     {
@@ -170,6 +168,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
   if (!isFeatureEnabled(planData, 'ENABLE_DAILY_FINANCIAL_SNAPSHOT')) restrictedPaths.push('/snapshots');
   if (!isFeatureEnabled(planData, 'ENABLE_ACCOUNTING_PERIOD_LOCK')) restrictedPaths.push('/period-locks');
   if (!isFeatureEnabled(planData, 'ENABLE_AUDIT_LOGS')) restrictedPaths.push('/audit');
+  if (!isFeatureEnabled(planData, 'ENABLE_WASTE_FINANCIAL_IMPACT')) restrictedPaths.push('/waste');
+  if (!isFeatureEnabled(planData, 'ENABLE_INSIGHTS_ENGINE')) restrictedPaths.push('/intelligence');
 
   // Additional restrictions for Plan Operativo (Plan 1)
   if (isPlanOperativo && user.role === UserRole.ADMIN) {

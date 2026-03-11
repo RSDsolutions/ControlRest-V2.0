@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { triggerLeadAutomation } from '../../services/leadAutomation';
 import LandingFooter from './LandingFooter';
 
 const COUNTRIES = [
@@ -200,11 +201,18 @@ const DemoRequestView: React.FC = () => {
         };
 
         try {
-            const { error: insertError } = await supabase
+            const { data, error: insertError } = await supabase
                 .from('demo_requests')
-                .insert([payload]);
+                .insert([payload])
+                .select('id, email, contact_name, restaurant_name, phone');
 
             if (insertError) throw insertError;
+
+            // Fire-and-forget: trigger async automation (email + WhatsApp + notes)
+            // This NEVER blocks the UI — the user sees success immediately
+            if (data && data.length > 0) {
+                triggerLeadAutomation(data[0]);
+            }
 
             setSubmitted(true);
         } catch (err: any) {

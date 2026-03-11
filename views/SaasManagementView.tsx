@@ -118,7 +118,8 @@ const SaasManagementView: React.FC<SaasManagementViewProps> = ({ currentUser }) 
                 p_password: adminPass,
                 p_full_name: adminName,
                 p_role: 'admin',
-                p_restaurant_id: restId
+                p_restaurant_id: restId,
+                p_branch_id: null
             });
             if (userError) throw userError;
 
