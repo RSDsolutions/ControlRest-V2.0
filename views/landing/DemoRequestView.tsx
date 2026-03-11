@@ -201,25 +201,30 @@ const DemoRequestView: React.FC = () => {
         }
 
         const { country, phone_code, preferred_contact_method, phone, ...submitData } = formData;
+        const leadId = crypto.randomUUID();
+        const fullPhone = `${phone_code} ${phone}`;
         const payload = {
+            id: leadId,
             ...submitData,
-            phone: `${phone_code} ${phone}`,
+            phone: fullPhone,
             score
         };
 
         try {
-            const { data, error: insertError } = await supabaseAnon
+            const { error: insertError } = await supabaseAnon
                 .from('demo_requests')
-                .insert([payload])
-                .select('id, email, contact_name, restaurant_name, phone');
+                .insert([payload]);
 
             if (insertError) throw insertError;
 
             // Fire-and-forget: trigger async automation (email + WhatsApp + notes)
-            // This NEVER blocks the UI — the user sees success immediately
-            if (data && data.length > 0) {
-                triggerLeadAutomation(data[0]);
-            }
+            triggerLeadAutomation({
+                id: leadId,
+                email: formData.email,
+                contact_name: formData.contact_name,
+                restaurant_name: formData.restaurant_name,
+                phone: fullPhone
+            });
 
             setSubmitted(true);
         } catch (err: any) {
