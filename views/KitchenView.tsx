@@ -389,10 +389,10 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                         </div>
                     ) : (
                         // ACTIVE KANBAN VIEW
-                        <div className="flex gap-4 sm:gap-6 h-full pb-4 px-2 sm:px-0">
+                        <div className="flex gap-4 sm:gap-6 h-full pb-4 px-2 sm:px-0 overflow-x-auto snap-x snap-mandatory hide-scrollbar">
                             {/* PENDING COLUMN */}
                             {(filter === 'all' || filter === 'pending') && (
-                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
+                                <div className="w-full sm:w-80 flex flex-col h-full shrink-0 snap-center">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-amber-500"></span> PENDIENTES
@@ -401,7 +401,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                                             {kitchenOrders.filter(o => o.kitchenStatus === 'pending').length}
                                         </span>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200">
+                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200 hide-scrollbar">
                                         {kitchenOrders.filter(o => o.kitchenStatus === 'pending').map(order => renderOrderCard(order))}
                                     </div>
                                 </div>
@@ -409,7 +409,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
 
                             {/* PREPARING COLUMN */}
                             {(filter === 'all' || filter === 'preparing') && (
-                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
+                                <div className="w-full sm:w-80 flex flex-col h-full shrink-0 snap-center">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span> EN PREPARACIÓN
@@ -418,7 +418,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                                             {kitchenOrders.filter(o => o.kitchenStatus === 'preparing').length}
                                         </span>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200">
+                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200 hide-scrollbar">
                                         {kitchenOrders.filter(o => o.kitchenStatus === 'preparing').map(order => renderOrderCard(order))}
                                     </div>
                                 </div>
@@ -426,7 +426,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
 
                             {/* READY COLUMN */}
                             {(filter === 'all' || filter === 'ready') && (
-                                <div className="w-[85vw] sm:w-80 flex flex-col h-full shrink-0">
+                                <div className="w-full sm:w-80 flex flex-col h-full shrink-0 snap-center">
                                     <div className="flex items-center justify-between mb-4 px-1">
                                         <h3 className="font-black text-slate-700 flex items-center gap-2">
                                             <span className="w-3 h-3 rounded-full bg-emerald-500"></span> LISTOS
@@ -435,7 +435,7 @@ const KitchenView: React.FC<KitchenViewProps> = ({ plates, tables, branchId, fet
                                             {kitchenOrders.filter(o => o.kitchenStatus === 'ready').length}
                                         </span>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200">
+                                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 pb-20 scrollbar-thin scrollbar-thumb-slate-200 hide-scrollbar">
                                         {kitchenOrders.filter(o => o.kitchenStatus === 'ready').map(order => renderOrderCard(order))}
                                     </div>
                                 </div>
