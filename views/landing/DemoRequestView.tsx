@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import { triggerLeadAutomation } from '../../services/leadAutomation';
+
+// Standalone anonymous client for public form (no session persistence)
+const supabaseAnon = createClient(
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+);
 import LandingFooter from './LandingFooter';
 
 const COUNTRIES = [
@@ -201,7 +208,7 @@ const DemoRequestView: React.FC = () => {
         };
 
         try {
-            const { data, error: insertError } = await supabase
+            const { data, error: insertError } = await supabaseAnon
                 .from('demo_requests')
                 .insert([payload])
                 .select('id, email, contact_name, restaurant_name, phone');
