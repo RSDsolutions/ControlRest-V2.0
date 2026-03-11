@@ -145,7 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, branches = [], curren
       items: [
         { label: 'Cocina', icon: 'soup_kitchen', path: '/kitchen' },
         { label: 'Recetario', icon: 'menu_book', path: '/kitchen/recipes' },
-        { label: 'Solicitar Insumos', icon: 'shopping_cart', path: '/kitchen/purchase-requests' },
+        // { label: 'Solicitar Insumos', icon: 'shopping_cart', path: '/kitchen/purchase-requests' },
         { label: 'Reportar Merma', icon: 'report_problem', path: '/kitchen/waste' },
         { label: 'Historial', icon: 'history', path: '/kitchen-history' },
       ],

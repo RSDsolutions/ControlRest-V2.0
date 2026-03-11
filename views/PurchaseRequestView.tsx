@@ -31,10 +31,10 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
     const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
 
     // New PO State
-    const [form, setForm] = useState<{ supplier_id: string; notes: string; items: { id: string; ingredient_id: string; qty: string; cost: string }[] }>({
+    const [form, setForm] = useState<{ supplier_id: string; notes: string; items: { id: string; ingredient_id: string; qty: string; cost: string; display_unit: string }[] }>({
         supplier_id: '',
         notes: '',
-        items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }]
+        items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '', display_unit: '' }]
     });
 
     const fetchOrders = useCallback(async () => {
@@ -131,19 +131,35 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
             if (poError) throw poError;
 
             // 2. Create items
-            const itemsToInsert = validItems.map(i => ({
-                purchase_order_id: poData.id,
-                ingredient_id: i.ingredient_id,
-                quantity_requested: parseFloat(i.qty),
-                expected_unit_cost: parseFloat(i.cost)
-            }));
+            const itemsToInsert = validItems.map(i => {
+                const ing = ingredients.find(ing => ing.id === i.ingredient_id);
+                const baseUnit = (ing as any)?.unit_base || 'unidades';
+                
+                let qtyInBase = parseFloat(i.qty);
+                let costInBase = parseFloat(i.cost);
+
+                if (baseUnit === 'gr') {
+                    if (i.display_unit === 'kg') { qtyInBase *= 1000; costInBase /= 1000; }
+                    else if (i.display_unit === 'lb') { qtyInBase *= 453.592; costInBase /= 453.592; }
+                } else if (baseUnit === 'ml') {
+                    if (i.display_unit === 'L' || i.display_unit === 'litros') { qtyInBase *= 1000; costInBase /= 1000; }
+                    else if (i.display_unit === 'gal') { qtyInBase *= 3785.41; costInBase /= 3785.41; }
+                }
+
+                return {
+                    purchase_order_id: poData.id,
+                    ingredient_id: i.ingredient_id,
+                    quantity_requested: qtyInBase,
+                    expected_unit_cost: costInBase
+                };
+            });
 
             const { error: itemsError } = await supabase.from('purchase_order_items').insert(itemsToInsert);
             if (itemsError) throw itemsError;
 
             setMsg('✅ Solicitud de Compra creada.');
             setShowForm(false);
-            setForm({ supplier_id: '', notes: '', items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] });
+            setForm({ supplier_id: '', notes: '', items: [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '', display_unit: '' }] });
             fetchOrders();
         } catch (err: any) {
             setMsg('❌ Error: ' + err.message);
@@ -289,7 +305,7 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                             const unit = (selectedIng as any)?.unit_base || 'unidades';
 
                             return (
-                                <div key={item.id} className="flex gap-2 items-center">
+                                <div key={item.id} className="flex flex-wrap md:flex-nowrap gap-2 items-center">
                                     <select
                                         required
                                         value={item.ingredient_id}
@@ -301,38 +317,67 @@ const PurchaseRequestView: React.FC<Props> = ({ branchId, currentUser }) => {
                                             // Handle dynamically mapped properties or undefined cases safely
                                             const defaultCost = (ing as any)?.unitPrice ?? (ing as any)?.unit_cost_gr ?? 0;
                                             if (ing) newItems[idx].cost = defaultCost.toString();
+                                            newItems[idx].display_unit = (ing as any)?.unit_base || 'unidades';
                                             setForm({ ...form, items: newItems });
                                         }}
-                                        className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
+                                        className="flex-[2] min-w-[120px] px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
                                     >
                                         <option value="">Seleccionar...</option>
                                         {ingredients.map(i => <option key={i.id} value={i.id}>{i.icon} {i.name}</option>)}
                                     </select>
                                     <input
-                                        required type="number" min="0.1" step="any" placeholder={`Cant. (${unit})`} value={item.qty}
+                                        required type="number" min="0.1" step="any" placeholder={`Cant.`} value={item.qty}
                                         onChange={e => { const newItems = [...form.items]; newItems[idx].qty = e.target.value; setForm({ ...form, items: newItems }); }}
-                                        className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
-                                        title={`Cantidad en ${unit}`}
+                                        className="w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
+                                        title={`Cantidad`}
                                     />
-                                    <div className="relative w-32">
+                                    { (unit === 'gr' || unit === 'ml') ? (
+                                        <select
+                                            value={item.display_unit || unit}
+                                            onChange={e => {
+                                                const newItems = [...form.items];
+                                                newItems[idx].display_unit = e.target.value;
+                                                setForm({ ...form, items: newItems });
+                                            }}
+                                            className="w-20 px-2 py-2 border border-slate-200 rounded-lg text-sm font-bold bg-slate-50"
+                                        >
+                                            {unit === 'gr' && (
+                                                <>
+                                                    <option value="gr">gr</option>
+                                                    <option value="kg">kg</option>
+                                                    <option value="lb">lb</option>
+                                                </>
+                                            )}
+                                            {unit === 'ml' && (
+                                                <>
+                                                    <option value="ml">ml</option>
+                                                    <option value="L">L</option>
+                                                    <option value="gal">gal</option>
+                                                </>
+                                            )}
+                                        </select>
+                                    ) : (
+                                        <span className="w-20 px-2 py-2 text-sm font-bold text-slate-500 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-center">{unit}</span>
+                                    )}
+                                    <div className="relative flex-1 min-w-[100px]">
                                         <span className="absolute left-3 top-2 text-slate-400 text-sm font-bold">$</span>
                                         <input
-                                            required type="number" min="0" step="any" placeholder="Costo Unit." value={item.cost}
+                                            required type="number" min="0" step="any" placeholder={`Cto/${item.display_unit || unit}`} value={item.cost}
                                             onChange={e => { const newItems = [...form.items]; newItems[idx].cost = e.target.value; setForm({ ...form, items: newItems }); }}
                                             className="w-full pl-6 pr-3 py-2 border border-slate-200 rounded-lg text-sm font-bold"
-                                            title={`Costo por ${unit}`}
+                                            title={`Costo por ${item.display_unit || unit}`}
                                         />
                                     </div>
                                     <button type="button" onClick={() => {
                                         const newItems = form.items.filter((_, i) => i !== idx);
-                                        setForm({ ...form, items: newItems.length ? newItems : [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] });
+                                        setForm({ ...form, items: newItems.length ? newItems : [{ id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '', display_unit: '' }] });
                                     }} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                                         <span className="material-icons-round text-[20px]">delete</span>
                                     </button>
                                 </div>
                             );
                         })}
-                        <button type="button" onClick={() => setForm({ ...form, items: [...form.items, { id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '' }] })} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
+                        <button type="button" onClick={() => setForm({ ...form, items: [...form.items, { id: crypto.randomUUID(), ingredient_id: '', qty: '', cost: '', display_unit: '' }] })} className="text-sm font-bold text-primary flex items-center gap-1 hover:underline">
                             <span className="material-icons-round text-[16px]">add_circle</span> Añadir Fila
                         </button>
                     </div>
