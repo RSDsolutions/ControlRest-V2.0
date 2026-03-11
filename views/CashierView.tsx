@@ -103,6 +103,7 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
    }, [selectedTableId, orders]);
 
    const tableTotal = tableOrders.reduce((sum: number, o: Order) => sum + (o.total || 0), 0) as number;
+   const selectedTableHasUndelivered = tableOrders.some(o => ['open', 'pending', 'preparing', 'ready'].includes(o.status));
    const totalPaid = Object.values(splitPayments).reduce((sum: number, val: any) => sum + parseFloat(val || '0'), 0) as number;
    const pendingAmount = Math.max(0, tableTotal - totalPaid);
 
@@ -340,7 +341,10 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                               </tr>
                            ) : (
                               activeBills.map(table => {
-                                 const total = orders.filter(o => o.tableId === (table.id || table.label)).reduce((sum, o) => sum + o.total, 0);
+                                 const tableOrdersForTable = orders.filter(o => o.tableId === (table.id || table.label));
+                                 const total = tableOrdersForTable.reduce((sum, o) => sum + o.total, 0);
+                                 const hasUndelivered = tableOrdersForTable.some(o => ['open', 'pending', 'preparing', 'ready'].includes(o.status));
+
                                  return (
                                     <tr key={table.id || table.label} className="group transition-colors hover:bg-slate-50/50">
                                        <td className="py-4">
@@ -353,12 +357,18 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                                        </td>
                                        <td className="py-4 font-mono font-bold text-slate-900">${total.toFixed(2)}</td>
                                        <td className="py-4 text-right">
-                                          <button
-                                             onClick={() => setSelectedTableId(table.id || table.label)}
-                                             className="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-slate-200"
-                                          >
-                                             Seleccionar
-                                          </button>
+                                          {hasUndelivered ? (
+                                             <span className="px-3 py-1.5 bg-rose-50 text-rose-500 rounded-lg font-bold text-[10px] uppercase tracking-widest border border-rose-100 whitespace-nowrap">
+                                                Platos Pendientes
+                                             </span>
+                                          ) : (
+                                             <button
+                                                onClick={() => setSelectedTableId(table.id || table.label)}
+                                                className="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-slate-200"
+                                             >
+                                                Seleccionar
+                                             </button>
+                                          )}
                                        </td>
                                     </tr>
                                  );
@@ -452,10 +462,10 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
 
                         <button
                            onClick={confirmPayment}
-                           disabled={processing || pendingAmount > 0.01}
+                           disabled={processing || pendingAmount > 0.01 || selectedTableHasUndelivered}
                            className="w-full py-5 bg-primary text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
                         >
-                           {processing ? 'Procesando...' : 'Confirmar Cobro'}
+                           {processing ? 'Procesando...' : selectedTableHasUndelivered ? 'Platos Pendientes' : 'Confirmar Cobro'}
                         </button>
 
                         <button
