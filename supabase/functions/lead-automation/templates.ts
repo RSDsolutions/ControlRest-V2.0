@@ -102,3 +102,55 @@ export function getWhatsAppTemplate(contactName: string, restaurantName: string)
     `Quedo atento 👍`
   ].join("\n");
 }
+
+// ─── Admin Notification Email HTML Template ───
+export function getAdminEmailTemplate(leadData: any): string {
+  const fieldsHtml = Object.entries(leadData)
+    .filter(([key]) => !['id', 'created_at', 'score', 'notes'].includes(key))
+    .map(([key, value]) => `
+      <tr>
+        <td style="padding:12px;border-bottom:1px solid #334155;color:#94a3b8;font-weight:600;text-transform:capitalize;">
+          ${key.replace(/_/g, ' ')}
+        </td>
+        <td style="padding:12px;border-bottom:1px solid #334155;color:#ffffff;">
+          ${value !== null && value !== undefined ? (typeof value === 'boolean' ? (value ? 'Sí' : 'No') : value.toString()) : 'N/A'}
+        </td>
+      </tr>
+    `).join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#0B1120;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:0;">
+        🚀 Nuevo Lead Registrado
+      </h1>
+      <div style="width:60px;height:3px;background:linear-gradient(90deg,#2563eb,#3b82f6);margin:12px auto 0;"></div>
+    </div>
+
+    <!-- Main Card -->
+    <div style="background-color:#1e293b;border:1px solid #334155;border-radius:24px;padding:32px;">
+      <h2 style="color:#3b82f6;font-size:20px;font-weight:700;margin:0 0 24px;">
+        Datos de: ${leadData.restaurant_name || "N/A"}
+      </h2>
+      
+      <table style="width:100%;border-collapse:collapse;text-align:left;font-size:14px;">
+        ${fieldsHtml}
+      </table>
+      
+      <p style="color:#cbd5e1;font-size:14px;margin-top:32px;text-align:center;">
+        Generado por automatización de RestoGestión.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}

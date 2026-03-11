@@ -1,8 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
-import { sendWelcomeEmail } from "./emailService.ts";
+import { sendWelcomeEmail, sendAdminNotificationEmail } from "./emailService.ts";
 import { sendWhatsAppMessage } from "./whatsappService.ts";
-import { getEmailTemplate, getWhatsAppTemplate } from "./templates.ts";
+import { getEmailTemplate, getWhatsAppTemplate, getAdminEmailTemplate } from "./templates.ts";
 
 // ─── CORS Headers ───────────────────────────────────────────────────
 const corsHeaders = {
@@ -51,9 +51,22 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[lead-automation] Processing lead: ${lead.id} — ${lead.restaurant_name}`);
 
-    const results = { email: false, whatsapp: false };
+    const results = { email: false, whatsapp: false, adminEmail: false };
     const now = new Date();
     const timestamp = `${now.getDate().toString().padStart(2, "0")}/${(now.getMonth() + 1).toString().padStart(2, "0")}/${now.getFullYear()} ${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+
+    // Fetch full lead data to use for notes and admin email
+    let fullLeadData = null;
+    try {
+      const { data } = await supabaseAdmin
+        .from("demo_requests")
+        .select("*")
+        .eq("id", lead.id)
+        .single();
+      fullLeadData = data;
+    } catch (err) {
+      console.error(`[lead-automation] ❌ Failed to fetch full lead data:`, err);
+    }
 
     // ─── Step 1: Send Welcome Email ───
     try {
@@ -63,6 +76,20 @@ Deno.serve(async (req: Request) => {
       console.log(`[lead-automation] ✅ Email sent to ${lead.email}`);
     } catch (err) {
       console.error(`[lead-automation] ❌ Email failed for ${lead.email}:`, err);
+    }
+
+    // ─── Step 1.5: Send Admin Notification Email ───
+    try {
+      if (fullLeadData) {
+        const adminEmailHtml = getAdminEmailTemplate(fullLeadData);
+        await sendAdminNotificationEmail(lead.contact_name, adminEmailHtml);
+        results.adminEmail = true;
+        console.log(`[lead-automation] ✅ Admin notification sent to robinsonsolorzano99@gmail.com`);
+      } else {
+        console.error(`[lead-automation] ❌ Could not fetch lead data for admin notification`);
+      }
+    } catch (err) {
+      console.error(`[lead-automation] ❌ Admin notification failed:`, err);
     }
 
     // ─── Step 2: Send WhatsApp Message ───
@@ -79,15 +106,10 @@ Deno.serve(async (req: Request) => {
     try {
       const emailStatus = results.email ? "✅" : "❌";
       const whatsappStatus = results.whatsapp ? "✅" : "❌";
-      const botNote = `[Bot 🤖 ${timestamp}] ${emailStatus} Email de bienvenida | ${whatsappStatus} WhatsApp de primer contacto`;
+      const adminStatus = results.adminEmail ? "✅ Notif Admin" : "❌ Notif Admin";
+      const botNote = `[Bot 🤖 ${timestamp}] ${emailStatus} Email de bienvenida | ${whatsappStatus} WhatsApp | ${adminStatus}`;
 
-      const { data: current } = await supabaseAdmin
-        .from("demo_requests")
-        .select("notes")
-        .eq("id", lead.id)
-        .single();
-
-      const existingNotes = current?.notes || "";
+      const existingNotes = fullLeadData?.notes || "";
       const updatedNotes = existingNotes
         ? `${existingNotes}\n${botNote}`
         : botNote;
