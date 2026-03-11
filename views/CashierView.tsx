@@ -402,12 +402,11 @@ const CashierView: React.FC<CashierViewProps> = ({ tables, plates, setTables, br
                      </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-4 text-[9px] font-mono text-slate-400">
-                     <span>Branch: {branchId || 'NULL'}</span>
-                     <span>Session: {currentShift?.id || 'NULL'}</span>
-                     <span>User: {currentUser?.name}</span>
-                     {statsError && <span className="text-rose-400">Error: {String(statsError)}</span>}
-                  </div>
+                  {statsError && (
+                     <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-4 text-[9px] font-mono text-slate-400">
+                        <span className="text-rose-400">Error: {String(statsError)}</span>
+                     </div>
+                  )}
                </div>
             </div>
 
