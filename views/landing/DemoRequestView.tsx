@@ -188,6 +188,23 @@ const DemoRequestView: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
+        // --- Limpieza y validación de teléfono ---
+        const cleanCode = formData.phone_code.replace(/\D/g, '');
+        const cleanNumber = formData.phone.replace(/\D/g, '');
+        let fullPhone = `${cleanCode}${cleanNumber}`;
+
+        // Regla Ecuador: Si empieza con 593 y el siguiente dígito es 0, quitar el 0
+        if (fullPhone.startsWith('5930')) {
+            fullPhone = fullPhone.replace(/^5930/, '593');
+        }
+
+        // Validación visual simple
+        if (fullPhone.length < 10) {
+            setError('Por favor ingresa un número de teléfono válido.');
+            setIsLoading(false);
+            return;
+        }
+
         // Calculate score
         let score = 0;
         if (['2-3'].includes(formData.number_of_branches)) score += 10;
@@ -202,7 +219,6 @@ const DemoRequestView: React.FC = () => {
 
         const { country, phone_code, preferred_contact_method, phone, ...submitData } = formData;
         const leadId = crypto.randomUUID();
-        const fullPhone = `${phone_code} ${phone}`;
         const payload = {
             id: leadId,
             ...submitData,
